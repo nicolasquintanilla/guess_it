@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "638542701605",
+    "project_id": "guess-it-tfg",
+    "storage_bucket": "guess-it-tfg.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:638542701605:android:b14d8d1e4b606d80420bcc",
+        "android_client_info": {
+          "package_name": "com.nicolas_quintanilla_.guess_it"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDUOJRU79yhuEroadI9x0sLAH9-cGARFXg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
