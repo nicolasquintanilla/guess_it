@@ -1,10 +1,13 @@
 import 'package:flutter/foundation.dart'; // Añadimos esto para kIsWeb
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
 import 'package:path_provider/path_provider.dart';
 import 'firebase_options.dart';
 import 'core/di/injection_container.dart' as di;
+import 'core/router/app_router.dart';
+import 'features/auth/presentation/bloc/auth_bloc.dart';
 
 void main() async {
   // Garantizamos que los bindings de Flutter estén listos
@@ -34,13 +37,14 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
-      title: 'Guess It!',
-      debugShowCheckedModeBanner: false,
-      home: Scaffold(
-        body: Center(
-          child: Text('¡Guess It! Motor de Autenticación 100% Listo.'),
-        ),
+    return BlocProvider<AuthBloc>(
+      create: (BuildContext context) {
+        return di.sl<AuthBloc>();
+      },
+      child: MaterialApp.router(
+        title: 'Guess It!',
+        debugShowCheckedModeBanner: false,
+        routerConfig: appRouter,
       ),
     );
   }
