@@ -65,5 +65,4 @@ class DefaultFirebaseOptions {
     storageBucket: 'guess-it-tfg.firebasestorage.app',
     iosBundleId: 'com.nicolasquintanilla.guessIt',
   );
-
 }
