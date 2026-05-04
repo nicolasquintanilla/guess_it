@@ -13,6 +13,12 @@ import 'package:guess_it/features/auth/data/repositories/auth_repository_impl.da
 import 'package:guess_it/features/auth/data/datasources/auth_remote_datasource.dart';
 import 'package:guess_it/features/auth/data/datasources/auth_local_datasource.dart';
 
+import 'package:guess_it/features/room/presentation/bloc/room_bloc.dart';
+import 'package:guess_it/features/room/domain/usecases/create_room_usecase.dart';
+import 'package:guess_it/features/room/domain/repositories/room_repository.dart';
+import 'package:guess_it/features/room/data/repositories/room_repository_impl.dart';
+import 'package:guess_it/features/room/data/datasources/room_remote_datasource.dart';
+
 final sl = GetIt.instance;
 
 Future<void> init() async {
@@ -23,6 +29,11 @@ Future<void> init() async {
       registerHostUseCase: sl(),
       playAsGuestUseCase: sl(),
       logoutUseCase: sl(),
+    ),
+  );
+  sl.registerFactory(
+    () => RoomBloc(
+      createRoomUseCase: sl(),
     ),
   );
 
@@ -47,12 +58,22 @@ Future<void> init() async {
       repository: sl(),
     ),
   );
+  sl.registerLazySingleton(
+    () => CreateRoomUseCase(
+      repository: sl(),
+    ),
+  );
 
   // Repository
   sl.registerLazySingleton<AuthRepository>(
     () => AuthRepositoryImpl(
       remoteDataSource: sl(),
       localDataSource: sl(),
+    ),
+  );
+  sl.registerLazySingleton<RoomRepository>(
+    () => RoomRepositoryImpl(
+      remoteDataSource: sl(),
     ),
   );
 
@@ -66,6 +87,11 @@ Future<void> init() async {
   sl.registerLazySingleton<AuthLocalDataSource>(
     () => AuthLocalDataSourceImpl(
       uuid: sl(),
+    ),
+  );
+  sl.registerLazySingleton<RoomRemoteDataSource>(
+    () => RoomRemoteDataSourceImpl(
+      firestore: sl(),
     ),
   );
 

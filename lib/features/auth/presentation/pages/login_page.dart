@@ -28,9 +28,7 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Guess It! - Login'),
-      ),
+      appBar: AppBar(title: const Text('Guess It! - Login')),
       body: BlocConsumer<AuthBloc, AuthState>(
         listener: (BuildContext context, AuthState state) {
           if (state.status == AuthStatus.error) {
@@ -47,6 +45,7 @@ class _LoginPageState extends State<LoginPage> {
                 backgroundColor: Colors.green,
               ),
             );
+            context.go('/hub');
           }
         },
         builder: (BuildContext context, AuthState state) {
@@ -73,11 +72,11 @@ class _LoginPageState extends State<LoginPage> {
                 ElevatedButton(
                   onPressed: () {
                     context.read<AuthBloc>().add(
-                          LoginHostEvent(
-                            email: emailController.text,
-                            password: passwordController.text,
-                          ),
-                        );
+                      LoginHostEvent(
+                        email: emailController.text,
+                        password: passwordController.text,
+                      ),
+                    );
                   },
                   child: const Text('Iniciar Sesión'),
                 ),
@@ -89,9 +88,7 @@ class _LoginPageState extends State<LoginPage> {
                 ),
                 OutlinedButton(
                   onPressed: () {
-                    context.read<AuthBloc>().add(
-                          const PlayAsGuestEvent(),
-                        );
+                    context.read<AuthBloc>().add(const PlayAsGuestEvent());
                   },
                   child: const Text('Jugar como Invitado'),
                 ),

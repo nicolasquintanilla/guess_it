@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:guess_it/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:guess_it/features/auth/presentation/bloc/auth_event.dart';
 import 'package:guess_it/features/auth/presentation/bloc/auth_state.dart';
@@ -29,9 +30,7 @@ class _RegisterPageState extends State<RegisterPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Guess It! - Registro'),
-      ),
+      appBar: AppBar(title: const Text('Guess It! - Registro')),
       body: BlocConsumer<AuthBloc, AuthState>(
         listener: (BuildContext context, AuthState state) {
           if (state.status == AuthStatus.error) {
@@ -48,6 +47,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 backgroundColor: Colors.green,
               ),
             );
+            context.go('/hub');
           }
         },
         builder: (BuildContext context, AuthState state) {
@@ -79,12 +79,12 @@ class _RegisterPageState extends State<RegisterPage> {
                 ElevatedButton(
                   onPressed: () {
                     context.read<AuthBloc>().add(
-                          RegisterHostEvent(
-                            username: usernameController.text,
-                            email: emailController.text,
-                            password: passwordController.text,
-                          ),
-                        );
+                      RegisterHostEvent(
+                        username: usernameController.text,
+                        email: emailController.text,
+                        password: passwordController.text,
+                      ),
+                    );
                   },
                   child: const Text('Registrarse'),
                 ),
