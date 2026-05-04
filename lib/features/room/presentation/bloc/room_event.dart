@@ -17,3 +17,17 @@ class CreateRoomEvent extends RoomEvent {
   @override
   List<Object?> get props => <Object?>[hostId];
 }
+
+class JoinRoomEvent extends RoomEvent {
+  final String roomId;
+  final String guestId;
+
+  const JoinRoomEvent({
+    required String roomId,
+    required String guestId,
+  })  : roomId = roomId,
+        guestId = guestId;
+
+  @override
+  List<Object?> get props => <Object?>[roomId, guestId];
+}

@@ -8,7 +8,7 @@ import 'firebase_options.dart';
 import 'core/di/injection_container.dart' as di;
 import 'core/router/app_router.dart';
 import 'features/auth/presentation/bloc/auth_bloc.dart';
-import 'features/room/presentation/bloc/room_bloc.dart';
+import 'features/game/presentation/bloc/game_bloc.dart';
 
 void main() async {
   // Garantizamos que los bindings de Flutter estén listos
@@ -45,9 +45,9 @@ class MyApp extends StatelessWidget {
             return di.sl<AuthBloc>();
           },
         ),
-        BlocProvider<RoomBloc>(
+        BlocProvider<GameBloc>(
           create: (BuildContext context) {
-            return di.sl<RoomBloc>();
+            return di.sl<GameBloc>();
           },
         ),
       ],

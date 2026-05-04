@@ -4,4 +4,8 @@ import 'package:guess_it/features/room/domain/entities/room_entity.dart';
 
 abstract class RoomRepository {
   Future<Either<Failure, RoomEntity>> createRoom(String hostId);
+  Future<Either<Failure, RoomEntity>> joinRoom({
+    required String roomId,
+    required String guestId,
+  });
 }

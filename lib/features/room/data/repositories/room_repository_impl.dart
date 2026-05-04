@@ -20,4 +20,20 @@ class RoomRepositoryImpl implements RoomRepository {
       return Left(ServerFailure(message: e.toString()));
     }
   }
+
+  @override
+  Future<Either<Failure, RoomEntity>> joinRoom({
+    required String roomId,
+    required String guestId,
+  }) async {
+    try {
+      final RoomEntity room = await remoteDataSource.joinRoom(
+        roomId: roomId,
+        guestId: guestId,
+      );
+      return Right(room);
+    } catch (e) {
+      return Left(ServerFailure(message: e.toString()));
+    }
+  }
 }
