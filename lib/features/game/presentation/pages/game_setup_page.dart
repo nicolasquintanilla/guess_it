@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:guess_it/features/game/presentation/bloc/game_bloc.dart';
-import 'package:guess_it/features/game/presentation/bloc/game_event.dart';
 
 class GameSetupPage extends StatefulWidget {
   const GameSetupPage({Key? key}) : super(key: key);
@@ -16,11 +13,13 @@ class GameSetupPage extends StatefulWidget {
 class _GameSetupPageState extends State<GameSetupPage> {
   final TextEditingController teamOneController = TextEditingController();
   final TextEditingController teamTwoController = TextEditingController();
+  final TextEditingController countController = TextEditingController();
 
   @override
   void dispose() {
     teamOneController.dispose();
     teamTwoController.dispose();
+    countController.dispose();
     super.dispose();
   }
 
@@ -50,27 +49,46 @@ class _GameSetupPageState extends State<GameSetupPage> {
                 border: OutlineInputBorder(),
               ),
             ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: countController,
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(
+                labelText: 'Cantidad total de palabras',
+                hintText: 'Ej. 30, 40, 60',
+                border: OutlineInputBorder(),
+              ),
+            ),
             const SizedBox(height: 48),
             ElevatedButton(
               onPressed: () {
                 final String t1 = teamOneController.text.trim();
                 final String t2 = teamTwoController.text.trim();
-                if (t1.isEmpty || t2.isEmpty) {
+                final String countStr = countController.text.trim();
+                
+                if (t1.isEmpty || t2.isEmpty || countStr.isEmpty) {
                   return;
                 }
-                context.read<GameBloc>().add(
-                      InitializeGameEvent(
-                        teamOneName: t1,
-                        teamTwoName: t2,
-                      ),
-                    );
-                context.push('/play');
+                
+                final int? targetCount = int.tryParse(countStr);
+                if (targetCount == null || targetCount <= 0) {
+                  return;
+                }
+
+                context.push(
+                  '/custom-words',
+                  extra: <String, dynamic>{
+                    'teamOne': t1,
+                    'teamTwo': t2,
+                    'targetCount': targetCount,
+                  },
+                );
               },
               style: ElevatedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 16),
                 textStyle: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
-              child: const Text('¡A Jugar!'),
+              child: const Text('Siguiente'),
             ),
           ],
         ),

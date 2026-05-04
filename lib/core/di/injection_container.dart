@@ -14,6 +14,7 @@ import 'package:guess_it/features/auth/data/datasources/auth_remote_datasource.d
 import 'package:guess_it/features/auth/data/datasources/auth_local_datasource.dart';
 
 import 'package:guess_it/features/game/presentation/bloc/game_bloc.dart';
+import 'package:guess_it/features/game/domain/repositories/word_repository.dart';
 
 final sl = GetIt.instance;
 
@@ -28,7 +29,9 @@ Future<void> init() async {
     ),
   );
   sl.registerFactory(
-    () => GameBloc(),
+    () => GameBloc(
+      wordRepository: sl(),
+    ),
   );
 
   // UseCases
@@ -59,6 +62,9 @@ Future<void> init() async {
       remoteDataSource: sl(),
       localDataSource: sl(),
     ),
+  );
+  sl.registerLazySingleton<WordRepository>(
+    () => WordRepository(),
   );
 
   // DataSources

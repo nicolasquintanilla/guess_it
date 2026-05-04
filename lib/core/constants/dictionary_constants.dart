@@ -1,0 +1,23 @@
+const List<String> globalDictionary = <String>[
+  'PERRO',
+  'GATO',
+  'MESA',
+  'SILLA',
+  'COCHE',
+  'AVION',
+  'CASA',
+  'ARBOL',
+  'MONTAÑA',
+  'PLAYA',
+  'SOL',
+  'LUNA',
+  'ESTRELLA',
+  'RIO',
+  'BOSQUE',
+  'ZAPATO',
+  'RELOJ',
+  'TELEFONO',
+  'GUITARRA',
+  'PIANO',
+  'ORDENADOR'
+];

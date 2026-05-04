@@ -3,6 +3,8 @@ import 'package:guess_it/features/auth/presentation/pages/login_page.dart';
 import 'package:guess_it/features/auth/presentation/pages/register_page.dart';
 import 'package:guess_it/features/hub/presentation/pages/hub_page.dart';
 import 'package:guess_it/features/game/presentation/pages/game_setup_page.dart';
+import 'package:guess_it/features/game/presentation/pages/custom_words_page.dart';
+import 'package:guess_it/features/game/presentation/pages/game_play_page.dart';
 
 final GoRouter appRouter = GoRouter(
   initialLocation: '/',
@@ -29,6 +31,19 @@ final GoRouter appRouter = GoRouter(
       path: '/game-setup',
       builder: (context, state) {
         return const GameSetupPage();
+      },
+    ),
+    GoRoute(
+      path: '/custom-words',
+      builder: (context, state) {
+        final Map<String, dynamic> setupData = state.extra as Map<String, dynamic>;
+        return CustomWordsPage(setupData: setupData);
+      },
+    ),
+    GoRoute(
+      path: '/play',
+      builder: (context, state) {
+        return const GamePlayPage();
       },
     ),
   ],
