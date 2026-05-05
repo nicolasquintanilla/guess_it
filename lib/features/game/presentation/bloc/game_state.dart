@@ -9,6 +9,7 @@ class GameState extends Equatable {
   final int remainingSeconds;
   final String currentWord;
   final List<String> currentBag;
+  final List<String> masterBag;
 
   const GameState({
     required GameStatus status,
@@ -16,11 +17,13 @@ class GameState extends Equatable {
     required int remainingSeconds,
     required String currentWord,
     required List<String> currentBag,
+    required List<String> masterBag,
   })  : status = status,
         game = game,
         remainingSeconds = remainingSeconds,
         currentWord = currentWord,
-        currentBag = currentBag;
+        currentBag = currentBag,
+        masterBag = masterBag;
 
   factory GameState.initial() {
     return const GameState(
@@ -29,6 +32,7 @@ class GameState extends Equatable {
       remainingSeconds: 0,
       currentWord: '',
       currentBag: <String>[],
+      masterBag: <String>[],
     );
   }
 
@@ -38,6 +42,7 @@ class GameState extends Equatable {
     int? remainingSeconds,
     String? currentWord,
     List<String>? currentBag,
+    List<String>? masterBag,
   }) {
     return GameState(
       status: status ?? this.status,
@@ -45,6 +50,7 @@ class GameState extends Equatable {
       remainingSeconds: remainingSeconds ?? this.remainingSeconds,
       currentWord: currentWord ?? this.currentWord,
       currentBag: currentBag ?? this.currentBag,
+      masterBag: masterBag ?? this.masterBag,
     );
   }
 
@@ -55,5 +61,6 @@ class GameState extends Equatable {
         remainingSeconds,
         currentWord,
         currentBag,
+        masterBag,
       ];
 }

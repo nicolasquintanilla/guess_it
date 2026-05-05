@@ -5,6 +5,7 @@ import 'package:guess_it/features/hub/presentation/pages/hub_page.dart';
 import 'package:guess_it/features/game/presentation/pages/game_setup_page.dart';
 import 'package:guess_it/features/game/presentation/pages/custom_words_page.dart';
 import 'package:guess_it/features/game/presentation/pages/game_play_page.dart';
+import 'package:guess_it/features/game/presentation/pages/scoreboard_page.dart';
 
 final GoRouter appRouter = GoRouter(
   initialLocation: '/',
@@ -44,6 +45,12 @@ final GoRouter appRouter = GoRouter(
       path: '/play',
       builder: (context, state) {
         return const GamePlayPage();
+      },
+    ),
+    GoRoute(
+      path: '/scoreboard',
+      builder: (context, state) {
+        return const ScoreboardPage();
       },
     ),
   ],

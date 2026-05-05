@@ -53,7 +53,8 @@ class GameBloc extends Bloc<GameEvent, GameState> {
       game: newGame,
       remainingSeconds: 0,
       currentWord: '',
-      currentBag: generatedBag,
+      currentBag: List<String>.from(generatedBag),
+      masterBag: List<String>.from(generatedBag),
     ));
   }
 
@@ -101,12 +102,10 @@ class GameBloc extends Bloc<GameEvent, GameState> {
     } else {
       updatedGame = currentGame.copyWith(
         activeTeam: 1,
-        currentRound: currentGame.currentRound + 1,
       );
     }
 
     // Si la palabra actual no se acertó, la devolvemos a la bolsa al cambiar de turno
-    // (Opcional, pero previene que se pierda la palabra si el tiempo acabó)
     final List<String> newBag = List<String>.from(state.currentBag);
     if (state.currentWord.isNotEmpty) {
       newBag.add(state.currentWord);
@@ -200,21 +199,37 @@ class GameBloc extends Bloc<GameEvent, GameState> {
     }
 
     final List<String> newBag = List<String>.from(state.currentBag);
-    String newWord = '';
 
     if (newBag.isEmpty) {
       _turnTimer?.cancel();
-      // Si no quedan palabras, terminamos el turno
-      emit(state.copyWith(
-        game: updatedGame,
-        currentWord: '',
-        currentBag: newBag,
-        remainingSeconds: 0,
-      ));
+      
+      if (currentGame.currentRound < 3) {
+        updatedGame = currentGame.copyWith(
+          currentRound: currentGame.currentRound + 1,
+        );
+        final List<String> reloadedBag = List<String>.from(state.masterBag)..shuffle();
+        
+        emit(state.copyWith(
+          game: updatedGame,
+          currentBag: reloadedBag,
+          currentWord: '',
+          remainingSeconds: 0,
+        ));
+      } else {
+        updatedGame = currentGame.copyWith(
+          gameStatus: 'finished',
+        );
+        emit(state.copyWith(
+          status: GameStatus.finished,
+          game: updatedGame,
+          currentWord: '',
+          remainingSeconds: 0,
+        ));
+      }
       return;
-    } else {
-      newWord = newBag.removeAt(0);
     }
+
+    final String newWord = newBag.removeAt(0);
 
     emit(state.copyWith(
       game: updatedGame,
