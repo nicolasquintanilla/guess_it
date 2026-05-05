@@ -4,9 +4,40 @@ import 'package:go_router/go_router.dart';
 import 'package:guess_it/features/game/domain/entities/game_entity.dart';
 import 'package:guess_it/features/game/presentation/bloc/game_bloc.dart';
 import 'package:guess_it/features/game/presentation/bloc/game_state.dart';
+import 'package:guess_it/features/ranking/presentation/bloc/ranking_bloc.dart';
 
-class ScoreboardPage extends StatelessWidget {
+class ScoreboardPage extends StatefulWidget {
   const ScoreboardPage({Key? key}) : super(key: key);
+
+  @override
+  State<ScoreboardPage> createState() {
+    return _ScoreboardPageState();
+  }
+}
+
+class _ScoreboardPageState extends State<ScoreboardPage> {
+  @override
+  void initState() {
+    super.initState();
+    _evaluateCompetitiveMode();
+  }
+
+  void _evaluateCompetitiveMode() {
+    final GameBloc gameBloc = context.read<GameBloc>();
+    final GameEntity? game = gameBloc.state.game;
+
+    if (game != null) {
+      final int scoreOne = game.teamOneScore;
+      final int scoreTwo = game.teamTwoScore;
+      final int hostTeam = game.hostTeam;
+
+      if (scoreOne > scoreTwo && hostTeam == 1) {
+        context.read<RankingBloc>().add(SubmitWinEvent(points: scoreOne));
+      } else if (scoreTwo > scoreOne && hostTeam == 2) {
+        context.read<RankingBloc>().add(SubmitWinEvent(points: scoreTwo));
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {

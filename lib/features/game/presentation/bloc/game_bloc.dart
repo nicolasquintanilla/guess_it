@@ -41,6 +41,7 @@ class GameBloc extends Bloc<GameEvent, GameState> {
       currentRound: 1,
       activeTeam: 1,
       gameStatus: 'in_progress',
+      hostTeam: event.hostTeam,
     );
 
     final List<String> generatedBag = wordRepository.generateWordBag(

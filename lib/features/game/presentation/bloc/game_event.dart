@@ -12,16 +12,19 @@ class InitializeGameEvent extends GameEvent {
   final String teamTwoName;
   final List<String> userWords;
   final int targetWordCount;
+  final int hostTeam;
 
   const InitializeGameEvent({
     required String teamOneName,
     required String teamTwoName,
     required List<String> userWords,
     required int targetWordCount,
+    required int hostTeam,
   })  : teamOneName = teamOneName,
         teamTwoName = teamTwoName,
         userWords = userWords,
-        targetWordCount = targetWordCount;
+        targetWordCount = targetWordCount,
+        hostTeam = hostTeam;
 
   @override
   List<Object?> get props => <Object?>[
@@ -29,6 +32,7 @@ class InitializeGameEvent extends GameEvent {
         teamTwoName,
         userWords,
         targetWordCount,
+        hostTeam,
       ];
 }
 

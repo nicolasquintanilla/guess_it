@@ -1,6 +1,8 @@
-import 'package:flutter/foundation.dart'; // Añadimos esto para kIsWeb
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
 import 'package:path_provider/path_provider.dart';
@@ -9,18 +11,17 @@ import 'core/di/injection_container.dart' as di;
 import 'core/router/app_router.dart';
 import 'features/auth/presentation/bloc/auth_bloc.dart';
 import 'features/game/presentation/bloc/game_bloc.dart';
+import 'features/ranking/data/datasources/ranking_remote_data_source.dart';
+import 'features/ranking/data/repositories/ranking_repository_impl.dart';
+import 'features/ranking/presentation/bloc/ranking_bloc.dart';
 
 void main() async {
-  // Garantizamos que los bindings de Flutter estén listos
   WidgetsFlutterBinding.ensureInitialized();
 
-  // 1. Inicializamos Firebase
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
-  // 2. Inicializamos el Service Locator (Inyección de Dependencias)
   await di.init();
 
-  // 3. Inicializamos el almacenamiento local para HydratedBloc (CORREGIDO)
   HydratedBloc.storage = await HydratedStorage.build(
     storageDirectory: kIsWeb
         ? HydratedStorageDirectory.web
@@ -33,7 +34,6 @@ void main() async {
 }
 
 class MyApp extends StatelessWidget {
-  // Aplicando regla estricta: Cero uso de 'super.key' abreviado
   const MyApp({Key? key}) : super(key: key);
 
   @override
@@ -48,6 +48,20 @@ class MyApp extends StatelessWidget {
         BlocProvider<GameBloc>(
           create: (BuildContext context) {
             return di.sl<GameBloc>();
+          },
+        ),
+        BlocProvider<RankingBloc>(
+          create: (BuildContext context) {
+            final RankingRemoteDataSource dataSource = RankingRemoteDataSource(
+              firestore: FirebaseFirestore.instance,
+              auth: FirebaseAuth.instance,
+            );
+            final RankingRepositoryImpl repository = RankingRepositoryImpl(
+              remoteDataSource: dataSource,
+            );
+            return RankingBloc(
+              repository: repository,
+            );
           },
         ),
       ],

@@ -109,6 +109,7 @@ class _CustomWordsPageState extends State<CustomWordsPage> {
                         teamTwoName: widget.setupData['teamTwo'] as String,
                         userWords: addedWords,
                         targetWordCount: targetCount,
+                        hostTeam: widget.setupData['hostTeam'] as int,
                       ),
                     );
                 context.push('/play');

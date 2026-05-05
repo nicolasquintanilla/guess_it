@@ -8,6 +8,7 @@ class GameEntity extends Equatable {
   final int currentRound;
   final int activeTeam;
   final String gameStatus;
+  final int hostTeam;
 
   const GameEntity({
     required String teamOneName,
@@ -17,13 +18,15 @@ class GameEntity extends Equatable {
     required int currentRound,
     required int activeTeam,
     required String gameStatus,
+    required int hostTeam,
   })  : teamOneName = teamOneName,
         teamTwoName = teamTwoName,
         teamOneScore = teamOneScore,
         teamTwoScore = teamTwoScore,
         currentRound = currentRound,
         activeTeam = activeTeam,
-        gameStatus = gameStatus;
+        gameStatus = gameStatus,
+        hostTeam = hostTeam;
 
   GameEntity copyWith({
     String? teamOneName,
@@ -33,6 +36,7 @@ class GameEntity extends Equatable {
     int? currentRound,
     int? activeTeam,
     String? gameStatus,
+    int? hostTeam,
   }) {
     return GameEntity(
       teamOneName: teamOneName ?? this.teamOneName,
@@ -42,6 +46,7 @@ class GameEntity extends Equatable {
       currentRound: currentRound ?? this.currentRound,
       activeTeam: activeTeam ?? this.activeTeam,
       gameStatus: gameStatus ?? this.gameStatus,
+      hostTeam: hostTeam ?? this.hostTeam,
     );
   }
 
@@ -54,5 +59,6 @@ class GameEntity extends Equatable {
         currentRound,
         activeTeam,
         gameStatus,
+        hostTeam,
       ];
 }
