@@ -8,31 +8,27 @@ abstract class GameEvent extends Equatable {
 }
 
 class InitializeGameEvent extends GameEvent {
-  final String teamOneName;
-  final String teamTwoName;
+  final List<String> teamNames;
   final List<String> userWords;
   final int targetWordCount;
-  final int hostTeam;
+  final String hostTeamName;
 
   const InitializeGameEvent({
-    required String teamOneName,
-    required String teamTwoName,
+    required List<String> teamNames,
     required List<String> userWords,
     required int targetWordCount,
-    required int hostTeam,
-  })  : teamOneName = teamOneName,
-        teamTwoName = teamTwoName,
+    required String hostTeamName,
+  })  : teamNames = teamNames,
         userWords = userWords,
         targetWordCount = targetWordCount,
-        hostTeam = hostTeam;
+        hostTeamName = hostTeamName;
 
   @override
   List<Object?> get props => <Object?>[
-        teamOneName,
-        teamTwoName,
+        teamNames,
         userWords,
         targetWordCount,
-        hostTeam,
+        hostTeamName,
       ];
 }
 
@@ -69,4 +65,12 @@ class CorrectAnswerEvent extends GameEvent {
 
 class SkipWordEvent extends GameEvent {
   const SkipWordEvent();
+}
+
+class PauseGameEvent extends GameEvent {
+  const PauseGameEvent();
+}
+
+class ResumeGameEvent extends GameEvent {
+  const ResumeGameEvent();
 }

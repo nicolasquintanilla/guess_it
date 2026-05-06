@@ -5,13 +5,19 @@ import 'package:guess_it/features/game/presentation/bloc/game_bloc.dart';
 import 'package:guess_it/features/game/presentation/bloc/game_event.dart';
 
 class CustomWordsPage extends StatefulWidget {
-  final Map<String, dynamic> setupData;
+  final List<String> teamNames;
+  final int targetCount;
+  final String hostTeamName;
 
   const CustomWordsPage({
     Key? key,
-    required Map<String, dynamic> setupData,
-  })  : setupData = setupData,
-        super(key: key);
+    required List<String> teamNames,
+    required int targetCount,
+    required String hostTeamName,
+  }) : teamNames = teamNames,
+       targetCount = targetCount,
+       hostTeamName = hostTeamName,
+       super(key: key);
 
   @override
   State<CustomWordsPage> createState() {
@@ -41,18 +47,14 @@ class _CustomWordsPageState extends State<CustomWordsPage> {
 
   @override
   Widget build(BuildContext context) {
-    final int targetCount = widget.setupData['targetCount'] as int;
-
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Añadir Palabras'),
-      ),
+      appBar: AppBar(title: const Text('Añadir Palabras')),
       body: Padding(
         padding: const EdgeInsets.all(32.0),
         child: Column(
           children: <Widget>[
             Text(
-              'Palabras: ${addedWords.length} / $targetCount',
+              'Palabras: ${addedWords.length} / ${widget.targetCount}',
               style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 24),
@@ -104,19 +106,24 @@ class _CustomWordsPageState extends State<CustomWordsPage> {
             ElevatedButton(
               onPressed: () {
                 context.read<GameBloc>().add(
-                      InitializeGameEvent(
-                        teamOneName: widget.setupData['teamOne'] as String,
-                        teamTwoName: widget.setupData['teamTwo'] as String,
-                        userWords: addedWords,
-                        targetWordCount: targetCount,
-                        hostTeam: widget.setupData['hostTeam'] as int,
-                      ),
-                    );
+                  InitializeGameEvent(
+                    teamNames: widget.teamNames,
+                    userWords: addedWords,
+                    targetWordCount: widget.targetCount,
+                    hostTeamName: widget.hostTeamName,
+                  ),
+                );
                 context.push('/play');
               },
               style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
-                textStyle: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 32,
+                  vertical: 24,
+                ),
+                textStyle: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               child: const Text('¡Generar Partida y Jugar!'),
             ),

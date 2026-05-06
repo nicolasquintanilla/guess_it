@@ -15,11 +15,13 @@ import 'package:guess_it/features/auth/data/datasources/auth_local_datasource.da
 
 import 'package:guess_it/features/game/presentation/bloc/game_bloc.dart';
 import 'package:guess_it/features/game/domain/repositories/word_repository.dart';
+import 'package:guess_it/features/game/data/repositories/word_repository_impl.dart';
+import 'package:guess_it/features/game/data/datasources/word_remote_data_source.dart';
 
-final sl = GetIt.instance;
+final GetIt sl = GetIt.instance;
 
 Future<void> init() async {
-  // BLoC
+  // --- BLoC ---
   sl.registerFactory(
     () => AuthBloc(
       loginHostUseCase: sl(),
@@ -28,66 +30,35 @@ Future<void> init() async {
       logoutUseCase: sl(),
     ),
   );
-  sl.registerFactory(
-    () => GameBloc(
-      wordRepository: sl(),
-    ),
-  );
+  sl.registerFactory(() => GameBloc(wordRepository: sl()));
 
-  // UseCases
-  sl.registerLazySingleton(
-    () => LoginHostUseCase(
-      repository: sl(),
-    ),
-  );
-  sl.registerLazySingleton(
-    () => RegisterHostUseCase(
-      repository: sl(),
-    ),
-  );
-  sl.registerLazySingleton(
-    () => PlayAsGuestUseCase(
-      repository: sl(),
-    ),
-  );
-  sl.registerLazySingleton(
-    () => LogoutUseCase(
-      repository: sl(),
-    ),
-  );
+  // --- UseCases ---
+  sl.registerLazySingleton(() => LoginHostUseCase(repository: sl()));
+  sl.registerLazySingleton(() => RegisterHostUseCase(repository: sl()));
+  sl.registerLazySingleton(() => PlayAsGuestUseCase(repository: sl()));
+  sl.registerLazySingleton(() => LogoutUseCase(repository: sl()));
 
-  // Repository
+  // --- Repository ---
   sl.registerLazySingleton<AuthRepository>(
-    () => AuthRepositoryImpl(
-      remoteDataSource: sl(),
-      localDataSource: sl(),
-    ),
+    () => AuthRepositoryImpl(remoteDataSource: sl(), localDataSource: sl()),
   );
   sl.registerLazySingleton<WordRepository>(
-    () => WordRepository(),
+    () => WordRepositoryImpl(remoteDataSource: sl()),
   );
 
-  // DataSources
+  // --- DataSources ---
   sl.registerLazySingleton<AuthRemoteDataSource>(
-    () => AuthRemoteDataSourceImpl(
-      firebaseAuth: sl(),
-      firestore: sl(),
-    ),
+    () => AuthRemoteDataSourceImpl(firebaseAuth: sl(), firestore: sl()),
   );
   sl.registerLazySingleton<AuthLocalDataSource>(
-    () => AuthLocalDataSourceImpl(
-      uuid: sl(),
-    ),
+    () => AuthLocalDataSourceImpl(uuid: sl()),
+  );
+  sl.registerLazySingleton<WordRemoteDataSource>(
+    () => WordRemoteDataSource(firestore: sl()),
   );
 
-  // Core/Externos
-  sl.registerLazySingleton<FirebaseAuth>(
-    () => FirebaseAuth.instance,
-  );
-  sl.registerLazySingleton<FirebaseFirestore>(
-    () => FirebaseFirestore.instance,
-  );
-  sl.registerLazySingleton<Uuid>(
-    () => const Uuid(),
-  );
+  // --- Core/Externos ---
+  sl.registerLazySingleton<FirebaseAuth>(() => FirebaseAuth.instance);
+  sl.registerLazySingleton<FirebaseFirestore>(() => FirebaseFirestore.instance);
+  sl.registerLazySingleton<Uuid>(() => const Uuid());
 }

@@ -1,8 +1,9 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 class GameSetupPage extends StatefulWidget {
-  const GameSetupPage({Key? key}) : super(key: key);
+  const GameSetupPage();
 
   @override
   State<GameSetupPage> createState() {
@@ -11,47 +12,116 @@ class GameSetupPage extends StatefulWidget {
 }
 
 class _GameSetupPageState extends State<GameSetupPage> {
-  final TextEditingController teamOneController = TextEditingController();
-  final TextEditingController teamTwoController = TextEditingController();
+  final List<TextEditingController> teamControllers = <TextEditingController>[];
   final TextEditingController countController = TextEditingController();
-  int selectedHostTeam = 1;
+  int selectedHostIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    // Inyectamos 2 equipos iniciales (mínimo obligatorio)
+    teamControllers.add(TextEditingController());
+    teamControllers.add(TextEditingController());
+  }
 
   @override
   void dispose() {
-    teamOneController.dispose();
-    teamTwoController.dispose();
+    for (final TextEditingController controller in teamControllers) {
+      controller.dispose();
+    }
     countController.dispose();
     super.dispose();
+  }
+
+  void _showCupertinoAlert(BuildContext context, String title, String message) {
+    showCupertinoDialog(
+      context: context,
+      builder: (BuildContext ctx) {
+        return CupertinoAlertDialog(
+          title: Text(title),
+          content: Text(message),
+          actions: <Widget>[
+            CupertinoDialogAction(
+              child: const Text('Entendido'),
+              onPressed: () {
+                Navigator.of(ctx).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Configurar Partida'),
-      ),
+      appBar: AppBar(title: const Text('Configurar Partida')),
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(32.0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
-              TextField(
-                controller: teamOneController,
-                decoration: const InputDecoration(
-                  labelText: 'Nombre Equipo 1',
-                  border: OutlineInputBorder(),
+              ...teamControllers.asMap().entries.map((
+                MapEntry<int, TextEditingController> entry,
+              ) {
+                final int index = entry.key;
+                final TextEditingController controller = entry.value;
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 16.0),
+                  child: Row(
+                    children: <Widget>[
+                      Expanded(
+                        child: TextField(
+                          controller: controller,
+                          decoration: InputDecoration(
+                            labelText: 'Nombre Equipo ${index + 1}',
+                            border: const OutlineInputBorder(),
+                          ),
+                        ),
+                      ),
+                      if (teamControllers.length > 2 &&
+                          index == teamControllers.length - 1) ...<Widget>[
+                        const SizedBox(width: 16),
+                        IconButton(
+                          icon: const Icon(
+                            Icons.remove_circle,
+                            color: Colors.red,
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              final TextEditingController removed =
+                                  teamControllers.removeLast();
+                              removed.dispose();
+                              if (selectedHostIndex >= teamControllers.length) {
+                                selectedHostIndex = teamControllers.length - 1;
+                              }
+                            });
+                          },
+                        ),
+                      ],
+                    ],
+                  ),
+                );
+              }),
+              if (teamControllers.length < 6)
+                ElevatedButton.icon(
+                  onPressed: () {
+                    setState(() {
+                      teamControllers.add(TextEditingController());
+                    });
+                  },
+                  icon: const Icon(Icons.add),
+                  label: const Text('Añadir Equipo'),
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 12,
+                    ),
+                  ),
                 ),
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: teamTwoController,
-                decoration: const InputDecoration(
-                  labelText: 'Nombre Equipo 2',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 32),
               TextField(
                 controller: countController,
                 keyboardType: TextInputType.number,
@@ -66,65 +136,95 @@ class _GameSetupPageState extends State<GameSetupPage> {
                 '¿En qué equipo juegas tú (Anfitrión)?',
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  Radio<int>(
-                    value: 1,
-                    groupValue: selectedHostTeam,
-                    onChanged: (int? value) {
-                      if (value != null) {
-                        setState(() {
-                          selectedHostTeam = value;
-                        });
-                      }
-                    },
-                  ),
-                  const Text('Equipo 1'),
-                  const SizedBox(width: 32),
-                  Radio<int>(
-                    value: 2,
-                    groupValue: selectedHostTeam,
-                    onChanged: (int? value) {
-                      if (value != null) {
-                        setState(() {
-                          selectedHostTeam = value;
-                        });
-                      }
-                    },
-                  ),
-                  const Text('Equipo 2'),
-                ],
+              const SizedBox(height: 16),
+              Wrap(
+                alignment: WrapAlignment.center,
+                spacing: 16,
+                runSpacing: 16,
+                children: teamControllers.asMap().entries.map((
+                  MapEntry<int, TextEditingController> entry,
+                ) {
+                  final int index = entry.key;
+                  return Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: <Widget>[
+                      Radio<int>(
+                        value: index,
+                        groupValue: selectedHostIndex,
+                        onChanged: (int? value) {
+                          if (value != null) {
+                            setState(() {
+                              selectedHostIndex = value;
+                            });
+                          }
+                        },
+                      ),
+                      Text('Equipo ${index + 1}'),
+                    ],
+                  );
+                }).toList(),
               ),
               const SizedBox(height: 48),
               ElevatedButton(
                 onPressed: () {
-                  final String t1 = teamOneController.text.trim();
-                  final String t2 = teamTwoController.text.trim();
-                  final String countStr = countController.text.trim();
-                  
-                  if (t1.isEmpty || t2.isEmpty || countStr.isEmpty) {
+                  final bool hasEmptyTeam = teamControllers.any(
+                    (TextEditingController c) => c.text.trim().isEmpty,
+                  );
+
+                  if (hasEmptyTeam) {
+                    _showCupertinoAlert(
+                      context,
+                      'Equipos Incompletos',
+                      'Por favor, introduce un nombre para todos los equipos.',
+                    );
                     return;
                   }
-                  
+
+                  final String countStr = countController.text.trim();
+                  if (countStr.isEmpty) {
+                    _showCupertinoAlert(
+                      context,
+                      'Faltan Palabras',
+                      'Por favor, introduce la cantidad de palabras a jugar.',
+                    );
+                    return;
+                  }
+
                   final int? targetCount = int.tryParse(countStr);
                   if (targetCount == null || targetCount <= 0) {
+                    _showCupertinoAlert(
+                      context,
+                      'Cantidad Inválida',
+                      'La cantidad de palabras debe ser un número entero mayor a cero.',
+                    );
                     return;
                   }
+
+                  final List<String> teamNames = teamControllers
+                      .map((TextEditingController c) => c.text.trim())
+                      .toList();
+                  final String hostTeamName = teamControllers[selectedHostIndex]
+                      .text
+                      .trim();
 
                   context.push(
                     '/custom-words',
                     extra: <String, dynamic>{
-                      'teamOne': t1,
-                      'teamTwo': t2,
+                      'teamNames': teamNames,
                       'targetCount': targetCount,
-                      'hostTeam': selectedHostTeam,
+                      'hostTeamName': hostTeamName,
                     },
                   );
                 },
                 style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 16),
-                  textStyle: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 48,
+                    vertical: 16,
+                  ),
+                  textStyle: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 child: const Text('Siguiente'),
               ),

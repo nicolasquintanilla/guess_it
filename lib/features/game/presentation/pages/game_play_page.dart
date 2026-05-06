@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:guess_it/features/game/domain/entities/game_entity.dart';
+import 'package:guess_it/features/game/domain/entities/team_entity.dart';
 import 'package:guess_it/features/game/presentation/bloc/game_bloc.dart';
 import 'package:guess_it/features/game/presentation/bloc/game_event.dart';
 import 'package:guess_it/features/game/presentation/bloc/game_state.dart';
@@ -34,27 +36,53 @@ class GamePlayPage extends StatelessWidget {
         appBar: AppBar(
           title: BlocBuilder<GameBloc, GameState>(
             builder: (BuildContext context, GameState state) {
+              if (state.status == GameStatus.loading) {
+                return const Text('Generando Bolsa...');
+              }
               final GameEntity? game = state.game;
               if (game == null) {
                 return const Text('Cargando...');
               }
-              final String activeTeamName =
-                  game.activeTeam == 1 ? game.teamOneName : game.teamTwoName;
-              return Text('Turno de: $activeTeamName');
+              final TeamEntity activeTeam = game.teams[game.activeTeamIndex];
+              return Text('Turno de: ${activeTeam.name}');
             },
           ),
+          actions: <Widget>[
+            BlocBuilder<GameBloc, GameState>(
+              builder: (BuildContext context, GameState state) {
+                if (state.remainingSeconds > 0) {
+                  final bool isPaused = state.status == GameStatus.paused;
+                  return IconButton(
+                    icon: Icon(isPaused ? Icons.play_arrow : Icons.pause),
+                    iconSize: 32,
+                    onPressed: () {
+                      if (isPaused) {
+                        context.read<GameBloc>().add(const ResumeGameEvent());
+                      } else {
+                        context.read<GameBloc>().add(const PauseGameEvent());
+                      }
+                    },
+                  );
+                }
+                return const SizedBox.shrink();
+              },
+            ),
+          ],
         ),
         body: BlocBuilder<GameBloc, GameState>(
           builder: (BuildContext context, GameState state) {
+            if (state.status == GameStatus.loading) {
+              return const Center(child: CircularProgressIndicator());
+            }
+
             final GameEntity? game = state.game;
             if (game == null) {
               return const Center(child: CircularProgressIndicator());
             }
 
-            final String activeTeamName =
-                game.activeTeam == 1 ? game.teamOneName : game.teamTwoName;
-            final int activeTeamScore =
-                game.activeTeam == 1 ? game.teamOneScore : game.teamTwoScore;
+            final TeamEntity activeTeam = game.teams[game.activeTeamIndex];
+            final String activeTeamName = activeTeam.name;
+            final int activeTeamScore = activeTeam.score;
 
             if (state.remainingSeconds == 0) {
               return Center(
@@ -107,47 +135,65 @@ class GamePlayPage extends StatelessWidget {
                     ),
                   ),
                   const Spacer(),
-                  Text(
-                    state.currentWord,
-                    style: const TextStyle(
-                      fontSize: 60,
-                      fontWeight: FontWeight.w900,
+                  if (state.status == GameStatus.paused) ...<Widget>[
+                    const Text(
+                      'JUEGO PAUSADO',
+                      style: TextStyle(
+                        fontSize: 48,
+                        fontWeight: FontWeight.w900,
+                        color: Colors.grey,
+                      ),
+                      textAlign: TextAlign.center,
                     ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const Spacer(),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: <Widget>[
-                      OutlinedButton(
-                        onPressed: () {
-                          context.read<GameBloc>().add(const SkipWordEvent());
-                        },
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
-                          side: const BorderSide(color: Colors.red, width: 2),
-                        ),
-                        child: const Text(
-                          'Pasar',
-                          style: TextStyle(color: Colors.red, fontSize: 24),
-                        ),
+                    const Spacer(),
+                  ] else ...<Widget>[
+                    Text(
+                      state.currentWord,
+                      style: const TextStyle(
+                        fontSize: 60,
+                        fontWeight: FontWeight.w900,
                       ),
-                      ElevatedButton(
-                        onPressed: () {
-                          context.read<GameBloc>().add(const CorrectAnswerEvent());
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.green,
-                          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
+                      textAlign: TextAlign.center,
+                    ),
+                    const Spacer(),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: <Widget>[
+                        OutlinedButton(
+                          onPressed: () {
+                            HapticFeedback.heavyImpact();
+                            context.read<GameBloc>().add(const SkipWordEvent());
+                          },
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
+                            side: const BorderSide(color: Colors.red, width: 2),
+                          ),
+                          child: const Text(
+                            'Pasar',
+                            style: TextStyle(color: Colors.red, fontSize: 24),
+                          ),
                         ),
-                        child: const Text(
-                          '¡Correcto!',
-                          style: TextStyle(color: Colors.white, fontSize: 24),
+                        ElevatedButton(
+                          onPressed: () {
+                            HapticFeedback.lightImpact();
+                            Future<void>.delayed(const Duration(milliseconds: 100), () {
+                              HapticFeedback.lightImpact();
+                            });
+                            context.read<GameBloc>().add(const CorrectAnswerEvent());
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.green,
+                            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
+                          ),
+                          child: const Text(
+                            '¡Correcto!',
+                            style: TextStyle(color: Colors.white, fontSize: 24),
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 48),
+                      ],
+                    ),
+                    const SizedBox(height: 48),
+                  ],
                 ],
               ),
             );

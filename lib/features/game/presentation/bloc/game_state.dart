@@ -1,7 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:guess_it/features/game/domain/entities/game_entity.dart';
 
-enum GameStatus { initial, playing, finished }
+enum GameStatus { initial, loading, playing, paused, finished }
 
 class GameState extends Equatable {
   final GameStatus status;

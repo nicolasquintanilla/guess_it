@@ -1,64 +1,47 @@
 import 'package:equatable/equatable.dart';
+import 'package:guess_it/features/game/domain/entities/team_entity.dart';
 
 class GameEntity extends Equatable {
-  final String teamOneName;
-  final String teamTwoName;
-  final int teamOneScore;
-  final int teamTwoScore;
+  final List<TeamEntity> teams;
   final int currentRound;
-  final int activeTeam;
+  final int activeTeamIndex;
   final String gameStatus;
-  final int hostTeam;
+  final String hostTeamName;
 
   const GameEntity({
-    required String teamOneName,
-    required String teamTwoName,
-    required int teamOneScore,
-    required int teamTwoScore,
+    required List<TeamEntity> teams,
     required int currentRound,
-    required int activeTeam,
+    required int activeTeamIndex,
     required String gameStatus,
-    required int hostTeam,
-  })  : teamOneName = teamOneName,
-        teamTwoName = teamTwoName,
-        teamOneScore = teamOneScore,
-        teamTwoScore = teamTwoScore,
+    required String hostTeamName,
+  })  : teams = teams,
         currentRound = currentRound,
-        activeTeam = activeTeam,
+        activeTeamIndex = activeTeamIndex,
         gameStatus = gameStatus,
-        hostTeam = hostTeam;
+        hostTeamName = hostTeamName;
 
   GameEntity copyWith({
-    String? teamOneName,
-    String? teamTwoName,
-    int? teamOneScore,
-    int? teamTwoScore,
+    List<TeamEntity>? teams,
     int? currentRound,
-    int? activeTeam,
+    int? activeTeamIndex,
     String? gameStatus,
-    int? hostTeam,
+    String? hostTeamName,
   }) {
     return GameEntity(
-      teamOneName: teamOneName ?? this.teamOneName,
-      teamTwoName: teamTwoName ?? this.teamTwoName,
-      teamOneScore: teamOneScore ?? this.teamOneScore,
-      teamTwoScore: teamTwoScore ?? this.teamTwoScore,
+      teams: teams ?? this.teams,
       currentRound: currentRound ?? this.currentRound,
-      activeTeam: activeTeam ?? this.activeTeam,
+      activeTeamIndex: activeTeamIndex ?? this.activeTeamIndex,
       gameStatus: gameStatus ?? this.gameStatus,
-      hostTeam: hostTeam ?? this.hostTeam,
+      hostTeamName: hostTeamName ?? this.hostTeamName,
     );
   }
 
   @override
   List<Object?> get props => <Object?>[
-        teamOneName,
-        teamTwoName,
-        teamOneScore,
-        teamTwoScore,
+        teams,
         currentRound,
-        activeTeam,
+        activeTeamIndex,
         gameStatus,
-        hostTeam,
+        hostTeamName,
       ];
 }

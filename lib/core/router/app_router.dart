@@ -39,7 +39,11 @@ final GoRouter appRouter = GoRouter(
       path: '/custom-words',
       builder: (context, state) {
         final Map<String, dynamic> setupData = state.extra as Map<String, dynamic>;
-        return CustomWordsPage(setupData: setupData);
+        return CustomWordsPage(
+          teamNames: setupData['teamNames'] as List<String>,
+          targetCount: setupData['targetCount'] as int,
+          hostTeamName: setupData['hostTeamName'] as String,
+        );
       },
     ),
     GoRoute(

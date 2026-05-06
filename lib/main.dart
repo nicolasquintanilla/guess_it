@@ -11,6 +11,8 @@ import 'core/di/injection_container.dart' as di;
 import 'core/router/app_router.dart';
 import 'features/auth/presentation/bloc/auth_bloc.dart';
 import 'features/game/presentation/bloc/game_bloc.dart';
+import 'features/game/data/datasources/word_remote_data_source.dart';
+import 'features/game/data/repositories/word_repository_impl.dart';
 import 'features/ranking/data/datasources/ranking_remote_data_source.dart';
 import 'features/ranking/data/repositories/ranking_repository_impl.dart';
 import 'features/ranking/presentation/bloc/ranking_bloc.dart';
@@ -47,7 +49,15 @@ class MyApp extends StatelessWidget {
         ),
         BlocProvider<GameBloc>(
           create: (BuildContext context) {
-            return di.sl<GameBloc>();
+            final WordRemoteDataSource wordRemoteDataSource = WordRemoteDataSource(
+              firestore: FirebaseFirestore.instance,
+            );
+            final WordRepositoryImpl wordRepository = WordRepositoryImpl(
+              remoteDataSource: wordRemoteDataSource,
+            );
+            return GameBloc(
+              wordRepository: wordRepository,
+            );
           },
         ),
         BlocProvider<RankingBloc>(
