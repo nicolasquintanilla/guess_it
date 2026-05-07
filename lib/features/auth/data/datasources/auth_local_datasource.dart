@@ -8,9 +8,7 @@ abstract class AuthLocalDataSource {
 class AuthLocalDataSourceImpl implements AuthLocalDataSource {
   final Uuid uuid;
 
-  const AuthLocalDataSourceImpl({
-    required Uuid uuid,
-  }) : uuid = uuid;
+  const AuthLocalDataSourceImpl({required Uuid uuid}) : uuid = uuid;
 
   @override
   Future<UserEntity> playAsGuest() async {
@@ -22,6 +20,8 @@ class AuthLocalDataSourceImpl implements AuthLocalDataSource {
       username: 'Guest_$generatedId',
       isGuest: true,
       createdAt: createdAt,
+      gamesPlayed: 0,
+      victories: 0,
     );
   }
 }

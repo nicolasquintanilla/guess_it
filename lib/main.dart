@@ -6,6 +6,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:google_fonts/google_fonts.dart';
+
 import 'firebase_options.dart';
 import 'core/di/injection_container.dart' as di;
 import 'core/router/app_router.dart';
@@ -18,25 +20,53 @@ import 'features/ranking/data/repositories/ranking_repository_impl.dart';
 import 'features/ranking/presentation/bloc/ranking_bloc.dart';
 
 void main() async {
+  // 1. Asegurar los bindings de Flutter
   WidgetsFlutterBinding.ensureInitialized();
+  print('--- DEPURACIÓN: Bindings inicializados ---');
 
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  // 2. Inicializar Firebase
+  try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+    print('--- DEPURACIÓN: Firebase inicializado ---');
+  } catch (e) {
+    print('--- ERROR FATAL EN FIREBASE: $e ---');
+  }
 
-  await di.init();
+  // 3. Inicializar Inyección de Dependencias
+  try {
+    await di.init();
+    print('--- DEPURACIÓN: Dependencias (DI) inicializadas ---');
+  } catch (e) {
+    print('--- ERROR FATAL EN DI: $e ---');
+  }
 
-  HydratedBloc.storage = await HydratedStorage.build(
-    storageDirectory: kIsWeb
-        ? HydratedStorageDirectory.web
-        : HydratedStorageDirectory(
-            (await getApplicationDocumentsDirectory()).path,
-          ),
-  );
+  // 4. Inicializar Caché (HydratedBloc)
+  try {
+    print('--- DEPURACIÓN: Buscando directorio de almacenamiento... ---');
+    HydratedBloc.storage = await HydratedStorage.build(
+      storageDirectory: kIsWeb
+          ? HydratedStorageDirectory.web
+          : HydratedStorageDirectory(
+              (await getApplicationDocumentsDirectory()).path,
+            ),
+    );
+    print('--- DEPURACIÓN: HydratedStorage inicializado ---');
+  } catch (e) {
+    print('--- ERROR FATAL EN HYDRATED STORAGE: $e ---');
+  }
 
+  // 5. Arrancar la App
+  print('--- DEPURACIÓN: Arrancando runApp... ---');
   runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+  @override
+  final Key? key;
+
+  const MyApp({Key? key}) : key = key;
 
   @override
   Widget build(BuildContext context) {
@@ -49,15 +79,12 @@ class MyApp extends StatelessWidget {
         ),
         BlocProvider<GameBloc>(
           create: (BuildContext context) {
-            final WordRemoteDataSource wordRemoteDataSource = WordRemoteDataSource(
-              firestore: FirebaseFirestore.instance,
-            );
+            final WordRemoteDataSource wordRemoteDataSource =
+                WordRemoteDataSource(firestore: FirebaseFirestore.instance);
             final WordRepositoryImpl wordRepository = WordRepositoryImpl(
               remoteDataSource: wordRemoteDataSource,
             );
-            return GameBloc(
-              wordRepository: wordRepository,
-            );
+            return GameBloc(wordRepository: wordRepository);
           },
         ),
         BlocProvider<RankingBloc>(
@@ -69,15 +96,64 @@ class MyApp extends StatelessWidget {
             final RankingRepositoryImpl repository = RankingRepositoryImpl(
               remoteDataSource: dataSource,
             );
-            return RankingBloc(
-              repository: repository,
-            );
+            return RankingBloc(repository: repository);
           },
         ),
       ],
       child: MaterialApp.router(
-        title: 'Guess It!',
+        title: 'Guess It',
         debugShowCheckedModeBanner: false,
+        theme: ThemeData(
+          colorScheme: ColorScheme.fromSeed(
+            seedColor: Colors.deepPurpleAccent,
+            background: Colors.grey[50],
+          ),
+          textTheme: GoogleFonts.nunitoTextTheme(),
+          appBarTheme: AppBarTheme(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            centerTitle: true,
+            titleTextStyle: GoogleFonts.nunito(
+              fontSize: 24,
+              fontWeight: FontWeight.w800,
+              color: Colors.deepPurpleAccent,
+            ),
+            iconTheme: const IconThemeData(color: Colors.deepPurpleAccent),
+          ),
+          elevatedButtonTheme: ElevatedButtonThemeData(
+            style: ElevatedButton.styleFrom(
+              elevation: 0,
+              backgroundColor: Colors.deepPurpleAccent,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              textStyle: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          outlinedButtonTheme: OutlinedButtonThemeData(
+            style: OutlinedButton.styleFrom(
+              backgroundColor: Colors.transparent,
+              side: const BorderSide(color: Colors.deepPurpleAccent, width: 2),
+              foregroundColor: Colors.deepPurpleAccent,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              textStyle: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          inputDecorationTheme: InputDecorationTheme(
+            filled: true,
+            fillColor: Colors.white,
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
+          ),
+        ),
         routerConfig: appRouter,
       ),
     );

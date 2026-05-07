@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -6,7 +7,10 @@ import 'package:guess_it/features/auth/presentation/bloc/auth_event.dart';
 import 'package:guess_it/features/auth/presentation/bloc/auth_state.dart';
 
 class RegisterPage extends StatefulWidget {
-  const RegisterPage({Key? key}) : super(key: key);
+  @override
+  final Key? key;
+
+  const RegisterPage({Key? key}) : key = key;
 
   @override
   State<RegisterPage> createState() {
@@ -27,69 +31,202 @@ class _RegisterPageState extends State<RegisterPage> {
     super.dispose();
   }
 
+  String _translateError(String error) {
+    if (error.contains('invalid-email')) {
+      return 'El formato del correo no es válido.';
+    } else if (error.contains('user-not-found') ||
+        error.contains('invalid-credential')) {
+      return 'Usuario o contraseña incorrectos.';
+    } else if (error.contains('email-already-in-use')) {
+      return 'Este correo ya está registrado.';
+    }
+    return 'Ha ocurrido un error de conexión.';
+  }
+
+  void _showCupertinoAlert(BuildContext context, String title, String message) {
+    showCupertinoDialog(
+      context: context,
+      builder: (BuildContext ctx) {
+        return CupertinoAlertDialog(
+          title: Text(title),
+          content: Text(message),
+          actions: <Widget>[
+            CupertinoDialogAction(
+              child: const Text('Entendido'),
+              onPressed: () {
+                Navigator.of(ctx, rootNavigator: true).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Guess It! - Registro')),
+      extendBodyBehindAppBar: true,
+      appBar: AppBar(
+        title: const Text('Registro'),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        iconTheme: const IconThemeData(color: Colors.white),
+        titleTextStyle: const TextStyle(
+          color: Colors.white,
+          fontSize: 24,
+          fontWeight: FontWeight.w800,
+        ),
+      ),
       body: BlocConsumer<AuthBloc, AuthState>(
         listener: (BuildContext context, AuthState state) {
           if (state.status == AuthStatus.error) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.errorMessage ?? 'Unknown error'),
-                backgroundColor: Colors.red,
-              ),
+            final String translatedMsg = _translateError(
+              state.errorMessage ?? '',
+            );
+            _showCupertinoAlert(
+              context,
+              'Error de Autenticación',
+              translatedMsg,
             );
           } else if (state.status == AuthStatus.authenticated) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('¡Éxito!'),
-                backgroundColor: Colors.green,
-              ),
-            );
             context.go('/hub');
           }
         },
         builder: (BuildContext context, AuthState state) {
-          if (state.status == AuthStatus.loading) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          return Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                TextField(
-                  controller: usernameController,
-                  decoration: const InputDecoration(labelText: 'Username'),
+          return Stack(
+            children: <Widget>[
+              Container(
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: <Color>[Colors.deepPurple, Colors.deepPurpleAccent],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
                 ),
-                const SizedBox(height: 16),
-                TextField(
-                  controller: emailController,
-                  decoration: const InputDecoration(labelText: 'Email'),
+              ),
+              Positioned(
+                top: 100,
+                left: -50,
+                child: Icon(
+                  Icons.videogame_asset,
+                  size: 250,
+                  color: Colors.white.withOpacity(0.05),
                 ),
-                const SizedBox(height: 16),
-                TextField(
-                  controller: passwordController,
-                  decoration: const InputDecoration(labelText: 'Password'),
-                  obscureText: true,
+              ),
+              Positioned(
+                bottom: -50,
+                right: -50,
+                child: Icon(
+                  Icons.extension,
+                  size: 300,
+                  color: Colors.white.withOpacity(0.05),
                 ),
-                const SizedBox(height: 32),
-                ElevatedButton(
-                  onPressed: () {
-                    context.read<AuthBloc>().add(
-                      RegisterHostEvent(
-                        username: usernameController.text,
-                        email: emailController.text,
-                        password: passwordController.text,
+              ),
+              Center(
+                child: SingleChildScrollView(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                    child: Card(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(32.0),
                       ),
-                    );
-                  },
-                  child: const Text('Registrarse'),
+                      elevation: 8,
+                      color: Colors.white,
+                      child: Padding(
+                        padding: const EdgeInsets.all(32.0),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: <Widget>[
+                            const Text(
+                              'Nuevo Jugador',
+                              style: TextStyle(
+                                fontSize: 32,
+                                fontWeight: FontWeight.w900,
+                                color: Colors.deepPurple,
+                              ),
+                            ),
+                            const SizedBox(height: 32),
+                            if (state.status == AuthStatus.loading)
+                              const CircularProgressIndicator()
+                            else ...<Widget>[
+                              TextField(
+                                controller: usernameController,
+                                decoration: const InputDecoration(
+                                  labelText: 'Username',
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              TextField(
+                                controller: emailController,
+                                decoration: const InputDecoration(
+                                  labelText: 'Email',
+                                ),
+                                keyboardType: TextInputType.emailAddress,
+                              ),
+                              const SizedBox(height: 16),
+                              TextField(
+                                controller: passwordController,
+                                decoration: const InputDecoration(
+                                  labelText: 'Password',
+                                ),
+                                obscureText: true,
+                              ),
+                              const SizedBox(height: 32),
+                              SizedBox(
+                                width: double.infinity,
+                                child: ElevatedButton(
+                                  onPressed: () {
+                                    final String username = usernameController
+                                        .text
+                                        .trim();
+                                    final String email = emailController.text
+                                        .trim();
+                                    final String password = passwordController
+                                        .text
+                                        .trim();
+
+                                    if (username.isEmpty ||
+                                        email.isEmpty ||
+                                        password.isEmpty) {
+                                      _showCupertinoAlert(
+                                        context,
+                                        'Datos Incompletos',
+                                        'Por favor, rellena todos los campos para registrarte.',
+                                      );
+                                      return;
+                                    }
+
+                                    context.read<AuthBloc>().add(
+                                      RegisterHostEvent(
+                                        username: username,
+                                        email: email,
+                                        password: password,
+                                      ),
+                                    );
+                                  },
+                                  child: const Text('Registrarse'),
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              TextButton(
+                                onPressed: () {
+                                  context.pop();
+                                },
+                                child: const Text(
+                                  'Volver al Login',
+                                  style: TextStyle(color: Colors.grey),
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
-              ],
-            ),
+              ),
+            ],
           );
         },
       ),

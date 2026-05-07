@@ -7,6 +7,8 @@ import 'package:guess_it/features/game/presentation/pages/custom_words_page.dart
 import 'package:guess_it/features/game/presentation/pages/game_play_page.dart';
 import 'package:guess_it/features/game/presentation/pages/scoreboard_page.dart';
 import 'package:guess_it/features/ranking/presentation/pages/ranking_page.dart';
+import 'package:guess_it/features/hub/presentation/pages/how_to_play_page.dart';
+import 'package:guess_it/features/auth/presentation/pages/profile_page.dart';
 
 final GoRouter appRouter = GoRouter(
   initialLocation: '/',
@@ -43,6 +45,7 @@ final GoRouter appRouter = GoRouter(
           teamNames: setupData['teamNames'] as List<String>,
           targetCount: setupData['targetCount'] as int,
           hostTeamName: setupData['hostTeamName'] as String,
+          turnDurationSeconds: setupData['turnDurationSeconds'] as int,
         );
       },
     ),
@@ -62,6 +65,18 @@ final GoRouter appRouter = GoRouter(
       path: '/ranking',
       builder: (context, state) {
         return const RankingPage();
+      },
+    ),
+    GoRoute(
+      path: '/how-to-play',
+      builder: (context, state) {
+        return const HowToPlayPage();
+      },
+    ),
+    GoRoute(
+      path: '/profile',
+      builder: (context, state) {
+        return const ProfilePage();
       },
     ),
   ],

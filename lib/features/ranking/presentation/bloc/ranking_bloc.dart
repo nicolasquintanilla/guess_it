@@ -53,13 +53,16 @@ abstract class RankingEvent extends Equatable {
 
 class SubmitWinEvent extends RankingEvent {
   final int points;
+  final bool isVictory;
 
   const SubmitWinEvent({
     required int points,
-  }) : points = points;
+    required bool isVictory,
+  })  : points = points,
+        isVictory = isVictory;
 
   @override
-  List<Object?> get props => <Object?>[points];
+  List<Object?> get props => <Object?>[points, isVictory];
 }
 
 class FetchRankingEvent extends RankingEvent {
@@ -84,7 +87,10 @@ class RankingBloc extends Bloc<RankingEvent, RankingState> {
     Emitter<RankingState> emit,
   ) async {
     try {
-      await repository.addWinAndPoints(points: event.points);
+      await repository.addWinAndPoints(
+        points: event.points,
+        isVictory: event.isVictory,
+      );
     } catch (_) {
       // Al ser un guardado silencioso, se ignora el error de red
       // para no interrumpir el UI de celebración si hay un problema de conexión.

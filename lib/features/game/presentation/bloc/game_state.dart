@@ -1,7 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:guess_it/features/game/domain/entities/game_entity.dart';
 
-enum GameStatus { initial, loading, playing, paused, finished }
+enum GameStatus { initial, loading, playing, paused, turnReview, finished }
 
 class GameState extends Equatable {
   final GameStatus status;
@@ -10,6 +10,8 @@ class GameState extends Equatable {
   final String currentWord;
   final List<String> currentBag;
   final List<String> masterBag;
+  final List<String> turnGuessedWords;
+  final List<String> turnSkippedWords;
 
   const GameState({
     required GameStatus status,
@@ -18,12 +20,16 @@ class GameState extends Equatable {
     required String currentWord,
     required List<String> currentBag,
     required List<String> masterBag,
+    required List<String> turnGuessedWords,
+    required List<String> turnSkippedWords,
   })  : status = status,
         game = game,
         remainingSeconds = remainingSeconds,
         currentWord = currentWord,
         currentBag = currentBag,
-        masterBag = masterBag;
+        masterBag = masterBag,
+        turnGuessedWords = turnGuessedWords,
+        turnSkippedWords = turnSkippedWords;
 
   factory GameState.initial() {
     return const GameState(
@@ -33,6 +39,8 @@ class GameState extends Equatable {
       currentWord: '',
       currentBag: <String>[],
       masterBag: <String>[],
+      turnGuessedWords: <String>[],
+      turnSkippedWords: <String>[],
     );
   }
 
@@ -43,6 +51,8 @@ class GameState extends Equatable {
     String? currentWord,
     List<String>? currentBag,
     List<String>? masterBag,
+    List<String>? turnGuessedWords,
+    List<String>? turnSkippedWords,
   }) {
     return GameState(
       status: status ?? this.status,
@@ -51,6 +61,8 @@ class GameState extends Equatable {
       currentWord: currentWord ?? this.currentWord,
       currentBag: currentBag ?? this.currentBag,
       masterBag: masterBag ?? this.masterBag,
+      turnGuessedWords: turnGuessedWords ?? this.turnGuessedWords,
+      turnSkippedWords: turnSkippedWords ?? this.turnSkippedWords,
     );
   }
 
@@ -62,5 +74,7 @@ class GameState extends Equatable {
         currentWord,
         currentBag,
         masterBag,
+        turnGuessedWords,
+        turnSkippedWords,
       ];
 }

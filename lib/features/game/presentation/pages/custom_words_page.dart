@@ -8,16 +8,22 @@ class CustomWordsPage extends StatefulWidget {
   final List<String> teamNames;
   final int targetCount;
   final String hostTeamName;
+  final int turnDurationSeconds;
+
+  @override
+  final Key? key;
 
   const CustomWordsPage({
     Key? key,
     required List<String> teamNames,
     required int targetCount,
     required String hostTeamName,
-  }) : teamNames = teamNames,
+    required int turnDurationSeconds,
+  }) : key = key,
+       teamNames = teamNames,
        targetCount = targetCount,
        hostTeamName = hostTeamName,
-       super(key: key);
+       turnDurationSeconds = turnDurationSeconds;
 
   @override
   State<CustomWordsPage> createState() {
@@ -111,6 +117,7 @@ class _CustomWordsPageState extends State<CustomWordsPage> {
                     userWords: addedWords,
                     targetWordCount: widget.targetCount,
                     hostTeamName: widget.hostTeamName,
+                    turnDurationSeconds: widget.turnDurationSeconds,
                   ),
                 );
                 context.push('/play');

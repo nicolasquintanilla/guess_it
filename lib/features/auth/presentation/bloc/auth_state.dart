@@ -12,9 +12,9 @@ class AuthState extends Equatable {
     required AuthStatus status,
     required UserEntity? user,
     required String? errorMessage,
-  })  : status = status,
-        user = user,
-        errorMessage = errorMessage;
+  }) : status = status,
+       user = user,
+       errorMessage = errorMessage;
 
   factory AuthState.initial() {
     return const AuthState(
@@ -37,17 +37,19 @@ class AuthState extends Equatable {
   }
 
   @override
-  List<Object?> get props => [status, user, errorMessage];
+  List<Object?> get props => <Object?>[status, user, errorMessage];
 
   Map<String, dynamic> toJson() {
-    return {
+    return <String, dynamic>{
       'status': status.name,
       'user': user != null
-          ? {
+          ? <String, dynamic>{
               'id': user!.id,
               'username': user!.username,
               'isGuest': user!.isGuest,
               'createdAt': user!.createdAt,
+              'gamesPlayed': user!.gamesPlayed,
+              'victories': user!.victories,
             }
           : null,
       'errorMessage': errorMessage,
@@ -57,7 +59,7 @@ class AuthState extends Equatable {
   factory AuthState.fromJson(Map<String, dynamic> json) {
     return AuthState(
       status: AuthStatus.values.firstWhere(
-        (element) => element.name == json['status'],
+        (AuthStatus element) => element.name == json['status'],
         orElse: () => AuthStatus.initial,
       ),
       user: json['user'] != null
@@ -66,6 +68,8 @@ class AuthState extends Equatable {
               username: json['user']['username'] as String,
               isGuest: json['user']['isGuest'] as bool,
               createdAt: json['user']['createdAt'] as String,
+              gamesPlayed: json['user']['gamesPlayed'] as int? ?? 0,
+              victories: json['user']['victories'] as int? ?? 0,
             )
           : null,
       errorMessage: json['errorMessage'] as String?,

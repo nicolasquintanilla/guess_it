@@ -55,6 +55,8 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       username: data['username'] as String,
       isGuest: data['isGuest'] as bool,
       createdAt: data['createdAt'] as String,
+      gamesPlayed: data['gamesPlayed'] as int? ?? 0,
+      victories: data['victories'] as int? ?? 0,
     );
   }
 
@@ -74,6 +76,9 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       throw Exception('Registration failed: User is null');
     }
 
+    await user.updateDisplayName(username);
+    await user.reload();
+
     final String createdAt = DateTime.now().toIso8601String();
 
     final UserEntity userEntity = UserEntity(
@@ -81,12 +86,16 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       username: username,
       isGuest: false,
       createdAt: createdAt,
+      gamesPlayed: 0,
+      victories: 0,
     );
 
     await firestore.collection('users').doc(user.uid).set({
       'username': username,
       'isGuest': false,
       'createdAt': createdAt,
+      'gamesPlayed': 0,
+      'victories': 0,
     });
 
     return userEntity;

@@ -3,7 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 class GameSetupPage extends StatefulWidget {
-  const GameSetupPage();
+  @override
+  final Key? key;
+
+  const GameSetupPage({Key? key}) : key = key;
 
   @override
   State<GameSetupPage> createState() {
@@ -15,6 +18,7 @@ class _GameSetupPageState extends State<GameSetupPage> {
   final List<TextEditingController> teamControllers = <TextEditingController>[];
   final TextEditingController countController = TextEditingController();
   int selectedHostIndex = 0;
+  int selectedTurnDuration = 30;
 
   @override
   void initState() {
@@ -56,16 +60,16 @@ class _GameSetupPageState extends State<GameSetupPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Configurar Partida')),
+      appBar: AppBar(
+        title: const Text('Configurar Partida'),
+      ),
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(32.0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
-              ...teamControllers.asMap().entries.map((
-                MapEntry<int, TextEditingController> entry,
-              ) {
+              ...teamControllers.asMap().entries.map((MapEntry<int, TextEditingController> entry) {
                 final int index = entry.key;
                 final TextEditingController controller = entry.value;
                 return Padding(
@@ -81,18 +85,13 @@ class _GameSetupPageState extends State<GameSetupPage> {
                           ),
                         ),
                       ),
-                      if (teamControllers.length > 2 &&
-                          index == teamControllers.length - 1) ...<Widget>[
+                      if (teamControllers.length > 2 && index == teamControllers.length - 1) ...<Widget>[
                         const SizedBox(width: 16),
                         IconButton(
-                          icon: const Icon(
-                            Icons.remove_circle,
-                            color: Colors.red,
-                          ),
+                          icon: const Icon(Icons.remove_circle, color: Colors.red),
                           onPressed: () {
                             setState(() {
-                              final TextEditingController removed =
-                                  teamControllers.removeLast();
+                              final TextEditingController removed = teamControllers.removeLast();
                               removed.dispose();
                               if (selectedHostIndex >= teamControllers.length) {
                                 selectedHostIndex = teamControllers.length - 1;
@@ -100,7 +99,7 @@ class _GameSetupPageState extends State<GameSetupPage> {
                             });
                           },
                         ),
-                      ],
+                      ]
                     ],
                   ),
                 );
@@ -115,10 +114,7 @@ class _GameSetupPageState extends State<GameSetupPage> {
                   icon: const Icon(Icons.add),
                   label: const Text('Añadir Equipo'),
                   style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 24,
-                      vertical: 12,
-                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                   ),
                 ),
               const SizedBox(height: 32),
@@ -141,9 +137,7 @@ class _GameSetupPageState extends State<GameSetupPage> {
                 alignment: WrapAlignment.center,
                 spacing: 16,
                 runSpacing: 16,
-                children: teamControllers.asMap().entries.map((
-                  MapEntry<int, TextEditingController> entry,
-                ) {
+                children: teamControllers.asMap().entries.map((MapEntry<int, TextEditingController> entry) {
                   final int index = entry.key;
                   return Row(
                     mainAxisSize: MainAxisSize.min,
@@ -164,18 +158,49 @@ class _GameSetupPageState extends State<GameSetupPage> {
                   );
                 }).toList(),
               ),
+              const SizedBox(height: 32),
+              const Text(
+                'Duración del turno (segundos)',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 16),
+              CupertinoSlidingSegmentedControl<int>(
+                groupValue: selectedTurnDuration,
+                children: const <int, Widget>{
+                  30: Text('30s'),
+                  45: Text('45s'),
+                  60: Text('60s'),
+                },
+                onValueChanged: (int? value) {
+                  if (value != null) {
+                    setState(() {
+                      selectedTurnDuration = value;
+                    });
+                  }
+                },
+              ),
               const SizedBox(height: 48),
               ElevatedButton(
                 onPressed: () {
-                  final bool hasEmptyTeam = teamControllers.any(
-                    (TextEditingController c) => c.text.trim().isEmpty,
-                  );
-
+                  final bool hasEmptyTeam = teamControllers.any((TextEditingController c) => c.text.trim().isEmpty);
+                  
                   if (hasEmptyTeam) {
                     _showCupertinoAlert(
-                      context,
-                      'Equipos Incompletos',
+                      context, 
+                      'Equipos Incompletos', 
                       'Por favor, introduce un nombre para todos los equipos.',
+                    );
+                    return;
+                  }
+                  
+                  final List<String> teamNames = teamControllers.map((TextEditingController c) => c.text.trim()).toList();
+                  final Set<String> uniqueNames = teamNames.map((String name) => name.toUpperCase()).toSet();
+                  
+                  if (uniqueNames.length != teamNames.length) {
+                    _showCupertinoAlert(
+                      context, 
+                      'Nombres Repetidos', 
+                      'Por favor, introduce nombres únicos para cada equipo.',
                     );
                     return;
                   }
@@ -183,29 +208,24 @@ class _GameSetupPageState extends State<GameSetupPage> {
                   final String countStr = countController.text.trim();
                   if (countStr.isEmpty) {
                     _showCupertinoAlert(
-                      context,
-                      'Faltan Palabras',
+                      context, 
+                      'Faltan Palabras', 
                       'Por favor, introduce la cantidad de palabras a jugar.',
                     );
                     return;
                   }
-
+                  
                   final int? targetCount = int.tryParse(countStr);
                   if (targetCount == null || targetCount <= 0) {
                     _showCupertinoAlert(
-                      context,
-                      'Cantidad Inválida',
+                      context, 
+                      'Cantidad Inválida', 
                       'La cantidad de palabras debe ser un número entero mayor a cero.',
                     );
                     return;
                   }
 
-                  final List<String> teamNames = teamControllers
-                      .map((TextEditingController c) => c.text.trim())
-                      .toList();
-                  final String hostTeamName = teamControllers[selectedHostIndex]
-                      .text
-                      .trim();
+                  final String hostTeamName = teamControllers[selectedHostIndex].text.trim();
 
                   context.push(
                     '/custom-words',
@@ -213,18 +233,13 @@ class _GameSetupPageState extends State<GameSetupPage> {
                       'teamNames': teamNames,
                       'targetCount': targetCount,
                       'hostTeamName': hostTeamName,
+                      'turnDurationSeconds': selectedTurnDuration,
                     },
                   );
                 },
                 style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 48,
-                    vertical: 16,
-                  ),
-                  textStyle: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 16),
+                  textStyle: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 ),
                 child: const Text('Siguiente'),
               ),

@@ -10,8 +10,8 @@ class RankingRepositoryImpl implements RankingRepository {
   }) : remoteDataSource = remoteDataSource;
 
   @override
-  Future<void> addWinAndPoints({required int points}) async {
-    return remoteDataSource.addWinAndPoints(points: points);
+  Future<void> addWinAndPoints({required int points, required bool isVictory}) async {
+    return remoteDataSource.addWinAndPoints(points: points, isVictory: isVictory);
   }
 
   @override

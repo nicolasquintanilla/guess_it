@@ -12,7 +12,7 @@ class RankingRemoteDataSource {
   })  : firestore = firestore,
         auth = auth;
 
-  Future<void> addWinAndPoints({required int points}) async {
+  Future<void> addWinAndPoints({required int points, required bool isVictory}) async {
     final User? currentUser = auth.currentUser;
     if (currentUser == null) {
       return;
@@ -25,7 +25,8 @@ class RankingRemoteDataSource {
     await firestore.collection('users').doc(uid).set(
       <String, dynamic>{
         'hostName': hostName,
-        'totalMatchesWon': FieldValue.increment(1),
+        'gamesPlayed': FieldValue.increment(1),
+        'victories': FieldValue.increment(isVictory ? 1 : 0),
         'totalPointsScored': FieldValue.increment(points),
         'lastPlayedAt': lastPlayedAt,
       },
@@ -36,6 +37,7 @@ class RankingRemoteDataSource {
   Future<List<RankingEntity>> getGlobalRanking() async {
     final QuerySnapshot<Map<String, dynamic>> snapshot = await firestore
         .collection('users')
+        .where('gamesPlayed', isGreaterThanOrEqualTo: 5)
         .orderBy('totalPointsScored', descending: true)
         .limit(50)
         .get();
@@ -43,9 +45,11 @@ class RankingRemoteDataSource {
     return snapshot.docs.map((QueryDocumentSnapshot<Map<String, dynamic>> doc) {
       final Map<String, dynamic> data = doc.data();
       return RankingEntity(
-        hostName: data['hostName'] as String? ?? 'Desconocido',
+        hostName: data['username'] as String? ?? data['hostName'] as String? ?? 'Desconocido',
         totalMatchesWon: data['totalMatchesWon'] as int? ?? 0,
         totalPointsScored: data['totalPointsScored'] as int? ?? 0,
+        gamesPlayed: data['gamesPlayed'] as int? ?? 0,
+        victories: data['victories'] as int? ?? 0,
       );
     }).toList();
   }

@@ -2,9 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:guess_it/features/ranking/presentation/bloc/ranking_bloc.dart';
 import 'package:guess_it/features/ranking/domain/entities/ranking_entity.dart';
+import 'package:guess_it/core/widgets/premium_scaffold.dart';
 
 class RankingPage extends StatefulWidget {
-  const RankingPage({Key? key}) : super(key: key);
+  @override
+  final Key? key;
+
+  const RankingPage({Key? key}) : key = key;
 
   @override
   State<RankingPage> createState() {
@@ -21,11 +25,9 @@ class _RankingPageState extends State<RankingPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Clasificación Mundial'),
-      ),
-      body: BlocBuilder<RankingBloc, RankingState>(
+    return PremiumScaffold(
+      title: 'Clasificación Mundial',
+      child: BlocBuilder<RankingBloc, RankingState>(
         builder: (BuildContext context, RankingState state) {
           if (state is RankingInitial || state is RankingLoading) {
             return const Center(child: CircularProgressIndicator());
@@ -64,7 +66,7 @@ class _RankingPageState extends State<RankingPage> {
                       ranking.hostName,
                       style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                     ),
-                    subtitle: Text('Victorias: ${ranking.totalMatchesWon}'),
+                    subtitle: Text('Victorias: ${ranking.victories} | Partidas: ${ranking.gamesPlayed}'),
                     trailing: Text(
                       '${ranking.totalPointsScored} pts',
                       style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: Colors.green),
