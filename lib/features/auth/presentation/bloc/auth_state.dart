@@ -1,7 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:guess_it/features/auth/domain/entities/user_entity.dart';
 
-enum AuthStatus { initial, loading, authenticated, unauthenticated, error }
+enum AuthStatus { initial, loading, authenticated, unauthenticated, error, passwordResetSent }
 
 class AuthState extends Equatable {
   final AuthStatus status;

@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:guess_it/features/game/presentation/bloc/game_bloc.dart';
 import 'package:guess_it/features/game/presentation/bloc/game_event.dart';
+import 'package:guess_it/core/widgets/premium_scaffold.dart';
 
 class CustomWordsPage extends StatefulWidget {
   final List<String> teamNames;
@@ -43,98 +44,127 @@ class _CustomWordsPageState extends State<CustomWordsPage> {
 
   void _addWord() {
     final String newWord = wordController.text.trim().toUpperCase();
-    if (newWord.isNotEmpty && !addedWords.contains(newWord)) {
-      setState(() {
-        addedWords.add(newWord);
-        wordController.clear();
-      });
+    if (newWord.isEmpty) return;
+
+    if (addedWords.contains(newWord)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Esta palabra ya ha sido añadida.'), backgroundColor: Colors.orange, duration: Duration(seconds: 2)),
+      );
+      return;
     }
+
+    if (addedWords.length >= widget.targetCount) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Ya has alcanzado el límite de palabras.'), backgroundColor: Colors.red, duration: Duration(seconds: 2)),
+      );
+      return;
+    }
+
+    setState(() {
+      addedWords.add(newWord);
+      wordController.clear();
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Añadir Palabras')),
-      body: Padding(
+    return PremiumScaffold(
+      title: 'Añadir Palabras',
+      showBackArrow: true,
+      child: SingleChildScrollView(
         padding: const EdgeInsets.all(32.0),
-        child: Column(
-          children: <Widget>[
-            Text(
-              'Palabras: ${addedWords.length} / ${widget.targetCount}',
-              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 24),
-            Row(
+        child: Card(
+          color: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24.0),
+          ),
+          elevation: 8,
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: <Widget>[
-                Expanded(
-                  child: TextField(
-                    controller: wordController,
-                    textCapitalization: TextCapitalization.characters,
-                    decoration: const InputDecoration(
-                      labelText: 'Nueva palabra',
-                      border: OutlineInputBorder(),
-                    ),
-                    onSubmitted: (String _) {
-                      _addWord();
-                    },
-                  ),
+                Text(
+                  'Palabras: ${addedWords.length} / ${widget.targetCount}',
+                  style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                 ),
-                const SizedBox(width: 16),
-                IconButton(
-                  icon: const Icon(Icons.add, size: 32),
-                  onPressed: _addWord,
-                  color: Colors.blueAccent,
-                ),
-              ],
-            ),
-            const SizedBox(height: 24),
-            Expanded(
-              child: ListView.builder(
-                itemCount: addedWords.length,
-                itemBuilder: (BuildContext context, int index) {
-                  return Card(
-                    child: ListTile(
-                      title: Text(addedWords[index]),
-                      trailing: IconButton(
-                        icon: const Icon(Icons.delete, color: Colors.red),
-                        onPressed: () {
-                          setState(() {
-                            addedWords.removeAt(index);
-                          });
+                const SizedBox(height: 24),
+                Row(
+                  children: <Widget>[
+                    Expanded(
+                      child: TextField(
+                        controller: wordController,
+                        textCapitalization: TextCapitalization.characters,
+                        decoration: const InputDecoration(
+                          labelText: 'Nueva palabra',
+                          border: OutlineInputBorder(),
+                        ),
+                        onSubmitted: (String _) {
+                          _addWord();
                         },
                       ),
                     ),
-                  );
-                },
-              ),
-            ),
-            const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: () {
-                context.read<GameBloc>().add(
-                  InitializeGameEvent(
-                    teamNames: widget.teamNames,
-                    userWords: addedWords,
-                    targetWordCount: widget.targetCount,
-                    hostTeamName: widget.hostTeamName,
-                    turnDurationSeconds: widget.turnDurationSeconds,
+                    const SizedBox(width: 16),
+                    IconButton(
+                      icon: const Icon(Icons.add, size: 32),
+                      onPressed: _addWord,
+                      color: Colors.blueAccent,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 24),
+                ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: addedWords.length,
+                  itemBuilder: (BuildContext context, int index) {
+                    return Card(
+                      child: ListTile(
+                        title: Text(addedWords[index]),
+                        trailing: IconButton(
+                          icon: const Icon(Icons.delete, color: Colors.red),
+                          onPressed: () {
+                            setState(() {
+                              addedWords.removeAt(index);
+                            });
+                          },
+                        ),
+                      ),
+                    );
+                  },
+                ),
+                const SizedBox(height: 24),
+                Center(
+                  child: ElevatedButton(
+                    onPressed: () {
+                      context.read<GameBloc>().add(
+                        InitializeGameEvent(
+                          teamNames: widget.teamNames,
+                          userWords: addedWords,
+                          targetWordCount: widget.targetCount,
+                          hostTeamName: widget.hostTeamName,
+                          turnDurationSeconds: widget.turnDurationSeconds,
+                        ),
+                      );
+                      context.push('/play');
+                    },
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 32,
+                        vertical: 24,
+                      ),
+                      textStyle: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    child: const Text('Generar Partida'),
                   ),
-                );
-                context.push('/play');
-              },
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 32,
-                  vertical: 24,
                 ),
-                textStyle: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              child: const Text('¡Generar Partida y Jugar!'),
+                const SizedBox(height: 16),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );

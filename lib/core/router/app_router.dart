@@ -9,6 +9,9 @@ import 'package:guess_it/features/game/presentation/pages/scoreboard_page.dart';
 import 'package:guess_it/features/ranking/presentation/pages/ranking_page.dart';
 import 'package:guess_it/features/hub/presentation/pages/how_to_play_page.dart';
 import 'package:guess_it/features/auth/presentation/pages/profile_page.dart';
+import 'package:guess_it/features/groups/presentation/pages/groups_page.dart';
+import 'package:guess_it/features/groups/presentation/pages/group_details_page.dart';
+import 'package:guess_it/features/groups/domain/entities/group_entity.dart';
 
 final GoRouter appRouter = GoRouter(
   initialLocation: '/',
@@ -77,6 +80,18 @@ final GoRouter appRouter = GoRouter(
       path: '/profile',
       builder: (context, state) {
         return const ProfilePage();
+      },
+    ),
+    GoRoute(
+      path: '/groups',
+      builder: (context, state) {
+        return const GroupsPage();
+      },
+    ),
+    GoRoute(
+      path: '/group-details',
+      builder: (context, state) {
+        return GroupDetailsPage(group: state.extra as GroupEntity);
       },
     ),
   ],

@@ -32,15 +32,20 @@ class _RegisterPageState extends State<RegisterPage> {
   }
 
   String _translateError(String error) {
-    if (error.contains('invalid-email')) {
+    if (error.contains('network-request-failed')) {
+      return 'No hay conexión a Internet. Revisa tu red.';
+    } else if (error.contains('weak-password')) {
+      return 'La contraseña es muy débil. Usa al menos 6 caracteres.';
+    } else if (error.contains('invalid-email')) {
       return 'El formato del correo no es válido.';
-    } else if (error.contains('user-not-found') ||
-        error.contains('invalid-credential')) {
-      return 'Usuario o contraseña incorrectos.';
+    } else if (error.contains('user-not-found') || error.contains('invalid-credential') || error.contains('wrong-password')) {
+      return 'El correo o la contraseña son incorrectos.';
     } else if (error.contains('email-already-in-use')) {
-      return 'Este correo ya está registrado.';
+      return 'Este correo ya está registrado en otra cuenta.';
+    } else if (error.contains('too-many-requests')) {
+      return 'Demasiados intentos. Inténtalo más tarde.';
     }
-    return 'Ha ocurrido un error de conexión.';
+    return 'Error inesperado: $error';
   }
 
   void _showCupertinoAlert(BuildContext context, String title, String message) {
@@ -79,7 +84,10 @@ class _RegisterPageState extends State<RegisterPage> {
         ),
       ),
       body: BlocConsumer<AuthBloc, AuthState>(
+        listenWhen: (AuthState previous, AuthState current) => previous.status != current.status,
         listener: (BuildContext context, AuthState state) {
+          if (!ModalRoute.of(context)!.isCurrent) return;
+
           if (state.status == AuthStatus.error) {
             final String translatedMsg = _translateError(
               state.errorMessage ?? '',
@@ -153,14 +161,14 @@ class _RegisterPageState extends State<RegisterPage> {
                               TextField(
                                 controller: usernameController,
                                 decoration: const InputDecoration(
-                                  labelText: 'Username',
+                                  labelText: 'Nombre de usuario',
                                 ),
                               ),
                               const SizedBox(height: 16),
                               TextField(
                                 controller: emailController,
                                 decoration: const InputDecoration(
-                                  labelText: 'Email',
+                                  labelText: 'Correo electrónico',
                                 ),
                                 keyboardType: TextInputType.emailAddress,
                               ),
@@ -168,7 +176,7 @@ class _RegisterPageState extends State<RegisterPage> {
                               TextField(
                                 controller: passwordController,
                                 decoration: const InputDecoration(
-                                  labelText: 'Password',
+                                  labelText: 'Contraseña',
                                 ),
                                 obscureText: true,
                               ),

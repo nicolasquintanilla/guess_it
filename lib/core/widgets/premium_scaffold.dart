@@ -7,6 +7,7 @@ class PremiumScaffold extends StatelessWidget {
   final String? title;
   final bool showBackArrow;
   final List<Widget>? actions;
+  final Widget? floatingActionButton;
 
   const PremiumScaffold({
     Key? key,
@@ -14,11 +15,13 @@ class PremiumScaffold extends StatelessWidget {
     String? title,
     bool showBackArrow = true,
     List<Widget>? actions,
+    Widget? floatingActionButton,
   })  : key = key,
         child = child,
         title = title,
         showBackArrow = showBackArrow,
-        actions = actions;
+        actions = actions,
+        floatingActionButton = floatingActionButton;
 
   @override
   Widget build(BuildContext context) {
@@ -39,6 +42,7 @@ class PremiumScaffold extends StatelessWidget {
               ),
             )
           : null,
+      floatingActionButton: floatingActionButton,
       body: Stack(
         children: <Widget>[
           Container(
@@ -69,7 +73,10 @@ class PremiumScaffold extends StatelessWidget {
             ),
           ),
           SafeArea(
-            child: child,
+            child: Padding(
+              padding: const EdgeInsets.only(bottom: 24.0),
+              child: child,
+            ),
           ),
         ],
       ),

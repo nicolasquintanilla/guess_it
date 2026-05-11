@@ -1,4 +1,7 @@
 import 'package:hydrated_bloc/hydrated_bloc.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:guess_it/features/auth/domain/entities/user_entity.dart';
 import 'package:guess_it/features/auth/presentation/bloc/auth_event.dart';
 import 'package:guess_it/features/auth/presentation/bloc/auth_state.dart';
 import 'package:guess_it/features/auth/domain/usecases/login_host_usecase.dart';
@@ -26,6 +29,58 @@ class AuthBloc extends HydratedBloc<AuthEvent, AuthState> {
     on<RegisterHostEvent>(_onRegisterHost);
     on<PlayAsGuestEvent>(_onPlayAsGuest);
     on<LogoutEvent>(_onLogout);
+    on<ResetPasswordEvent>(_onResetPassword);
+    on<ReloadUserEvent>(_onReloadUser);
+    on<ResetAuthStatusEvent>((ResetAuthStatusEvent event, Emitter<AuthState> emit) {
+      emit(state.copyWith(status: AuthStatus.initial));
+    });
+    on<DeleteAccountEvent>(_onDeleteAccount);
+  }
+
+  Future<void> _onReloadUser(
+    ReloadUserEvent event,
+    Emitter<AuthState> emit,
+  ) async {
+    if (state.user == null || state.user!.isGuest) return;
+
+    try {
+      final DocumentSnapshot<Map<String, dynamic>> doc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(state.user!.id)
+          .get();
+
+      if (doc.exists) {
+        final Map<String, dynamic> data = doc.data()!;
+        final UserEntity updatedUser = UserEntity(
+          id: state.user!.id,
+          username: state.user!.username,
+          isGuest: state.user!.isGuest,
+          createdAt: state.user!.createdAt,
+          gamesPlayed: data['gamesPlayed'] as int? ?? 0,
+          victories: data['victories'] as int? ?? 0,
+        );
+
+        emit(state.copyWith(user: updatedUser));
+      }
+    } catch (_) {
+      // Ignore background error
+    }
+  }
+
+  Future<void> _onResetPassword(
+    ResetPasswordEvent event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(state.copyWith(status: AuthStatus.loading, errorMessage: null));
+    try {
+      await FirebaseAuth.instance.sendPasswordResetEmail(email: event.email);
+      emit(state.copyWith(status: AuthStatus.passwordResetSent));
+    } catch (e) {
+      emit(state.copyWith(
+        status: AuthStatus.error,
+        errorMessage: e.toString(),
+      ));
+    }
   }
 
   Future<void> _onLoginHost(
@@ -64,10 +119,15 @@ class AuthBloc extends HydratedBloc<AuthEvent, AuthState> {
         status: AuthStatus.error,
         errorMessage: failure.message,
       )),
-      (user) => emit(state.copyWith(
-        status: AuthStatus.authenticated,
-        user: user,
-      )),
+      (user) {
+        try {
+          FirebaseAuth.instance.currentUser?.sendEmailVerification();
+        } catch (_) {}
+        emit(state.copyWith(
+          status: AuthStatus.authenticated,
+          user: user,
+        ));
+      },
     );
   }
 
@@ -102,6 +162,50 @@ class AuthBloc extends HydratedBloc<AuthEvent, AuthState> {
       )),
       (_) => emit(AuthState.initial()),
     );
+  }
+
+  Future<void> _onDeleteAccount(
+    DeleteAccountEvent event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(state.copyWith(status: AuthStatus.loading, errorMessage: null));
+
+    final UserEntity? user = state.user;
+    if (user == null || user.isGuest) return;
+
+    try {
+      final FirebaseFirestore firestore = FirebaseFirestore.instance;
+
+      final QuerySnapshot<Map<String, dynamic>> hostedGroups = await firestore
+          .collection('groups')
+          .where('hostId', isEqualTo: user.id)
+          .get();
+
+      for (final QueryDocumentSnapshot<Map<String, dynamic>> doc in hostedGroups.docs) {
+        await doc.reference.delete();
+      }
+
+      final QuerySnapshot<Map<String, dynamic>> memberGroups = await firestore
+          .collection('groups')
+          .where('memberNames', arrayContains: user.username)
+          .get();
+
+      for (final QueryDocumentSnapshot<Map<String, dynamic>> doc in memberGroups.docs) {
+        await doc.reference.update(<String, Object?>{
+          'memberNames': FieldValue.arrayRemove(<String>[user.username]),
+        });
+      }
+
+      await firestore.collection('users').doc(user.id).delete();
+      await FirebaseAuth.instance.currentUser?.delete();
+
+      emit(AuthState.initial());
+    } catch (e) {
+      emit(state.copyWith(
+        status: AuthStatus.error,
+        errorMessage: e.toString(),
+      ));
+    }
   }
 
   @override

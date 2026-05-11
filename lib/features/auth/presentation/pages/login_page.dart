@@ -31,15 +31,25 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   String _translateError(String error) {
-    if (error.contains('invalid-email')) {
+    if (error.contains('network-request-failed')) {
+      return 'No hay conexión a Internet. Revisa tu red.';
+    } else if (error.contains('weak-password')) {
+      return 'La contraseña es muy débil. Usa al menos 6 caracteres.';
+    } else if (error.contains('invalid-email')) {
       return 'El formato del correo no es válido.';
-    } else if (error.contains('user-not-found') ||
-        error.contains('invalid-credential')) {
-      return 'Usuario o contraseña incorrectos.';
+    } else if (error.contains('user-not-found')) {
+      return 'No existe ningún usuario con este correo.';
+    } else if (error.contains('invalid-credential') ||
+        error.contains('wrong-password')) {
+      return 'El correo o la contraseña no son correctos.';
     } else if (error.contains('email-already-in-use')) {
-      return 'Este correo ya está registrado.';
+      return 'Este correo ya está registrado en otra cuenta.';
+    } else if (error.contains('too-many-requests')) {
+      return 'Demasiados intentos. Inténtalo más tarde.';
+    } else if (error.contains('User data not found')) {
+      return 'Este usuario no existe.';
     }
-    return 'Ha ocurrido un error de conexión.';
+    return 'Error inesperado: $error';
   }
 
   void _showCupertinoAlert(BuildContext context, String title, String message) {
@@ -62,11 +72,55 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
+  void _showResetPasswordDialog(BuildContext context) {
+    final TextEditingController resetEmailController = TextEditingController();
+    showCupertinoDialog(
+      context: context,
+      builder: (BuildContext ctx) {
+        return CupertinoAlertDialog(
+          title: const Text('Recuperar Contraseña'),
+          content: Padding(
+            padding: const EdgeInsets.only(top: 16.0),
+            child: CupertinoTextField(
+              controller: resetEmailController,
+              placeholder: 'Correo electrónico',
+              keyboardType: TextInputType.emailAddress,
+            ),
+          ),
+          actions: <Widget>[
+            CupertinoDialogAction(
+              child: const Text('Cancelar'),
+              onPressed: () {
+                Navigator.of(ctx).pop();
+              },
+            ),
+            CupertinoDialogAction(
+              child: const Text('Enviar'),
+              onPressed: () {
+                final String email = resetEmailController.text.trim();
+                if (email.isNotEmpty) {
+                  context.read<AuthBloc>().add(
+                    ResetPasswordEvent(email: email),
+                  );
+                }
+                Navigator.of(ctx).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return PremiumScaffold(
       child: BlocConsumer<AuthBloc, AuthState>(
+        listenWhen: (AuthState previous, AuthState current) =>
+            previous.status != current.status,
         listener: (BuildContext context, AuthState state) {
+          if (!ModalRoute.of(context)!.isCurrent) return;
+
           if (state.status == AuthStatus.error) {
             final String translatedMsg = _translateError(
               state.errorMessage ?? '',
@@ -78,6 +132,13 @@ class _LoginPageState extends State<LoginPage> {
             );
           } else if (state.status == AuthStatus.authenticated) {
             context.go('/hub');
+          } else if (state.status == AuthStatus.passwordResetSent) {
+            _showCupertinoAlert(
+              context,
+              'Éxito',
+              'Correo enviado. Revisa tu bandeja de entrada',
+            );
+            context.read<AuthBloc>().add(const ResetAuthStatusEvent());
           }
         },
         builder: (BuildContext context, AuthState state) {
@@ -114,7 +175,7 @@ class _LoginPageState extends State<LoginPage> {
                               TextField(
                                 controller: emailController,
                                 decoration: const InputDecoration(
-                                  labelText: 'Email',
+                                  labelText: 'Correo electrónico',
                                 ),
                                 keyboardType: TextInputType.emailAddress,
                               ),
@@ -122,9 +183,20 @@ class _LoginPageState extends State<LoginPage> {
                               TextField(
                                 controller: passwordController,
                                 decoration: const InputDecoration(
-                                  labelText: 'Password',
+                                  labelText: 'Contraseña',
                                 ),
                                 obscureText: true,
+                              ),
+                              Align(
+                                alignment: Alignment.centerRight,
+                                child: TextButton(
+                                  onPressed: () =>
+                                      _showResetPasswordDialog(context),
+                                  child: const Text(
+                                    '¿Olvidaste tu contraseña?',
+                                    style: TextStyle(color: Colors.grey),
+                                  ),
+                                ),
                               ),
                               const SizedBox(height: 32),
                               SizedBox(
@@ -141,7 +213,7 @@ class _LoginPageState extends State<LoginPage> {
                                       _showCupertinoAlert(
                                         context,
                                         'Datos Incompletos',
-                                        'Por favor, introduce tu email y contraseña.',
+                                        'Por favor, introduce tu correo electrónico y contraseña.',
                                       );
                                       return;
                                     }
@@ -171,7 +243,9 @@ class _LoginPageState extends State<LoginPage> {
                                 width: double.infinity,
                                 child: OutlinedButton(
                                   onPressed: () {
-                                    context.read<AuthBloc>().add(const PlayAsGuestEvent());
+                                    context.read<AuthBloc>().add(
+                                      const PlayAsGuestEvent(),
+                                    );
                                   },
                                   style: OutlinedButton.styleFrom(
                                     foregroundColor: Colors.deepPurpleAccent,

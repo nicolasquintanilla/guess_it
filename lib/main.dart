@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -18,10 +19,14 @@ import 'features/game/data/repositories/word_repository_impl.dart';
 import 'features/ranking/data/datasources/ranking_remote_data_source.dart';
 import 'features/ranking/data/repositories/ranking_repository_impl.dart';
 import 'features/ranking/presentation/bloc/ranking_bloc.dart';
+import 'features/groups/presentation/bloc/group_bloc.dart';
+import 'features/groups/data/datasources/group_remote_data_source.dart';
+import 'features/groups/data/repositories/group_repository_impl.dart';
 
 void main() async {
   // 1. Asegurar los bindings de Flutter
   WidgetsFlutterBinding.ensureInitialized();
+  await SystemChrome.setPreferredOrientations(<DeviceOrientation>[DeviceOrientation.portraitUp]);
   print('--- DEPURACIÓN: Bindings inicializados ---');
 
   // 2. Inicializar Firebase
@@ -97,6 +102,18 @@ class MyApp extends StatelessWidget {
               remoteDataSource: dataSource,
             );
             return RankingBloc(repository: repository);
+          },
+        ),
+        BlocProvider<GroupBloc>(
+          create: (BuildContext context) {
+            final GroupRemoteDataSource dataSource = GroupRemoteDataSource(
+              firestore: FirebaseFirestore.instance,
+              auth: FirebaseAuth.instance,
+            );
+            final GroupRepositoryImpl repository = GroupRepositoryImpl(
+              remoteDataSource: dataSource,
+            );
+            return GroupBloc(repository: repository);
           },
         ),
       ],

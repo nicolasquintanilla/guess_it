@@ -327,16 +327,19 @@ class GamePlayPage extends StatelessWidget {
                         ),
                         const Spacer(),
                         if (state.status == GameStatus.paused) ...<Widget>[
-                          const FittedBox(
-                            fit: BoxFit.scaleDown,
-                            child: Text(
-                              'JUEGO PAUSADO',
-                              style: TextStyle(
-                                fontSize: 48,
-                                fontWeight: FontWeight.w900,
-                                color: Colors.white70,
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                            child: const FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Text(
+                                'JUEGO PAUSADO',
+                                style: TextStyle(
+                                  fontSize: 32,
+                                  fontWeight: FontWeight.w900,
+                                  color: Colors.white70,
+                                ),
+                                textAlign: TextAlign.center,
                               ),
-                              textAlign: TextAlign.center,
                             ),
                           ),
                           const Spacer(),

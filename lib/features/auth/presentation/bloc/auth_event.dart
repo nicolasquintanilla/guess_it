@@ -4,7 +4,7 @@ abstract class AuthEvent extends Equatable {
   const AuthEvent();
 
   @override
-  List<Object?> get props => [];
+  List<Object?> get props => <Object?>[];
 }
 
 class LoginHostEvent extends AuthEvent {
@@ -18,7 +18,7 @@ class LoginHostEvent extends AuthEvent {
         password = password;
 
   @override
-  List<Object?> get props => [email, password];
+  List<Object?> get props => <Object?>[email, password];
 }
 
 class RegisterHostEvent extends AuthEvent {
@@ -35,7 +35,7 @@ class RegisterHostEvent extends AuthEvent {
         password = password;
 
   @override
-  List<Object?> get props => [username, email, password];
+  List<Object?> get props => <Object?>[username, email, password];
 }
 
 class PlayAsGuestEvent extends AuthEvent {
@@ -44,4 +44,27 @@ class PlayAsGuestEvent extends AuthEvent {
 
 class LogoutEvent extends AuthEvent {
   const LogoutEvent();
+}
+
+class ResetPasswordEvent extends AuthEvent {
+  final String email;
+
+  const ResetPasswordEvent({
+    required String email,
+  }) : email = email;
+
+  @override
+  List<Object?> get props => <Object?>[email];
+}
+
+class ResetAuthStatusEvent extends AuthEvent {
+  const ResetAuthStatusEvent();
+}
+
+class ReloadUserEvent extends AuthEvent {
+  const ReloadUserEvent();
+}
+
+class DeleteAccountEvent extends AuthEvent {
+  const DeleteAccountEvent();
 }
