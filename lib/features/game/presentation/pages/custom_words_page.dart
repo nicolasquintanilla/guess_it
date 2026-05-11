@@ -4,9 +4,10 @@ import 'package:go_router/go_router.dart';
 import 'package:guess_it/features/game/presentation/bloc/game_bloc.dart';
 import 'package:guess_it/features/game/presentation/bloc/game_event.dart';
 import 'package:guess_it/core/widgets/premium_scaffold.dart';
+import 'package:guess_it/features/game/domain/entities/team_entity.dart';
 
 class CustomWordsPage extends StatefulWidget {
-  final List<String> teamNames;
+  final List<TeamEntity> initialTeams;
   final int targetCount;
   final String hostTeamName;
   final int turnDurationSeconds;
@@ -16,12 +17,12 @@ class CustomWordsPage extends StatefulWidget {
 
   const CustomWordsPage({
     Key? key,
-    required List<String> teamNames,
+    required List<TeamEntity> initialTeams,
     required int targetCount,
     required String hostTeamName,
     required int turnDurationSeconds,
   }) : key = key,
-       teamNames = teamNames,
+       initialTeams = initialTeams,
        targetCount = targetCount,
        hostTeamName = hostTeamName,
        turnDurationSeconds = turnDurationSeconds;
@@ -139,7 +140,7 @@ class _CustomWordsPageState extends State<CustomWordsPage> {
                     onPressed: () {
                       context.read<GameBloc>().add(
                         InitializeGameEvent(
-                          teamNames: widget.teamNames,
+                          initialTeams: widget.initialTeams,
                           userWords: addedWords,
                           targetWordCount: widget.targetCount,
                           hostTeamName: widget.hostTeamName,

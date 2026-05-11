@@ -23,4 +23,14 @@ class GroupRepositoryImpl implements GroupRepository {
   Future<List<GroupEntity>> getUserGroups() async {
     return await remoteDataSource.getUserGroups();
   }
+
+  @override
+  Future<void> deleteGroup(String groupId) async {
+    return await remoteDataSource.deleteGroup(groupId);
+  }
+
+  @override
+  Future<void> leaveGroup(String groupId) async {
+    return await remoteDataSource.leaveGroup(groupId);
+  }
 }

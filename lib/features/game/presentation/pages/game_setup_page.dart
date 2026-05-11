@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:guess_it/core/widgets/premium_scaffold.dart';
+import 'package:guess_it/features/game/domain/entities/team_entity.dart';
 
 class GameSetupPage extends StatefulWidget {
   @override
@@ -17,6 +18,7 @@ class GameSetupPage extends StatefulWidget {
 
 class _GameSetupPageState extends State<GameSetupPage> {
   final List<TextEditingController> teamControllers = <TextEditingController>[];
+  final List<TextEditingController> emailControllers = <TextEditingController>[];
   final TextEditingController countController = TextEditingController();
   int selectedHostIndex = 0;
   int selectedTurnDuration = 30;
@@ -27,11 +29,16 @@ class _GameSetupPageState extends State<GameSetupPage> {
     // Inyectamos 2 equipos iniciales (mínimo obligatorio)
     teamControllers.add(TextEditingController());
     teamControllers.add(TextEditingController());
+    emailControllers.add(TextEditingController());
+    emailControllers.add(TextEditingController());
   }
 
   @override
   void dispose() {
     for (final TextEditingController controller in teamControllers) {
+      controller.dispose();
+    }
+    for (final TextEditingController controller in emailControllers) {
       controller.dispose();
     }
     countController.dispose();
@@ -87,12 +94,25 @@ class _GameSetupPageState extends State<GameSetupPage> {
                           child: Row(
                             children: <Widget>[
                               Expanded(
-                                child: TextField(
-                                  controller: controller,
-                                  decoration: InputDecoration(
-                                    labelText: 'Nombre Equipo ${index + 1}',
-                                    border: const OutlineInputBorder(),
-                                  ),
+                                child: Column(
+                                  children: [
+                                    TextField(
+                                      controller: controller,
+                                      decoration: InputDecoration(
+                                        labelText: 'Nombre Equipo ${index + 1}',
+                                        border: const OutlineInputBorder(),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    TextField(
+                                      controller: emailControllers[index],
+                                      decoration: const InputDecoration(
+                                        labelText: 'Correos de usuarios (separados por coma)',
+                                        hintText: 'usuario1@a.com, usuario2@a.com',
+                                      ),
+                                      keyboardType: TextInputType.emailAddress,
+                                    ),
+                                  ],
                                 ),
                               ),
                               if (teamControllers.length > 2 && index == teamControllers.length - 1) ...<Widget>[
@@ -103,6 +123,8 @@ class _GameSetupPageState extends State<GameSetupPage> {
                                     setState(() {
                                       final TextEditingController removed = teamControllers.removeLast();
                                       removed.dispose();
+                                      final TextEditingController removedEmail = emailControllers.removeLast();
+                                      removedEmail.dispose();
                                       if (selectedHostIndex >= teamControllers.length) {
                                         selectedHostIndex = teamControllers.length - 1;
                                       }
@@ -119,6 +141,7 @@ class _GameSetupPageState extends State<GameSetupPage> {
                           onPressed: () {
                             setState(() {
                               teamControllers.add(TextEditingController());
+                              emailControllers.add(TextEditingController());
                             });
                           },
                           icon: const Icon(Icons.add),
@@ -237,10 +260,17 @@ class _GameSetupPageState extends State<GameSetupPage> {
 
                           final String hostTeamName = teamControllers[selectedHostIndex].text.trim();
 
+                          final List<TeamEntity> initialTeams = <TeamEntity>[];
+                          for (int i = 0; i < teamControllers.length; i++) {
+                            final String emailsRaw = emailControllers[i].text;
+                            final List<String> emails = emailsRaw.split(',').map((String e) => e.trim()).where((String e) => e.isNotEmpty).toList();
+                            initialTeams.add(TeamEntity(name: teamControllers[i].text.trim(), score: 0, registeredEmails: emails));
+                          }
+
                           context.push(
                             '/custom-words',
                             extra: <String, dynamic>{
-                              'teamNames': teamNames,
+                              'initialTeams': initialTeams,
                               'targetCount': targetCount,
                               'hostTeamName': hostTeamName,
                               'turnDurationSeconds': selectedTurnDuration,

@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:guess_it/features/game/domain/entities/team_entity.dart';
 
 abstract class GameEvent extends Equatable {
   const GameEvent();
@@ -8,19 +9,19 @@ abstract class GameEvent extends Equatable {
 }
 
 class InitializeGameEvent extends GameEvent {
-  final List<String> teamNames;
+  final List<TeamEntity> initialTeams;
   final List<String> userWords;
   final int targetWordCount;
   final String hostTeamName;
   final int turnDurationSeconds;
 
   const InitializeGameEvent({
-    required List<String> teamNames,
+    required List<TeamEntity> initialTeams,
     required List<String> userWords,
     required int targetWordCount,
     required String hostTeamName,
     required int turnDurationSeconds,
-  })  : teamNames = teamNames,
+  })  : initialTeams = initialTeams,
         userWords = userWords,
         targetWordCount = targetWordCount,
         hostTeamName = hostTeamName,
@@ -28,7 +29,7 @@ class InitializeGameEvent extends GameEvent {
 
   @override
   List<Object?> get props => <Object?>[
-        teamNames,
+        initialTeams,
         userWords,
         targetWordCount,
         hostTeamName,
@@ -95,4 +96,8 @@ class ToggleWordReviewEvent extends GameEvent {
 
   @override
   List<Object?> get props => <Object?>[word, wasGuessed];
+}
+
+class ResetGameEvent extends GameEvent {
+  const ResetGameEvent();
 }

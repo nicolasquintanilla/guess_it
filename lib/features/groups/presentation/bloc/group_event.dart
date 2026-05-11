@@ -35,3 +35,17 @@ class JoinGroupEvent extends GroupEvent {
   @override
   List<Object?> get props => <Object?>[joinCode];
 }
+
+class DeleteGroupEvent extends GroupEvent {
+  final String groupId;
+  const DeleteGroupEvent({required this.groupId});
+  @override
+  List<Object?> get props => <Object?>[groupId];
+}
+
+class LeaveGroupEvent extends GroupEvent {
+  final String groupId;
+  const LeaveGroupEvent({required this.groupId});
+  @override
+  List<Object?> get props => <Object?>[groupId];
+}

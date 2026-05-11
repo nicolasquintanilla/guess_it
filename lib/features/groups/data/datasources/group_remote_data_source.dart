@@ -114,4 +114,18 @@ class GroupRemoteDataSource {
     }
     return result;
   }
+
+  Future<void> deleteGroup(String groupId) async {
+    await firestore.collection('groups').doc(groupId).delete();
+  }
+
+  Future<void> leaveGroup(String groupId) async {
+    final User? currentUser = auth.currentUser;
+    if (currentUser == null) throw Exception('No autenticado');
+    final DocumentSnapshot<Map<String, dynamic>> userDoc = await firestore.collection('users').doc(currentUser.uid).get();
+    final String username = userDoc.data()?['username'] as String? ?? '';
+    await firestore.collection('groups').doc(groupId).update(<String, dynamic>{
+      'memberNames': FieldValue.arrayRemove(<String>[username])
+    });
+  }
 }

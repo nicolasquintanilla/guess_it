@@ -68,6 +68,35 @@ class GamePlayPage extends StatelessWidget {
     );
   }
 
+  void _showExitConfirmation(BuildContext context) {
+    showCupertinoDialog(
+      context: context,
+      builder: (BuildContext ctx) {
+        return CupertinoAlertDialog(
+          title: const Text('¿Terminar Partida?'),
+          content: const Text('Si sales ahora, todo el progreso de esta partida se perderá.'),
+          actions: <Widget>[
+            CupertinoDialogAction(
+              child: const Text('Cancelar'),
+              onPressed: () {
+                Navigator.of(ctx).pop();
+              },
+            ),
+            CupertinoDialogAction(
+              isDestructiveAction: true,
+              child: const Text('Salir'),
+              onPressed: () {
+                Navigator.of(ctx).pop();
+                context.read<GameBloc>().add(const ResetGameEvent());
+                context.go('/hub');
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocListener<GameBloc, GameState>(
@@ -86,22 +115,27 @@ class GamePlayPage extends StatelessWidget {
             titleText = 'Turno de: ${activeTeam.name}';
           }
 
-          List<Widget>? actions;
+          final List<Widget> actions = <Widget>[
+            IconButton(
+              icon: const Icon(Icons.exit_to_app, color: Colors.white),
+              tooltip: 'Terminar partida',
+              onPressed: () => _showExitConfirmation(context),
+            ),
+          ];
+
           if (state.remainingSeconds > 0 && state.status != GameStatus.turnReview) {
             final bool isPaused = state.status == GameStatus.paused;
-            actions = <Widget>[
-              IconButton(
-                icon: Icon(isPaused ? Icons.play_arrow : Icons.pause, color: Colors.white),
-                iconSize: 32,
-                onPressed: () {
-                  if (isPaused) {
-                    context.read<GameBloc>().add(const ResumeGameEvent());
-                  } else {
-                    context.read<GameBloc>().add(const PauseGameEvent());
-                  }
-                },
-              ),
-            ];
+            actions.insert(0, IconButton(
+              icon: Icon(isPaused ? Icons.play_arrow : Icons.pause, color: Colors.white),
+              iconSize: 32,
+              onPressed: () {
+                if (isPaused) {
+                  context.read<GameBloc>().add(const ResumeGameEvent());
+                } else {
+                  context.read<GameBloc>().add(const PauseGameEvent());
+                }
+              },
+            ));
           }
 
           return PremiumScaffold(

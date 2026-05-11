@@ -12,6 +12,7 @@ import 'package:guess_it/features/auth/presentation/pages/profile_page.dart';
 import 'package:guess_it/features/groups/presentation/pages/groups_page.dart';
 import 'package:guess_it/features/groups/presentation/pages/group_details_page.dart';
 import 'package:guess_it/features/groups/domain/entities/group_entity.dart';
+import 'package:guess_it/features/game/domain/entities/team_entity.dart';
 
 final GoRouter appRouter = GoRouter(
   initialLocation: '/',
@@ -45,7 +46,7 @@ final GoRouter appRouter = GoRouter(
       builder: (context, state) {
         final Map<String, dynamic> setupData = state.extra as Map<String, dynamic>;
         return CustomWordsPage(
-          teamNames: setupData['teamNames'] as List<String>,
+          initialTeams: setupData['initialTeams'] as List<TeamEntity>,
           targetCount: setupData['targetCount'] as int,
           hostTeamName: setupData['hostTeamName'] as String,
           turnDurationSeconds: setupData['turnDurationSeconds'] as int,

@@ -14,6 +14,8 @@ class GroupBloc extends Bloc<GroupEvent, GroupState> {
     on<LoadGroupsEvent>(_onLoadGroups);
     on<CreateGroupEvent>(_onCreateGroup);
     on<JoinGroupEvent>(_onJoinGroup);
+    on<DeleteGroupEvent>(_onDeleteGroup);
+    on<LeaveGroupEvent>(_onLeaveGroup);
   }
 
   Future<void> _onLoadGroups(
@@ -76,6 +78,54 @@ class GroupBloc extends Bloc<GroupEvent, GroupState> {
         state.copyWith(
           status: GroupStatus.success,
           successMessage: '¡Te has unido al grupo!',
+        ),
+      );
+    } catch (e) {
+      emit(
+        state.copyWith(
+          status: GroupStatus.error,
+          errorMessage: e.toString(),
+        ),
+      );
+    }
+  }
+
+  Future<void> _onDeleteGroup(
+    DeleteGroupEvent event,
+    Emitter<GroupState> emit,
+  ) async {
+    emit(state.copyWith(status: GroupStatus.loading));
+    try {
+      await repository.deleteGroup(event.groupId);
+      add(const LoadGroupsEvent());
+      emit(
+        state.copyWith(
+          status: GroupStatus.success,
+          successMessage: 'Grupo eliminado',
+        ),
+      );
+    } catch (e) {
+      emit(
+        state.copyWith(
+          status: GroupStatus.error,
+          errorMessage: e.toString(),
+        ),
+      );
+    }
+  }
+
+  Future<void> _onLeaveGroup(
+    LeaveGroupEvent event,
+    Emitter<GroupState> emit,
+  ) async {
+    emit(state.copyWith(status: GroupStatus.loading));
+    try {
+      await repository.leaveGroup(event.groupId);
+      add(const LoadGroupsEvent());
+      emit(
+        state.copyWith(
+          status: GroupStatus.success,
+          successMessage: 'Has salido del grupo',
         ),
       );
     } catch (e) {

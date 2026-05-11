@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:math';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:guess_it/features/game/presentation/bloc/game_event.dart';
 import 'package:guess_it/features/game/presentation/bloc/game_state.dart';
@@ -11,10 +12,9 @@ class GameBloc extends Bloc<GameEvent, GameState> {
   final WordRepository wordRepository;
   Timer? _turnTimer;
 
-  GameBloc({
-    required WordRepository wordRepository,
-  })  : wordRepository = wordRepository,
-        super(GameState.initial()) {
+  GameBloc({required WordRepository wordRepository})
+    : wordRepository = wordRepository,
+      super(GameState.initial()) {
     on<InitializeGameEvent>(_onInitializeGame);
     on<AddPointsEvent>(_onAddPoints);
     on<SwitchTurnEvent>(_onSwitchTurn);
@@ -27,6 +27,7 @@ class GameBloc extends Bloc<GameEvent, GameState> {
     on<ResumeGameEvent>(_onResumeGame);
     on<TimeUpEvent>(_onTimeUp);
     on<ToggleWordReviewEvent>(_onToggleWordReview);
+    on<ResetGameEvent>(_onResetGame);
   }
 
   @override
@@ -46,12 +47,8 @@ class GameBloc extends Bloc<GameEvent, GameState> {
       event.targetWordCount,
     );
 
-    final List<TeamEntity> initializedTeams = event.teamNames
-        .map((String name) => TeamEntity(name: name, score: 0))
-        .toList();
-
     final GameEntity newGame = GameEntity(
-      teams: initializedTeams,
+      teams: event.initialTeams,
       currentRound: 1,
       activeTeamIndex: 0,
       gameStatus: 'in_progress',
@@ -59,44 +56,45 @@ class GameBloc extends Bloc<GameEvent, GameState> {
       turnDurationSeconds: event.turnDurationSeconds,
     );
 
-    emit(state.copyWith(
-      status: GameStatus.playing,
-      game: newGame,
-      remainingSeconds: 0,
-      currentWord: '',
-      currentBag: List<String>.from(generatedBag),
-      masterBag: List<String>.from(generatedBag),
-      turnGuessedWords: <String>[],
-      turnSkippedWords: <String>[],
-    ));
+    emit(
+      state.copyWith(
+        status: GameStatus.playing,
+        game: newGame,
+        remainingSeconds: 0,
+        currentWord: '',
+        currentBag: List<String>.from(generatedBag),
+        masterBag: List<String>.from(generatedBag),
+        turnGuessedWords: <String>[],
+        turnSkippedWords: <String>[],
+      ),
+    );
   }
 
-  void _onAddPoints(
-    AddPointsEvent event,
-    Emitter<GameState> emit,
-  ) {
+  void _onAddPoints(AddPointsEvent event, Emitter<GameState> emit) {
     if (state.game == null) {
       return;
     }
 
     final GameEntity currentGame = state.game!;
-    
-    final List<TeamEntity> updatedTeams = currentGame.teams.asMap().entries.map((MapEntry<int, TeamEntity> entry) {
-      if (entry.key == currentGame.activeTeamIndex) {
-        return entry.value.copyWith(score: entry.value.score + event.points);
-      }
-      return entry.value;
-    }).toList();
+
+    final List<TeamEntity> updatedTeams = currentGame.teams.asMap().entries.map(
+      (MapEntry<int, TeamEntity> entry) {
+        if (entry.key == currentGame.activeTeamIndex) {
+          return entry.value.copyWith(score: entry.value.score + event.points);
+        }
+        return entry.value;
+      },
+    ).toList();
 
     final GameEntity updatedGame = currentGame.copyWith(teams: updatedTeams);
 
     emit(state.copyWith(game: updatedGame));
   }
 
-  void _onSwitchTurn(
+  Future<void> _onSwitchTurn(
     SwitchTurnEvent event,
     Emitter<GameState> emit,
-  ) {
+  ) async {
     _turnTimer?.cancel();
 
     if (state.game == null) {
@@ -104,16 +102,18 @@ class GameBloc extends Bloc<GameEvent, GameState> {
     }
 
     final GameEntity currentGame = state.game!;
-    
+
     // 1. Sumar los puntos obtenidos en la revisión
     final int pointsEarned = state.turnGuessedWords.length;
-    
-    final List<TeamEntity> updatedTeams = currentGame.teams.asMap().entries.map((MapEntry<int, TeamEntity> entry) {
-      if (entry.key == currentGame.activeTeamIndex) {
-        return entry.value.copyWith(score: entry.value.score + pointsEarned);
-      }
-      return entry.value;
-    }).toList();
+
+    final List<TeamEntity> updatedTeams = currentGame.teams.asMap().entries.map(
+      (MapEntry<int, TeamEntity> entry) {
+        if (entry.key == currentGame.activeTeamIndex) {
+          return entry.value.copyWith(score: entry.value.score + pointsEarned);
+        }
+        return entry.value;
+      },
+    ).toList();
 
     // 2. Reconstruir la bolsa con las palabras saltadas y la palabra a medias
     final List<String> newBag = List<String>.from(state.currentBag);
@@ -134,7 +134,7 @@ class GameBloc extends Bloc<GameEvent, GameState> {
         );
         newBag.addAll(state.masterBag);
         newBag.shuffle();
-        
+
         // REGLA DEL PERDEDOR: Empieza el equipo con menos puntos
         int minScore = updatedGame.teams[0].score;
         int loserIndex = 0;
@@ -146,7 +146,78 @@ class GameBloc extends Bloc<GameEvent, GameState> {
         }
         updatedGame = updatedGame.copyWith(activeTeamIndex: loserIndex);
 
-        emit(state.copyWith(
+        emit(
+          state.copyWith(
+            status: GameStatus.playing,
+            game: updatedGame,
+            remainingSeconds: 0,
+            currentWord: '',
+            currentBag: newBag,
+            turnGuessedWords: <String>[],
+            turnSkippedWords: <String>[],
+          ),
+        );
+      } else {
+        // Fin del juego
+        updatedGame = updatedGame.copyWith(gameStatus: 'finished');
+
+        try {
+          final FirebaseFirestore firestore = FirebaseFirestore.instance;
+          int maxScore = -1;
+          for (final TeamEntity team in updatedGame.teams) {
+            if (team.score > maxScore) maxScore = team.score;
+          }
+
+          for (final TeamEntity team in updatedGame.teams) {
+            final bool isWinner = team.score == maxScore && maxScore > 0;
+            for (final String email in team.registeredEmails) {
+              final String cleanEmail = email.trim().toLowerCase();
+              if (cleanEmail.isEmpty) continue;
+
+              final QuerySnapshot<Map<String, dynamic>> userQuery =
+                  await firestore
+                      .collection('users')
+                      .where('email', isEqualTo: cleanEmail)
+                      .limit(1)
+                      .get();
+
+              if (userQuery.docs.isNotEmpty) {
+                final DocumentReference<Map<String, dynamic>> userRef =
+                    userQuery.docs.first.reference;
+                final Map<String, dynamic> updates = <String, dynamic>{
+                  'gamesPlayed': FieldValue.increment(1),
+                };
+                if (isWinner) {
+                  updates['victories'] = FieldValue.increment(1);
+                }
+                await userRef.update(updates);
+              }
+            }
+          }
+        } catch (e) {
+          print('Error actualizando estadísticas: $e');
+        }
+
+        emit(
+          state.copyWith(
+            status: GameStatus.finished,
+            game: updatedGame,
+            remainingSeconds: 0,
+            currentWord: '',
+            currentBag: <String>[],
+            turnGuessedWords: <String>[],
+            turnSkippedWords: <String>[],
+          ),
+        );
+      }
+    } else {
+      // Cambio de turno normal
+      final int nextTeamIndex =
+          (currentGame.activeTeamIndex + 1) % currentGame.teams.length;
+      updatedGame = updatedGame.copyWith(activeTeamIndex: nextTeamIndex);
+
+      emit(
+        state.copyWith(
           status: GameStatus.playing,
           game: updatedGame,
           remainingSeconds: 0,
@@ -154,88 +225,48 @@ class GameBloc extends Bloc<GameEvent, GameState> {
           currentBag: newBag,
           turnGuessedWords: <String>[],
           turnSkippedWords: <String>[],
-        ));
-      } else {
-        // Fin del juego
-        updatedGame = updatedGame.copyWith(
-          gameStatus: 'finished',
-        );
-        emit(state.copyWith(
-          status: GameStatus.finished,
-          game: updatedGame,
-          remainingSeconds: 0,
-          currentWord: '',
-          currentBag: <String>[],
-          turnGuessedWords: <String>[],
-          turnSkippedWords: <String>[],
-        ));
-      }
-    } else {
-      // Cambio de turno normal
-      final int nextTeamIndex = (currentGame.activeTeamIndex + 1) % currentGame.teams.length;
-      updatedGame = updatedGame.copyWith(activeTeamIndex: nextTeamIndex);
-      
-      emit(state.copyWith(
-        status: GameStatus.playing,
-        game: updatedGame,
-        remainingSeconds: 0,
-        currentWord: '',
-        currentBag: newBag,
-        turnGuessedWords: <String>[],
-        turnSkippedWords: <String>[],
-      ));
+        ),
+      );
     }
   }
 
-  void _onEndGame(
-    EndGameEvent event,
-    Emitter<GameState> emit,
-  ) {
+  void _onEndGame(EndGameEvent event, Emitter<GameState> emit) {
     _turnTimer?.cancel();
     if (state.game == null) {
       return;
     }
 
-    final GameEntity updatedGame = state.game!.copyWith(
-      gameStatus: 'finished',
-    );
+    final GameEntity updatedGame = state.game!.copyWith(gameStatus: 'finished');
 
-    emit(state.copyWith(
-      status: GameStatus.finished,
-      game: updatedGame,
-    ));
+    emit(state.copyWith(status: GameStatus.finished, game: updatedGame));
   }
 
-  void _onStartTurn(
-    StartTurnEvent event,
-    Emitter<GameState> emit,
-  ) {
+  void _onStartTurn(StartTurnEvent event, Emitter<GameState> emit) {
     _turnTimer?.cancel();
-    
+
     if (state.currentBag.isEmpty) {
       return;
     }
 
     final List<String> newBag = List<String>.from(state.currentBag);
     final String newWord = newBag.removeAt(0);
-    
-    emit(state.copyWith(
-      remainingSeconds: state.game!.turnDurationSeconds,
-      currentWord: newWord,
-      currentBag: newBag,
-      turnGuessedWords: <String>[],
-      turnSkippedWords: <String>[],
-    ));
+
+    emit(
+      state.copyWith(
+        remainingSeconds: state.game!.turnDurationSeconds,
+        currentWord: newWord,
+        currentBag: newBag,
+        turnGuessedWords: <String>[],
+        turnSkippedWords: <String>[],
+      ),
+    );
 
     _turnTimer = Timer.periodic(const Duration(seconds: 1), (Timer timer) {
       add(const TickTimerEvent());
     });
   }
 
-  void _onTickTimer(
-    TickTimerEvent event,
-    Emitter<GameState> emit,
-  ) {
+  void _onTickTimer(TickTimerEvent event, Emitter<GameState> emit) {
     if (state.remainingSeconds > 0) {
       final int updatedSeconds = state.remainingSeconds - 1;
       emit(state.copyWith(remainingSeconds: updatedSeconds));
@@ -246,10 +277,7 @@ class GameBloc extends Bloc<GameEvent, GameState> {
     }
   }
 
-  void _onCorrectAnswer(
-    CorrectAnswerEvent event,
-    Emitter<GameState> emit,
-  ) {
+  void _onCorrectAnswer(CorrectAnswerEvent event, Emitter<GameState> emit) {
     if (state.status == GameStatus.paused || state.remainingSeconds == 0) {
       return;
     }
@@ -263,28 +291,29 @@ class GameBloc extends Bloc<GameEvent, GameState> {
 
     if (newBag.isEmpty) {
       _turnTimer?.cancel();
-      emit(state.copyWith(
-        currentWord: '',
-        currentBag: newBag,
-        turnGuessedWords: newGuessed,
-      ));
+      emit(
+        state.copyWith(
+          currentWord: '',
+          currentBag: newBag,
+          turnGuessedWords: newGuessed,
+        ),
+      );
       add(const TimeUpEvent());
       return;
     }
 
     final String newWord = newBag.removeAt(0);
 
-    emit(state.copyWith(
-      currentWord: newWord,
-      currentBag: newBag,
-      turnGuessedWords: newGuessed,
-    ));
+    emit(
+      state.copyWith(
+        currentWord: newWord,
+        currentBag: newBag,
+        turnGuessedWords: newGuessed,
+      ),
+    );
   }
 
-  void _onSkipWord(
-    SkipWordEvent event,
-    Emitter<GameState> emit,
-  ) {
+  void _onSkipWord(SkipWordEvent event, Emitter<GameState> emit) {
     if (state.status == GameStatus.paused || state.remainingSeconds == 0) {
       return;
     }
@@ -298,38 +327,36 @@ class GameBloc extends Bloc<GameEvent, GameState> {
 
     if (newBag.isEmpty) {
       _turnTimer?.cancel();
-      emit(state.copyWith(
-        currentWord: '',
-        currentBag: newBag,
-        turnSkippedWords: newSkipped,
-      ));
+      emit(
+        state.copyWith(
+          currentWord: '',
+          currentBag: newBag,
+          turnSkippedWords: newSkipped,
+        ),
+      );
       add(const TimeUpEvent());
       return;
     }
 
     final String newWord = newBag.removeAt(0);
 
-    emit(state.copyWith(
-      currentWord: newWord,
-      currentBag: newBag,
-      turnSkippedWords: newSkipped,
-    ));
+    emit(
+      state.copyWith(
+        currentWord: newWord,
+        currentBag: newBag,
+        turnSkippedWords: newSkipped,
+      ),
+    );
   }
 
-  void _onPauseGame(
-    PauseGameEvent event,
-    Emitter<GameState> emit,
-  ) {
+  void _onPauseGame(PauseGameEvent event, Emitter<GameState> emit) {
     _turnTimer?.cancel();
     emit(state.copyWith(status: GameStatus.paused));
   }
 
-  void _onResumeGame(
-    ResumeGameEvent event,
-    Emitter<GameState> emit,
-  ) {
+  void _onResumeGame(ResumeGameEvent event, Emitter<GameState> emit) {
     emit(state.copyWith(status: GameStatus.playing));
-    
+
     if (state.remainingSeconds > 0) {
       _turnTimer?.cancel();
       _turnTimer = Timer.periodic(const Duration(seconds: 1), (Timer timer) {
@@ -338,10 +365,7 @@ class GameBloc extends Bloc<GameEvent, GameState> {
     }
   }
 
-  void _onTimeUp(
-    TimeUpEvent event,
-    Emitter<GameState> emit,
-  ) {
+  void _onTimeUp(TimeUpEvent event, Emitter<GameState> emit) {
     _turnTimer?.cancel();
     emit(state.copyWith(status: GameStatus.turnReview));
   }
@@ -367,9 +391,19 @@ class GameBloc extends Bloc<GameEvent, GameState> {
       }
     }
 
-    emit(state.copyWith(
-      turnGuessedWords: newGuessed,
-      turnSkippedWords: newSkipped,
-    ));
+    emit(
+      state.copyWith(
+        turnGuessedWords: newGuessed,
+        turnSkippedWords: newSkipped,
+      ),
+    );
+  }
+
+  Future<void> _onResetGame(
+    ResetGameEvent event,
+    Emitter<GameState> emit,
+  ) async {
+    _turnTimer?.cancel();
+    emit(GameState.initial());
   }
 }
