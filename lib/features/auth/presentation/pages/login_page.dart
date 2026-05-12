@@ -174,16 +174,30 @@ class _LoginPageState extends State<LoginPage> {
                             else ...<Widget>[
                               TextField(
                                 controller: emailController,
-                                decoration: const InputDecoration(
+                                decoration: InputDecoration(
                                   labelText: 'Correo electrónico',
+                                  prefixIcon: const Icon(Icons.email_outlined, color: Colors.deepPurple),
+                                  filled: true,
+                                  fillColor: Colors.grey.shade100,
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(16.0),
+                                    borderSide: BorderSide.none,
+                                  ),
                                 ),
                                 keyboardType: TextInputType.emailAddress,
                               ),
                               const SizedBox(height: 16),
                               TextField(
                                 controller: passwordController,
-                                decoration: const InputDecoration(
+                                decoration: InputDecoration(
                                   labelText: 'Contraseña',
+                                  prefixIcon: const Icon(Icons.lock_outline, color: Colors.deepPurple),
+                                  filled: true,
+                                  fillColor: Colors.grey.shade100,
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(16.0),
+                                    borderSide: BorderSide.none,
+                                  ),
                                 ),
                                 obscureText: true,
                               ),
@@ -199,15 +213,29 @@ class _LoginPageState extends State<LoginPage> {
                                 ),
                               ),
                               const SizedBox(height: 32),
-                              SizedBox(
+                              Container(
                                 width: double.infinity,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(32),
+                                  gradient: const LinearGradient(
+                                    colors: <Color>[Colors.orangeAccent, Colors.pinkAccent],
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                  ),
+                                  boxShadow: const <BoxShadow>[
+                                    BoxShadow(color: Colors.black26, blurRadius: 8, offset: Offset(0, 4))
+                                  ],
+                                ),
                                 child: ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.transparent, 
+                                    shadowColor: Colors.transparent,
+                                    padding: const EdgeInsets.symmetric(vertical: 16),
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(32)),
+                                  ),
                                   onPressed: () {
-                                    final String email = emailController.text
-                                        .trim();
-                                    final String password = passwordController
-                                        .text
-                                        .trim();
+                                    final String email = emailController.text.trim();
+                                    final String password = passwordController.text.trim();
 
                                     if (email.isEmpty || password.isEmpty) {
                                       _showCupertinoAlert(
@@ -225,36 +253,39 @@ class _LoginPageState extends State<LoginPage> {
                                       ),
                                     );
                                   },
-                                  child: const Text('Iniciar Sesión'),
+                                  child: const Text('Iniciar Sesión', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              TextButton(
+                                onPressed: () {
+                                  context.push('/register');
+                                },
+                                child: const Text(
+                                  '¿No tienes cuenta? Regístrate aquí',
+                                  style: TextStyle(color: Colors.deepPurple, fontWeight: FontWeight.bold),
                                 ),
                               ),
                               const SizedBox(height: 16),
                               SizedBox(
                                 width: double.infinity,
-                                child: OutlinedButton(
-                                  onPressed: () {
-                                    context.push('/register');
-                                  },
-                                  child: const Text('Crear cuenta'),
-                                ),
-                              ),
-                              const SizedBox(height: 16),
-                              SizedBox(
-                                width: double.infinity,
-                                child: OutlinedButton(
+                                child: OutlinedButton.icon(
                                   onPressed: () {
                                     context.read<AuthBloc>().add(
                                       const PlayAsGuestEvent(),
                                     );
                                   },
+                                  icon: const Icon(Icons.no_accounts),
+                                  label: const Text('Jugar como Invitado'),
                                   style: OutlinedButton.styleFrom(
                                     foregroundColor: Colors.deepPurpleAccent,
-                                    side: const BorderSide(
-                                      color: Colors.deepPurpleAccent,
+                                    padding: const EdgeInsets.symmetric(vertical: 16),
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(32)),
+                                    side: BorderSide(
+                                      color: Colors.deepPurpleAccent.withOpacity(0.5),
                                       width: 2,
                                     ),
                                   ),
-                                  child: const Text('Jugar como Invitado'),
                                 ),
                               ),
                             ],

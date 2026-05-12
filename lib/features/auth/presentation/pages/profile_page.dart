@@ -99,38 +99,82 @@ class _ProfilePageState extends State<ProfilePage> {
                         fontWeight: FontWeight.w900,
                       ),
                     ),
-                    const SizedBox(height: 48),
-                    Card(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(32.0),
-                      ),
-                      elevation: 8,
-                      color: Colors.white,
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                          vertical: 32.0,
-                          horizontal: 16.0,
+                    const SizedBox(height: 32),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: <Widget>[
+                        Expanded(
+                          child: _StatCard(
+                            icon: Icons.emoji_events,
+                            iconColor: Colors.amber,
+                            value: user.victories.toString(),
+                            title: 'Wins',
+                          ),
                         ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: _StatCard(
+                            icon: Icons.sports_esports,
+                            iconColor: Colors.blueAccent,
+                            value: user.gamesPlayed.toString(),
+                            title: 'Played',
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    Container(
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(24.0),
+                        gradient: LinearGradient(
+                          colors: winRate >= 50 
+                              ? <Color>[Colors.orangeAccent, Colors.deepOrange]
+                              : <Color>[Colors.blueGrey.shade400, Colors.blueGrey.shade700],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        boxShadow: const <BoxShadow>[
+                          BoxShadow(
+                            color: Colors.black26,
+                            blurRadius: 8,
+                            offset: Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 32.0, horizontal: 16.0),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: <Widget>[
-                            _StatItem(
-                              title: 'Partidas',
-                              value: user.gamesPlayed.toString(),
+                            const Icon(
+                              Icons.bolt,
+                              size: 48,
+                              color: Colors.white,
                             ),
-                            _StatItem(
-                              title: 'Victorias',
-                              value: user.victories.toString(),
+                            const SizedBox(height: 16),
+                            Text(
+                              '${winRate.toStringAsFixed(0)}%',
+                              style: const TextStyle(
+                                fontSize: 64,
+                                fontWeight: FontWeight.w900,
+                                color: Colors.white,
+                              ),
                             ),
-                            _StatItem(
-                              title: 'Tasa de Victorias',
-                              value: '${winRate.toStringAsFixed(1)}%',
+                            const SizedBox(height: 8),
+                            const Text(
+                              'Win Rate',
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white70,
+                              ),
                             ),
                           ],
                         ),
                       ),
                     ),
-                    const SizedBox(height: 32),
+                    const SizedBox(height: 48),
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.red,
@@ -178,38 +222,65 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 }
 
-class _StatItem extends StatelessWidget {
-  final String title;
+class _StatCard extends StatelessWidget {
+  @override
+  final Key? key;
+  final IconData icon;
+  final Color iconColor;
   final String value;
+  final String title;
 
-  const _StatItem({
-    required this.title,
-    required this.value,
-  });
+  const _StatCard({
+    Key? key,
+    required IconData icon,
+    required Color iconColor,
+    required String value,
+    required String title,
+  })  : key = key,
+        icon = icon,
+        iconColor = iconColor,
+        value = value,
+        title = title;
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: <Widget>[
-        Text(
-          value,
-          style: const TextStyle(
-            fontSize: 32,
-            fontWeight: FontWeight.w900,
-            color: Colors.deepPurple,
-          ),
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(24.0),
+      ),
+      color: Colors.white,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 24.0, horizontal: 8.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            Icon(
+              icon,
+              size: 40,
+              color: iconColor,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              value,
+              style: const TextStyle(
+                fontSize: 36,
+                fontWeight: FontWeight.w900,
+                color: Colors.black87,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              title,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.grey,
+              ),
+            ),
+          ],
         ),
-        const SizedBox(height: 8),
-        Text(
-          title,
-          style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            color: Colors.black54,
-          ),
-        ),
-      ],
+      ),
     );
   }
 }

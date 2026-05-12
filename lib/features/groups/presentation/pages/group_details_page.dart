@@ -126,13 +126,18 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: <Widget>[
-                            Text(
-                              widget.group.joinCode,
-                              style: const TextStyle(
-                                fontSize: 48,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.green,
-                                letterSpacing: 4.0,
+                            Expanded(
+                              child: FittedBox(
+                                fit: BoxFit.scaleDown,
+                                child: Text(
+                                  widget.group.joinCode,
+                                  style: const TextStyle(
+                                    fontSize: 48,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.green,
+                                    letterSpacing: 4.0,
+                                  ),
+                                ),
                               ),
                             ),
                             const SizedBox(width: 16),

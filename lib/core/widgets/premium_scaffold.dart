@@ -27,6 +27,8 @@ class PremiumScaffold extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       extendBodyBehindAppBar: true,
+      extendBody: true,
+      backgroundColor: Colors.transparent,
       appBar: title != null
           ? AppBar(
               title: Text(title!),
@@ -73,6 +75,7 @@ class PremiumScaffold extends StatelessWidget {
             ),
           ),
           SafeArea(
+            bottom: false,
             child: Padding(
               padding: const EdgeInsets.only(bottom: 24.0),
               child: child,
