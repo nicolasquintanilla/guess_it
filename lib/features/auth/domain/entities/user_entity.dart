@@ -7,6 +7,7 @@ class UserEntity extends Equatable {
   final String createdAt;
   final int gamesPlayed;
   final int victories;
+  final String avatar;
 
   const UserEntity({
     required String id,
@@ -15,12 +16,14 @@ class UserEntity extends Equatable {
     required String createdAt,
     required int gamesPlayed,
     required int victories,
+    String avatar = 'default',
   })  : id = id,
         username = username,
         isGuest = isGuest,
         createdAt = createdAt,
         gamesPlayed = gamesPlayed,
-        victories = victories;
+        victories = victories,
+        avatar = avatar;
 
   UserEntity copyWith({
     String? id,
@@ -29,6 +32,7 @@ class UserEntity extends Equatable {
     String? createdAt,
     int? gamesPlayed,
     int? victories,
+    String? avatar,
   }) {
     return UserEntity(
       id: id ?? this.id,
@@ -37,9 +41,10 @@ class UserEntity extends Equatable {
       createdAt: createdAt ?? this.createdAt,
       gamesPlayed: gamesPlayed ?? this.gamesPlayed,
       victories: victories ?? this.victories,
+      avatar: avatar ?? this.avatar,
     );
   }
 
   @override
-  List<Object?> get props => <Object?>[id, username, isGuest, createdAt, gamesPlayed, victories];
+  List<Object?> get props => <Object?>[id, username, isGuest, createdAt, gamesPlayed, victories, avatar];
 }

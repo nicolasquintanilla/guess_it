@@ -68,3 +68,25 @@ class ReloadUserEvent extends AuthEvent {
 class DeleteAccountEvent extends AuthEvent {
   const DeleteAccountEvent();
 }
+
+class UpdateUsernameEvent extends AuthEvent {
+  final String newUsername;
+  
+  const UpdateUsernameEvent({
+    required String newUsername,
+  }) : newUsername = newUsername;
+
+  @override
+  List<Object?> get props => <Object?>[newUsername];
+}
+
+class UpdateAvatarEvent extends AuthEvent {
+  final String newAvatar;
+  
+  const UpdateAvatarEvent({
+    required String newAvatar,
+  }) : newAvatar = newAvatar;
+
+  @override
+  List<Object?> get props => <Object?>[newAvatar];
+}

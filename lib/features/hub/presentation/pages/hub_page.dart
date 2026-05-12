@@ -30,11 +30,16 @@ class HubPage extends StatelessWidget {
       child: BlocBuilder<AuthBloc, AuthState>(
         builder: (BuildContext context, AuthState state) {
           final bool isGuest = state.user?.isGuest ?? true;
-          final String displayUsername = isGuest ? 'Invitado' : (state.user?.username ?? 'Invitado');
+          final String displayUsername = isGuest
+              ? 'Invitado'
+              : (state.user?.username ?? 'Invitado');
 
           return SingleChildScrollView(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 24.0,
+                vertical: 16.0,
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: <Widget>[
@@ -44,7 +49,11 @@ class HubPage extends StatelessWidget {
                       const CircleAvatar(
                         radius: 32,
                         backgroundColor: Colors.white24,
-                        child: Icon(Icons.person, size: 36, color: Colors.white),
+                        child: Icon(
+                          Icons.person,
+                          size: 36,
+                          color: Colors.white,
+                        ),
                       ),
                       const SizedBox(width: 16),
                       Expanded(
@@ -61,7 +70,7 @@ class HubPage extends StatelessWidget {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              'Hola, $displayUsername',
+                              '$displayUsername',
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: const TextStyle(
@@ -84,7 +93,10 @@ class HubPage extends StatelessWidget {
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(32),
                         gradient: const LinearGradient(
-                          colors: <Color>[Colors.orangeAccent, Colors.pinkAccent],
+                          colors: <Color>[
+                            Colors.orangeAccent,
+                            Colors.pinkAccent,
+                          ],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ),
@@ -97,7 +109,10 @@ class HubPage extends StatelessWidget {
                         ],
                       ),
                       child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 24.0),
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 16.0,
+                          horizontal: 24.0,
+                        ),
                         child: Row(
                           children: <Widget>[
                             const Icon(
@@ -136,7 +151,7 @@ class HubPage extends StatelessWidget {
                     physics: const NeverScrollableScrollPhysics(),
                     crossAxisSpacing: 16,
                     mainAxisSpacing: 16,
-                    childAspectRatio: 0.85,
+                    childAspectRatio: 0.75,
                     children: <Widget>[
                       _GridItem(
                         title: 'Mis Grupos',
@@ -196,12 +211,12 @@ class _GridItem extends StatelessWidget {
     required IconData icon,
     required Color iconColor,
     required VoidCallback onTap,
-  })  : key = key,
-        title = title,
-        description = description,
-        icon = icon,
-        iconColor = iconColor,
-        onTap = onTap;
+  }) : key = key,
+       title = title,
+       description = description,
+       icon = icon,
+       iconColor = iconColor,
+       onTap = onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -232,7 +247,7 @@ class _GridItem extends StatelessWidget {
                 ),
                 child: Icon(icon, color: iconColor, size: 32),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 8),
               Text(
                 title,
                 style: const TextStyle(
@@ -244,6 +259,8 @@ class _GridItem extends StatelessWidget {
               const SizedBox(height: 4),
               Text(
                 description,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w500,

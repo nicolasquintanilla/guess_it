@@ -35,6 +35,8 @@ class AuthBloc extends HydratedBloc<AuthEvent, AuthState> {
       emit(state.copyWith(status: AuthStatus.initial));
     });
     on<DeleteAccountEvent>(_onDeleteAccount);
+    on<UpdateUsernameEvent>(_onUpdateUsername);
+    on<UpdateAvatarEvent>(_onUpdateAvatar);
   }
 
   Future<void> _onReloadUser(
@@ -58,6 +60,7 @@ class AuthBloc extends HydratedBloc<AuthEvent, AuthState> {
           createdAt: state.user!.createdAt,
           gamesPlayed: data['gamesPlayed'] as int? ?? 0,
           victories: data['victories'] as int? ?? 0,
+          avatar: data['avatar'] as String? ?? 'default',
         );
 
         emit(state.copyWith(user: updatedUser));
@@ -205,6 +208,46 @@ class AuthBloc extends HydratedBloc<AuthEvent, AuthState> {
         status: AuthStatus.error,
         errorMessage: e.toString(),
       ));
+    }
+  }
+
+  Future<void> _onUpdateUsername(
+    UpdateUsernameEvent event,
+    Emitter<AuthState> emit,
+  ) async {
+    if (state.user == null || state.user!.isGuest) return;
+
+    try {
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(state.user!.id)
+          .update(<String, Object?>{'username': event.newUsername});
+
+      final UserEntity updatedUser = state.user!.copyWith(username: event.newUsername);
+
+      emit(state.copyWith(user: updatedUser));
+    } catch (_) {
+      // Ignore background error
+    }
+  }
+
+  Future<void> _onUpdateAvatar(
+    UpdateAvatarEvent event,
+    Emitter<AuthState> emit,
+  ) async {
+    if (state.user == null || state.user!.isGuest) return;
+
+    try {
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(state.user!.id)
+          .update(<String, Object?>{'avatar': event.newAvatar});
+
+      final UserEntity updatedUser = state.user!.copyWith(avatar: event.newAvatar);
+
+      emit(state.copyWith(user: updatedUser));
+    } catch (_) {
+      // Ignore background error
     }
   }
 

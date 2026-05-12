@@ -8,6 +8,7 @@ class PremiumScaffold extends StatelessWidget {
   final bool showBackArrow;
   final List<Widget>? actions;
   final Widget? floatingActionButton;
+  final String? helpText;
 
   const PremiumScaffold({
     Key? key,
@@ -16,15 +17,67 @@ class PremiumScaffold extends StatelessWidget {
     bool showBackArrow = true,
     List<Widget>? actions,
     Widget? floatingActionButton,
+    String? helpText,
   })  : key = key,
         child = child,
         title = title,
         showBackArrow = showBackArrow,
         actions = actions,
-        floatingActionButton = floatingActionButton;
+        floatingActionButton = floatingActionButton,
+        helpText = helpText;
 
   @override
   Widget build(BuildContext context) {
+    final List<Widget> currentActions = List<Widget>.from(actions ?? <Widget>[]);
+    if (helpText != null) {
+      currentActions.insert(
+        0,
+        IconButton(
+          icon: const Icon(Icons.help_outline, color: Colors.white),
+          onPressed: () {
+            showModalBottomSheet(
+              context: context,
+              shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+              ),
+              backgroundColor: Colors.white,
+              builder: (BuildContext ctx) {
+                return Padding(
+                  padding: const EdgeInsets.all(24.0),
+                  child: SingleChildScrollView(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        const Text(
+                          'Instrucciones',
+                          style: TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.deepPurple,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          helpText!,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            color: Colors.black87,
+                            height: 1.5,
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            );
+          },
+        ),
+      );
+    }
+
     return Scaffold(
       extendBodyBehindAppBar: true,
       extendBody: true,
@@ -35,7 +88,7 @@ class PremiumScaffold extends StatelessWidget {
               backgroundColor: Colors.transparent,
               elevation: 0,
               automaticallyImplyLeading: showBackArrow,
-              actions: actions,
+              actions: currentActions.isNotEmpty ? currentActions : null,
               iconTheme: const IconThemeData(color: Colors.white),
               titleTextStyle: const TextStyle(
                 color: Colors.white,

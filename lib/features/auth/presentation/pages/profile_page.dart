@@ -21,6 +21,19 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
+  final Map<String, IconData> _availableAvatars = const <String, IconData>{
+    'default': Icons.account_circle,
+    'robot': Icons.smart_toy,
+    'alien': Icons.adb,
+    'ninja': Icons.visibility,
+    'pet': Icons.pets,
+    'rocket': Icons.rocket_launch,
+    'gamepad': Icons.sports_esports,
+    'diamond': Icons.diamond,
+    'star': Icons.star,
+    'fire': Icons.local_fire_department,
+  };
+
   @override
   void initState() {
     super.initState();
@@ -85,19 +98,129 @@ class _ProfilePageState extends State<ProfilePage> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
-                    const Icon(
-                      Icons.account_circle,
-                      size: 120,
-                      color: Colors.white,
+                    GestureDetector(
+                      onTap: () {
+                        showModalBottomSheet(
+                          context: context,
+                          backgroundColor: Colors.white,
+                          shape: const RoundedRectangleBorder(
+                            borderRadius: BorderRadius.vertical(top: Radius.circular(32.0)),
+                          ),
+                          builder: (BuildContext ctx) {
+                            return Padding(
+                              padding: const EdgeInsets.all(24.0),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: <Widget>[
+                                  const Text('Elige tu Avatar', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.deepPurple)),
+                                  const SizedBox(height: 24),
+                                  GridView.builder(
+                                    shrinkWrap: true,
+                                    physics: const NeverScrollableScrollPhysics(),
+                                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                                      crossAxisCount: 4,
+                                      crossAxisSpacing: 16,
+                                      mainAxisSpacing: 16,
+                                    ),
+                                    itemCount: _availableAvatars.length,
+                                    itemBuilder: (BuildContext context, int index) {
+                                      final String key = _availableAvatars.keys.elementAt(index);
+                                      final IconData icon = _availableAvatars[key]!;
+                                      final bool isSelected = user.avatar == key;
+                                      return GestureDetector(
+                                        onTap: () {
+                                          context.read<AuthBloc>().add(UpdateAvatarEvent(newAvatar: key));
+                                          Navigator.pop(ctx);
+                                        },
+                                        child: Container(
+                                          decoration: BoxDecoration(
+                                            color: isSelected ? Colors.deepPurple.withOpacity(0.2) : Colors.grey.shade100,
+                                            shape: BoxShape.circle,
+                                            border: isSelected ? Border.all(color: Colors.deepPurple, width: 3) : null,
+                                          ),
+                                          child: Icon(icon, size: 40, color: isSelected ? Colors.deepPurple : Colors.grey.shade700),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                  const SizedBox(height: 24),
+                                ],
+                              ),
+                            );
+                          },
+                        );
+                      },
+                      child: Stack(
+                        alignment: Alignment.bottomRight,
+                        children: <Widget>[
+                          Container(
+                            padding: const EdgeInsets.all(16),
+                            decoration: const BoxDecoration(color: Colors.white24, shape: BoxShape.circle),
+                            child: Icon(
+                              _availableAvatars[user.avatar] ?? Icons.account_circle,
+                              size: 100,
+                              color: Colors.white,
+                            ),
+                          ),
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+                            child: const Icon(Icons.edit, color: Colors.deepPurple, size: 20),
+                          ),
+                        ],
+                      ),
                     ),
                     const SizedBox(height: 16),
-                    Text(
-                      user.username,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 36,
-                        fontWeight: FontWeight.w900,
-                      ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: <Widget>[
+                        Text(
+                          user.username,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 36,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.edit, color: Colors.white70),
+                          onPressed: () {
+                            final TextEditingController nameController = TextEditingController(text: user.username);
+                            showCupertinoDialog(
+                              context: context,
+                              builder: (BuildContext ctx) {
+                                return CupertinoAlertDialog(
+                                  title: const Text('Cambiar Nombre'),
+                                  content: Padding(
+                                    padding: const EdgeInsets.only(top: 16.0),
+                                    child: CupertinoTextField(
+                                      controller: nameController,
+                                      placeholder: 'Nuevo nombre',
+                                      textCapitalization: TextCapitalization.words,
+                                    ),
+                                  ),
+                                  actions: <Widget>[
+                                    CupertinoDialogAction(
+                                      child: const Text('Cancelar'),
+                                      onPressed: () => Navigator.of(ctx).pop(),
+                                    ),
+                                    CupertinoDialogAction(
+                                      child: const Text('Guardar'),
+                                      onPressed: () {
+                                        final String newName = nameController.text.trim();
+                                        if (newName.isNotEmpty && newName != user.username) {
+                                          context.read<AuthBloc>().add(UpdateUsernameEvent(newUsername: newName));
+                                        }
+                                        Navigator.of(ctx).pop();
+                                      },
+                                    ),
+                                  ],
+                                );
+                              },
+                            );
+                          },
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 32),
                     Row(
