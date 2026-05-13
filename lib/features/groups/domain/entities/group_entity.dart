@@ -6,7 +6,9 @@ class GroupEntity extends Equatable {
   final String hostId;
   final String joinCode;
   final List<String> memberNames;
+  final List<String> memberEmails;
   final String createdAt;
+  final Map<String, int> scores;
 
   const GroupEntity({
     required this.id,
@@ -14,8 +16,10 @@ class GroupEntity extends Equatable {
     required this.hostId,
     required this.joinCode,
     required this.memberNames,
+    required this.memberEmails,
     required this.createdAt,
-  });
+    Map<String, int> scores = const <String, int>{},
+  }) : scores = scores;
 
   GroupEntity copyWith({
     String? id,
@@ -23,7 +27,9 @@ class GroupEntity extends Equatable {
     String? hostId,
     String? joinCode,
     List<String>? memberNames,
+    List<String>? memberEmails,
     String? createdAt,
+    Map<String, int>? scores,
   }) {
     return GroupEntity(
       id: id ?? this.id,
@@ -31,7 +37,9 @@ class GroupEntity extends Equatable {
       hostId: hostId ?? this.hostId,
       joinCode: joinCode ?? this.joinCode,
       memberNames: memberNames ?? this.memberNames,
+      memberEmails: memberEmails ?? this.memberEmails,
       createdAt: createdAt ?? this.createdAt,
+      scores: scores ?? this.scores,
     );
   }
 
@@ -42,6 +50,8 @@ class GroupEntity extends Equatable {
         hostId,
         joinCode,
         memberNames,
+        memberEmails,
         createdAt,
+        scores,
       ];
 }

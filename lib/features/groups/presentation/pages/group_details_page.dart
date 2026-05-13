@@ -50,6 +50,9 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final String? currentUserId = context.read<AuthBloc>().state.user?.id;
+    final bool isHost = currentUserId == widget.group.hostId;
+
     return BlocListener<GroupBloc, GroupState>(
       listener: (BuildContext context, GroupState state) {
         if (state.status == GroupStatus.success && state.successMessage != null) {
@@ -61,6 +64,9 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> {
             ),
           );
           if (state.successMessage == 'Grupo eliminado' || state.successMessage == 'Has salido del grupo') {
+            context.pop();
+          } else if (state.successMessage == 'Miembro expulsado del grupo.') {
+            // Si el anfitrión echa a alguien, le llevamos atrás para que recargue la lista de grupos, o puedes dejarlo aquí si tienes un mecanismo de reload interno.
             context.pop();
           }
         }
@@ -186,6 +192,10 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> {
                 child: ListView.builder(
                   itemCount: widget.group.memberNames.length,
                   itemBuilder: (BuildContext context, int index) {
+                    final String memberName = widget.group.memberNames[index];
+                    // Obtenemos el email asociado si existe por índice, si no, lo dejamos vacío
+                    final String memberEmail = (index < widget.group.memberEmails.length) ? widget.group.memberEmails[index] : '';
+
                     return Card(
                       color: Colors.white,
                       shape: RoundedRectangleBorder(
@@ -194,17 +204,76 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> {
                       child: ListTile(
                         leading: const Icon(Icons.person, color: Colors.purple),
                         title: Text(
-                          widget.group.memberNames[index],
+                          memberName,
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 18,
                           ),
                         ),
+                        trailing: (isHost && memberName != context.read<AuthBloc>().state.user?.username)
+                            ? IconButton(
+                                icon: const Icon(Icons.person_remove, color: Colors.red),
+                                onPressed: () {
+                                  showCupertinoDialog(
+                                    context: context,
+                                    builder: (BuildContext ctx) => CupertinoAlertDialog(
+                                      title: const Text('Expulsar jugador'),
+                                      content: Text('¿Seguro que quieres expulsar a $memberName del grupo?'),
+                                      actions: <Widget>[
+                                        CupertinoDialogAction(child: const Text('Cancelar'), onPressed: () => Navigator.pop(ctx)),
+                                        CupertinoDialogAction(
+                                          isDestructiveAction: true,
+                                          child: const Text('Expulsar'),
+                                          onPressed: () {
+                                            Navigator.pop(ctx);
+                                            context.read<GroupBloc>().add(
+                                              KickMemberEvent(
+                                                groupId: widget.group.id,
+                                                memberName: memberName,
+                                                memberEmail: memberEmail,
+                                              ),
+                                            );
+                                          },
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                },
+                              )
+                            : null,
                       ),
                     );
                   },
                 ),
               ),
+              const SizedBox(height: 32),
+              const Text('Ranking del Grupo', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20)),
+              const SizedBox(height: 16),
+              if (widget.group.scores.isEmpty)
+                const Text('Aún no hay puntuaciones. ¡Jugad una partida!', style: TextStyle(color: Colors.white70))
+              else
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: widget.group.scores.length,
+                    itemBuilder: (BuildContext context, int index) {
+                      final List<MapEntry<String, int>> sortedScores = widget.group.scores.entries.toList()
+                        ..sort((MapEntry<String, int> a, MapEntry<String, int> b) => b.value.compareTo(a.value));
+                      final MapEntry<String, int> entry = sortedScores[index];
+                      
+                      return Card(
+                        color: index == 0 ? Colors.amber.shade300 : Colors.white,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
+                        child: ListTile(
+                          leading: index == 0 
+                              ? const Icon(Icons.emoji_events, color: Colors.white, size: 32)
+                              : CircleAvatar(backgroundColor: Colors.grey.shade200, child: Text('#${index + 1}', style: const TextStyle(color: Colors.black87, fontWeight: FontWeight.bold))),
+                          title: Text(entry.key, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: index == 0 ? Colors.white : Colors.black87)),
+                          trailing: Text('${entry.value} pts', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 20, color: index == 0 ? Colors.white : Colors.deepPurple)),
+                        ),
+                      );
+                    },
+                  ),
+                ),
             ],
           ),
         ),

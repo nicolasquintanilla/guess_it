@@ -16,6 +16,8 @@ class GroupBloc extends Bloc<GroupEvent, GroupState> {
     on<JoinGroupEvent>(_onJoinGroup);
     on<DeleteGroupEvent>(_onDeleteGroup);
     on<LeaveGroupEvent>(_onLeaveGroup);
+    on<ClearGroupsEvent>(_onClearGroups);
+    on<KickMemberEvent>(_onKickMember);
   }
 
   Future<void> _onLoadGroups(
@@ -126,6 +128,37 @@ class GroupBloc extends Bloc<GroupEvent, GroupState> {
         state.copyWith(
           status: GroupStatus.success,
           successMessage: 'Has salido del grupo',
+        ),
+      );
+    } catch (e) {
+      emit(
+        state.copyWith(
+          status: GroupStatus.error,
+          errorMessage: e.toString(),
+        ),
+      );
+    }
+  }
+
+  void _onClearGroups(
+    ClearGroupsEvent event,
+    Emitter<GroupState> emit,
+  ) {
+    emit(const GroupState());
+  }
+
+  Future<void> _onKickMember(
+    KickMemberEvent event,
+    Emitter<GroupState> emit,
+  ) async {
+    emit(state.copyWith(status: GroupStatus.loading));
+    try {
+      await repository.kickMember(event.groupId, event.memberName, event.memberEmail);
+      add(const LoadGroupsEvent()); // Recargamos para ver la lista actualizada
+      emit(
+        state.copyWith(
+          status: GroupStatus.success,
+          successMessage: 'Miembro expulsado del grupo.',
         ),
       );
     } catch (e) {

@@ -5,23 +5,46 @@ import 'package:guess_it/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:guess_it/features/auth/presentation/bloc/auth_event.dart';
 import 'package:guess_it/features/auth/presentation/bloc/auth_state.dart';
 import 'package:guess_it/core/widgets/premium_scaffold.dart';
+import 'package:guess_it/features/groups/presentation/bloc/group_bloc.dart';
+import 'package:guess_it/features/groups/presentation/bloc/group_event.dart';
 
-class HubPage extends StatelessWidget {
+class HubPage extends StatefulWidget {
   @override
   final Key? key;
 
   const HubPage({Key? key}) : key = key;
 
   @override
+  State<HubPage> createState() {
+    return _HubPageState();
+  }
+}
+
+class _HubPageState extends State<HubPage> {
+  @override
+  void initState() {
+    super.initState();
+    context.read<AuthBloc>().add(const ReloadUserEvent());
+  }
+
+  @override
   Widget build(BuildContext context) {
     return PremiumScaffold(
       title: '', // El título lo pondremos en el encabezado personalizado
       showBackArrow: false,
+      helpText: '¡Te damos la bienvenida al centro de mando de Guess It!\n\n'
+          'Desde aquí puedes acceder a todas las funciones del juego:\n\n'
+          '🎮 Empezar Partida: Configura los equipos, elige cuántas palabras queréis adivinar y lánzate a jugar.\n\n'
+          '👥 Mis Grupos: Crea grupos cerrados con tus amigos. Cada vez que juguéis usando un grupo, se generará una clasificación interna para ver quién es el mejor de la pandilla.\n\n'
+          '🌍 Ranking Global: Compite contra jugadores de todo el mundo. Las victorias que consigas en tus partidas se sumarán aquí.\n\n'
+          '📖 Cómo Jugar: Repasa las reglas de las tres rondas del juego para que nadie haga trampas.\n\n'
+          '👤 Mi Cuenta: Personaliza tu nombre, cambia tu avatar y revisa tu eficacia de victorias.',
       actions: <Widget>[
         IconButton(
           icon: const Icon(Icons.logout, color: Colors.white),
           tooltip: 'Cerrar Sesión',
           onPressed: () {
+            context.read<GroupBloc>().add(const ClearGroupsEvent());
             context.read<AuthBloc>().add(const LogoutEvent());
             context.go('/');
           },
@@ -29,6 +52,18 @@ class HubPage extends StatelessWidget {
       ],
       child: BlocBuilder<AuthBloc, AuthState>(
         builder: (BuildContext context, AuthState state) {
+          final Map<String, IconData> availableAvatars = const <String, IconData>{
+            'default': Icons.account_circle,
+            'robot': Icons.smart_toy,
+            'alien': Icons.adb,
+            'ninja': Icons.visibility,
+            'pet': Icons.pets,
+            'rocket': Icons.rocket_launch,
+            'gamepad': Icons.sports_esports,
+            'diamond': Icons.diamond,
+            'star': Icons.star,
+            'fire': Icons.local_fire_department,
+          };
           final bool isGuest = state.user?.isGuest ?? true;
           final String displayUsername = isGuest
               ? 'Invitado'
@@ -46,11 +81,11 @@ class HubPage extends StatelessWidget {
                   // 1. Encabezado de Bienvenida
                   Row(
                     children: <Widget>[
-                      const CircleAvatar(
+                      CircleAvatar(
                         radius: 32,
                         backgroundColor: Colors.white24,
                         child: Icon(
-                          Icons.person,
+                          state.user != null ? (availableAvatars[state.user!.avatar] ?? Icons.account_circle) : Icons.account_circle,
                           size: 36,
                           color: Colors.white,
                         ),
@@ -59,18 +94,10 @@ class HubPage extends StatelessWidget {
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: <Widget>[
-                            const Text(
-                              '¡Guess It!',
-                              style: TextStyle(
-                                fontSize: 16,
-                                color: Colors.white70,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
                             Text(
-                              '$displayUsername',
+                              displayUsername,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: const TextStyle(

@@ -33,4 +33,9 @@ class GroupRepositoryImpl implements GroupRepository {
   Future<void> leaveGroup(String groupId) async {
     return await remoteDataSource.leaveGroup(groupId);
   }
+
+  @override
+  Future<void> kickMember(String groupId, String memberName, String memberEmail) async {
+    return await remoteDataSource.kickMember(groupId, memberName, memberEmail);
+  }
 }

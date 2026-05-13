@@ -6,4 +6,5 @@ abstract class GroupRepository {
   Future<List<GroupEntity>> getUserGroups();
   Future<void> deleteGroup(String groupId);
   Future<void> leaveGroup(String groupId);
+  Future<void> kickMember(String groupId, String memberName, String memberEmail);
 }

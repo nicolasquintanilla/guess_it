@@ -14,18 +14,16 @@ class InitializeGameEvent extends GameEvent {
   final int targetWordCount;
   final String hostTeamName;
   final int turnDurationSeconds;
+  final String? groupId;
 
   const InitializeGameEvent({
-    required List<TeamEntity> initialTeams,
-    required List<String> userWords,
-    required int targetWordCount,
-    required String hostTeamName,
-    required int turnDurationSeconds,
-  })  : initialTeams = initialTeams,
-        userWords = userWords,
-        targetWordCount = targetWordCount,
-        hostTeamName = hostTeamName,
-        turnDurationSeconds = turnDurationSeconds;
+    required this.initialTeams,
+    required this.userWords,
+    required this.targetWordCount,
+    required this.hostTeamName,
+    required this.turnDurationSeconds,
+    this.groupId,
+  });
 
   @override
   List<Object?> get props => <Object?>[
@@ -34,6 +32,7 @@ class InitializeGameEvent extends GameEvent {
         targetWordCount,
         hostTeamName,
         turnDurationSeconds,
+        groupId,
       ];
 }
 
@@ -100,4 +99,11 @@ class ToggleWordReviewEvent extends GameEvent {
 
 class ResetGameEvent extends GameEvent {
   const ResetGameEvent();
+}
+
+class ProcessAiTurnEvent extends GameEvent {
+  const ProcessAiTurnEvent();
+  
+  @override
+  List<Object?> get props => <Object?>[];
 }

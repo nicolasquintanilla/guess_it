@@ -44,6 +44,15 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget build(BuildContext context) {
     return PremiumScaffold(
       title: 'Mi Perfil',
+      helpText: 'Tu Tarjeta de Identificación de Guess It.\n\n'
+          '🎨 Personalización:\n'
+          'Toca tu icono actual en el centro de la pantalla para abrir el selector y elegir el avatar que mejor te represente. Usa el botón del lápiz para modificar tu nombre de usuario.\n\n'
+          '📊 Tus Estadísticas:\n'
+          '• Victorias: Partidas en las que tu equipo quedó en primer lugar.\n'
+          '• Partidas: El total de veces que has jugado.\n'
+          '• Eficacia: Tu porcentaje de éxito (Victorias / Partidas).\n\n'
+          '🚨 Eliminar Cuenta:\n'
+          'Si usas el botón rojo inferior, todos tus datos, estadísticas y grupos se borrarán permanentemente de los servidores.',
       child: BlocConsumer<AuthBloc, AuthState>(
         listener: (BuildContext context, AuthState state) {
           if (state.status == AuthStatus.initial) {
@@ -231,7 +240,7 @@ class _ProfilePageState extends State<ProfilePage> {
                             icon: Icons.emoji_events,
                             iconColor: Colors.amber,
                             value: user.victories.toString(),
-                            title: 'Wins',
+                            title: 'Victorias',
                           ),
                         ),
                         const SizedBox(width: 16),
@@ -240,7 +249,7 @@ class _ProfilePageState extends State<ProfilePage> {
                             icon: Icons.sports_esports,
                             iconColor: Colors.blueAccent,
                             value: user.gamesPlayed.toString(),
-                            title: 'Played',
+                            title: 'Partidas',
                           ),
                         ),
                       ],
@@ -286,7 +295,7 @@ class _ProfilePageState extends State<ProfilePage> {
                             ),
                             const SizedBox(height: 8),
                             const Text(
-                              'Win Rate',
+                              'Eficacia',
                               style: TextStyle(
                                 fontSize: 20,
                                 fontWeight: FontWeight.bold,

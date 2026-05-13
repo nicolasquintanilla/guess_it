@@ -154,6 +154,9 @@ class GamePlayPage extends StatelessWidget {
                     final GameEntity game = state.game!;
 
                     if (state.status == GameStatus.turnReview) {
+                      final TeamEntity activeTeam = game.teams[game.activeTeamIndex];
+                      final bool isAi = activeTeam.name.startsWith('IA Guess It');
+                      
                       final List<String> allPlayedWords = <String>[
                         ...state.turnGuessedWords,
                         ...state.turnSkippedWords,
@@ -199,7 +202,7 @@ class GamePlayPage extends StatelessWidget {
                                       trailing: CupertinoSwitch(
                                         value: isGuessed,
                                         activeColor: Colors.green,
-                                        onChanged: (bool newValue) {
+                                        onChanged: isAi ? null : (bool newValue) { // Bloqueado para la IA
                                           context.read<GameBloc>().add(
                                             ToggleWordReviewEvent(
                                               word: word,
@@ -409,46 +412,58 @@ class GamePlayPage extends StatelessWidget {
                             ),
                           ),
                           const Spacer(),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: <Widget>[
-                              ElevatedButton(
-                                onPressed: () {
-                                  HapticFeedback.heavyImpact();
-                                  context.read<GameBloc>().add(const SkipWordEvent());
-                                },
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.red,
-                                  foregroundColor: Colors.white,
-                                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
+                          if (activeTeam.name == 'IA Guess It')
+                            const Column(
+                              children: <Widget>[
+                                CircularProgressIndicator(color: Colors.white),
+                                SizedBox(height: 16),
+                                Text(
+                                  'La IA está describiendo la palabra...',
+                                  style: TextStyle(color: Colors.white, fontSize: 18),
                                 ),
-                                child: const Text(
-                                  'Pasar',
-                                  style: TextStyle(fontSize: 24),
+                              ],
+                            )
+                          else
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: <Widget>[
+                                ElevatedButton(
+                                  onPressed: () {
+                                    HapticFeedback.heavyImpact();
+                                    context.read<GameBloc>().add(const SkipWordEvent());
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.red,
+                                    foregroundColor: Colors.white,
+                                    padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
+                                  ),
+                                  child: const Text(
+                                    'Pasar',
+                                    style: TextStyle(fontSize: 24),
+                                  ),
                                 ),
-                              ),
-                              ElevatedButton(
-                                onPressed: () {
-                                  HapticFeedback.lightImpact();
-                                  Future<void>.delayed(
-                                    const Duration(milliseconds: 100),
-                                    () {
-                                      HapticFeedback.lightImpact();
-                                    },
-                                  );
-                                  context.read<GameBloc>().add(const CorrectAnswerEvent());
-                                },
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.white,
-                                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
+                                ElevatedButton(
+                                  onPressed: () {
+                                    HapticFeedback.lightImpact();
+                                    Future<void>.delayed(
+                                      const Duration(milliseconds: 100),
+                                      () {
+                                        HapticFeedback.lightImpact();
+                                      },
+                                    );
+                                    context.read<GameBloc>().add(const CorrectAnswerEvent());
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.white,
+                                    padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
+                                  ),
+                                  child: const Text(
+                                    '¡Correcto!',
+                                    style: TextStyle(color: Colors.green, fontSize: 24),
+                                  ),
                                 ),
-                                child: const Text(
-                                  '¡Correcto!',
-                                  style: TextStyle(color: Colors.green, fontSize: 24),
-                                ),
-                              ),
-                            ],
-                          ),
+                              ],
+                            ),
                           const SizedBox(height: 48),
                         ],
                       ],

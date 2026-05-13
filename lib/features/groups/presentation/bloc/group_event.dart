@@ -49,3 +49,22 @@ class LeaveGroupEvent extends GroupEvent {
   @override
   List<Object?> get props => <Object?>[groupId];
 }
+
+class ClearGroupsEvent extends GroupEvent {
+  const ClearGroupsEvent();
+}
+
+class KickMemberEvent extends GroupEvent {
+  final String groupId;
+  final String memberName;
+  final String memberEmail;
+
+  const KickMemberEvent({
+    required this.groupId,
+    required this.memberName,
+    required this.memberEmail,
+  });
+
+  @override
+  List<Object?> get props => <Object?>[groupId, memberName, memberEmail];
+}

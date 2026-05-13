@@ -28,6 +28,7 @@ class GameBloc extends Bloc<GameEvent, GameState> {
     on<TimeUpEvent>(_onTimeUp);
     on<ToggleWordReviewEvent>(_onToggleWordReview);
     on<ResetGameEvent>(_onResetGame);
+    on<ProcessAiTurnEvent>(_onProcessAiTurn);
   }
 
   @override
@@ -54,6 +55,7 @@ class GameBloc extends Bloc<GameEvent, GameState> {
       gameStatus: 'in_progress',
       hostTeamName: event.hostTeamName,
       turnDurationSeconds: event.turnDurationSeconds,
+      groupId: event.groupId,
     );
 
     emit(
@@ -168,30 +170,84 @@ class GameBloc extends Bloc<GameEvent, GameState> {
             if (team.score > maxScore) maxScore = team.score;
           }
 
+        // --- LÓGICA ANTI-TRAMPAS RANKING GLOBAL ---
+        final bool isAiGame = updatedGame.teams.any((TeamEntity t) => t.name.startsWith('IA Guess It'));
+        
+        int totalRegisteredEmails = 0;
+        for (final TeamEntity team in updatedGame.teams) {
+          // Contamos solo correos que tengan formato real
+          totalRegisteredEmails += team.registeredEmails.where((String e) => e.contains('@')).length;
+        }
+        
+        // REGLA DE ORO: Solo si hay 2+ humanos registrados, no hay IA, y hay puntos.
+        if (!isAiGame && totalRegisteredEmails >= 2 && maxScore > 0) {
           for (final TeamEntity team in updatedGame.teams) {
-            final bool isWinner = team.score == maxScore && maxScore > 0;
-            for (final String email in team.registeredEmails) {
-              final String cleanEmail = email.trim().toLowerCase();
-              if (cleanEmail.isEmpty) continue;
+            final bool isWinner = team.score == maxScore;
+            for (final String emailOrName in team.registeredEmails) {
+              final String cleanEmail = emailOrName.trim().toLowerCase();
+              if (!cleanEmail.contains('@')) continue; 
 
               final QuerySnapshot<Map<String, dynamic>> userQuery =
-                  await firestore
+                  await firestore.collection('users').where('email', isEqualTo: cleanEmail).limit(1).get();
+
+              if (userQuery.docs.isNotEmpty) {
+                final DocumentReference<Map<String, dynamic>> userRef = userQuery.docs.first.reference;
+                await userRef.update(<String, dynamic>{
+                  'gamesPlayed': FieldValue.increment(1),
+                  'totalPointsScored': FieldValue.increment(team.score),
+                  if (isWinner) 'victories': FieldValue.increment(1),
+                });
+              }
+            }
+          }
+        }
+
+          // --- LÓGICA DE RANKING DE GRUPO ---
+          if (updatedGame.groupId != null && updatedGame.groupId!.isNotEmpty) {
+            final DocumentReference<Map<String, dynamic>> groupRef = firestore.collection('groups').doc(updatedGame.groupId);
+            final DocumentSnapshot<Map<String, dynamic>> groupDoc = await groupRef.get();
+            
+            if (groupDoc.exists) {
+              final Map<String, dynamic> data = groupDoc.data()!;
+              Map<String, int> groupScores = <String, int>{};
+              
+              // Extraer el mapa de puntuaciones si existe, forzando los tipos correctos
+              if (data.containsKey('scores') && data['scores'] is Map) {
+                final Map<dynamic, dynamic> rawScores = data['scores'] as Map<dynamic, dynamic>;
+                rawScores.forEach((dynamic key, dynamic value) {
+                  if (key is String && value is num) {
+                    groupScores[key] = value.toInt();
+                  }
+                });
+              }
+
+              // Repartir puntos a los miembros que jugaron esta partida
+              for (final TeamEntity team in updatedGame.teams) {
+                final bool isWinner = team.score == maxScore && maxScore > 0;
+                final int pointsToAssign = isWinner ? 3 : 1;
+
+                for (final String email in team.registeredEmails) {
+                  final String cleanEmail = email.trim().toLowerCase();
+                  if (cleanEmail.isEmpty) continue;
+
+                  final QuerySnapshot<Map<String, dynamic>> userQuery = await firestore
                       .collection('users')
                       .where('email', isEqualTo: cleanEmail)
                       .limit(1)
                       .get();
 
-              if (userQuery.docs.isNotEmpty) {
-                final DocumentReference<Map<String, dynamic>> userRef =
-                    userQuery.docs.first.reference;
-                final Map<String, dynamic> updates = <String, dynamic>{
-                  'gamesPlayed': FieldValue.increment(1),
-                };
-                if (isWinner) {
-                  updates['victories'] = FieldValue.increment(1);
+                  if (userQuery.docs.isNotEmpty) {
+                    final String username = userQuery.docs.first.data()['username'] as String? ?? 'Jugador';
+                    
+                    // Sumar puntos al jugador dentro del grupo
+                    final int currentScore = groupScores[username] ?? 0;
+                    groupScores[username] = currentScore + pointsToAssign;
+                  }
                 }
-                await userRef.update(updates);
               }
+              
+              // Guardar el mapa de puntuaciones actualizado en Firebase
+              await groupRef.update(<String, dynamic>{'scores': groupScores});
             }
           }
         } catch (e) {
@@ -264,6 +320,67 @@ class GameBloc extends Bloc<GameEvent, GameState> {
     _turnTimer = Timer.periodic(const Duration(seconds: 1), (Timer timer) {
       add(const TickTimerEvent());
     });
+
+    if (state.game!.teams[state.game!.activeTeamIndex].name.startsWith('IA Guess It')) {
+      add(const ProcessAiTurnEvent());
+    }
+  }
+
+  Future<void> _onProcessAiTurn(
+    ProcessAiTurnEvent event,
+    Emitter<GameState> emit,
+  ) async {
+    final GameEntity? game = state.game;
+    if (game == null) return;
+
+    final String teamName = game.teams[game.activeTeamIndex].name;
+    final int totalWords = state.masterBag.length;
+    int minWords = 1;
+    int maxWords = 2;
+
+    if (teamName.contains('Fácil')) {
+      minWords = (totalWords * 0.05).clamp(1, totalWords).floor();
+      maxWords = (totalWords * 0.10).clamp(minWords, totalWords).ceil();
+    } else if (teamName.contains('Media')) {
+      minWords = (totalWords * 0.10).clamp(1, totalWords).floor();
+      maxWords = (totalWords * 0.20).clamp(minWords, totalWords).ceil();
+    } else if (teamName.contains('Difícil')) {
+      minWords = (totalWords * 0.20).clamp(1, totalWords).floor();
+      maxWords = (totalWords * 0.35).clamp(minWords, totalWords).ceil();
+    }
+
+    final Random rnd = Random();
+    if (isClosed || state.status != GameStatus.playing) return;
+    
+    _turnTimer?.cancel();
+    
+    int wordsToGuess = minWords + rnd.nextInt((maxWords - minWords) + 1);
+    if (wordsToGuess > state.currentBag.length) {
+      wordsToGuess = state.currentBag.length;
+    }
+
+    final List<String> newBag = List<String>.from(state.currentBag);
+    final List<String> newGuessed = List<String>.from(state.turnGuessedWords);
+    final List<String> newSkipped = List<String>.from(state.turnSkippedWords);
+
+    for (int i = 0; i < wordsToGuess; i++) {
+      if (newBag.isEmpty) break;
+      newGuessed.add(newBag.removeAt(0));
+    }
+
+    if (newBag.isNotEmpty && rnd.nextBool()) {
+      newSkipped.add(newBag.removeAt(0));
+    }
+
+    emit(state.copyWith(
+      remainingSeconds: 0,
+      currentWord: '',
+      currentBag: newBag,
+      turnGuessedWords: newGuessed,
+      turnSkippedWords: newSkipped,
+    ));
+
+    add(const TimeUpEvent());
   }
 
   void _onTickTimer(TickTimerEvent event, Emitter<GameState> emit) {

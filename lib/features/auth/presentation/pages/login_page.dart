@@ -115,6 +115,7 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return PremiumScaffold(
+      showBackArrow: false,
       child: BlocConsumer<AuthBloc, AuthState>(
         listenWhen: (AuthState previous, AuthState current) =>
             previous.status != current.status,

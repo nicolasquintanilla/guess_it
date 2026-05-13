@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:guess_it/features/game/domain/entities/game_entity.dart';
 import 'package:guess_it/features/game/domain/entities/team_entity.dart';
 import 'package:guess_it/features/game/presentation/bloc/game_bloc.dart';
+import 'package:guess_it/features/game/presentation/bloc/game_event.dart';
 import 'package:guess_it/features/game/presentation/bloc/game_state.dart';
 import 'package:guess_it/features/ranking/presentation/bloc/ranking_bloc.dart';
 import 'package:guess_it/core/widgets/premium_scaffold.dart';
@@ -39,16 +40,14 @@ class _ScoreboardPageState extends State<ScoreboardPage> {
 
       final int maxScore = game.teams.fold(
         0,
-        (int currentMax, TeamEntity team) => team.score > currentMax ? team.score : currentMax,
+        (int currentMax, TeamEntity team) =>
+            team.score > currentMax ? team.score : currentMax,
       );
 
       final bool isVictory = hostTeam.score == maxScore;
 
       context.read<RankingBloc>().add(
-        SubmitWinEvent(
-          points: hostTeam.score,
-          isVictory: isVictory,
-        ),
+        SubmitWinEvent(points: hostTeam.score, isVictory: isVictory),
       );
     }
   }
@@ -58,84 +57,172 @@ class _ScoreboardPageState extends State<ScoreboardPage> {
     return PremiumScaffold(
       title: 'Resultados',
       showBackArrow: false,
+      helpText:
+          '¡Partida terminada!\n\nAquí puedes ver la puntuación final. Si los jugadores estaban registrados o cargaste un grupo, las estadísticas ya se han actualizado en la nube.',
       child: BlocBuilder<GameBloc, GameState>(
         builder: (BuildContext context, GameState state) {
-          final GameEntity? game = state.game;
-          
-          if (game == null || game.teams.isEmpty) {
-            return const Center(child: Text('Error cargando resultados.', style: TextStyle(color: Colors.white)));
+          if (state.game == null || state.game!.teams.isEmpty) {
+            return const Center(
+              child: Text(
+                'Error cargando resultados.',
+                style: TextStyle(color: Colors.white),
+              ),
+            );
           }
 
-          final List<TeamEntity> sortedTeams = List<TeamEntity>.from(game.teams)
-            ..sort((TeamEntity a, TeamEntity b) => b.score.compareTo(a.score));
-
-          final TeamEntity winner = sortedTeams.first;
-
-          final bool isTie = sortedTeams.length > 1 && sortedTeams[0].score == sortedTeams[1].score;
-          final String resultText = isTie ? '¡Empate en cabeza!' : '¡Gana el equipo ${winner.name}!';
+          final List<TeamEntity> sortedTeams = List<TeamEntity>.from(
+            state.game!.teams,
+          )..sort((TeamEntity a, TeamEntity b) => b.score.compareTo(a.score));
 
           return Center(
             child: SingleChildScrollView(
+              padding: const EdgeInsets.all(24.0),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: <Widget>[
-                  const SizedBox(height: 32),
-                  const Icon(
-                    Icons.emoji_events,
-                    size: 150,
-                    color: Colors.amber,
-                  ),
-                  const SizedBox(height: 24),
-                  Text(
-                    resultText,
-                    style: const TextStyle(fontSize: 32, fontWeight: FontWeight.w900, color: Colors.white),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 32),
                   ListView.builder(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
                     itemCount: sortedTeams.length,
                     itemBuilder: (BuildContext context, int index) {
                       final TeamEntity team = sortedTeams[index];
-                      final bool isWinner = index == 0 && !isTie;
-                      final bool isTiedWinner = isTie && team.score == winner.score;
-                      
-                      return ListTile(
-                        leading: (isWinner || isTiedWinner)
-                            ? const Icon(Icons.star, color: Colors.amber, size: 32)
-                            : Text(
-                                '#${index + 1}', 
-                                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
+
+                      if (index == 0) {
+                        return Container(
+                          margin: const EdgeInsets.only(bottom: 24.0),
+                          padding: const EdgeInsets.all(32.0),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(24.0),
+                            gradient: LinearGradient(
+                              colors: <Color>[
+                                Colors.amber.shade300,
+                                Colors.orange,
+                              ],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            boxShadow: <BoxShadow>[
+                              BoxShadow(
+                                color: Colors.orange.withOpacity(0.5),
+                                blurRadius: 16,
+                                offset: const Offset(0, 8),
                               ),
-                        title: Text(
-                          team.name,
-                          style: TextStyle(
-                            fontSize: 24,
-                            fontWeight: (isWinner || isTiedWinner) ? FontWeight.bold : FontWeight.normal,
-                            color: Colors.white,
+                            ],
                           ),
+                          child: Column(
+                            children: <Widget>[
+                              const Icon(
+                                Icons.emoji_events,
+                                size: 80,
+                                color: Colors.white,
+                              ),
+                              const SizedBox(height: 16),
+                              Text(
+                                team.name,
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(
+                                  fontSize: 32,
+                                  fontWeight: FontWeight.w900,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                '${team.score} Puntos',
+                                style: const TextStyle(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white70,
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      }
+
+                      return Card(
+                        elevation: 4,
+                        margin: const EdgeInsets.only(bottom: 16.0),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16.0),
                         ),
-                        trailing: Text(
-                          '${team.score} pts',
-                          style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
+                        color: Colors.white,
+                        child: ListTile(
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 24.0,
+                            vertical: 8.0,
+                          ),
+                          leading: CircleAvatar(
+                            backgroundColor: Colors.grey.shade200,
+                            child: Text(
+                              '#${index + 1}',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black87,
+                              ),
+                            ),
+                          ),
+                          title: Text(
+                            team.name,
+                            style: const TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black87,
+                            ),
+                          ),
+                          trailing: Text(
+                            '${team.score} pts',
+                            style: const TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w900,
+                              color: Colors.deepPurple,
+                            ),
+                          ),
                         ),
                       );
                     },
                   ),
-                  Padding(
-                    padding: const EdgeInsets.only(top: 48.0, bottom: 32.0, left: 16.0, right: 16.0),
+                  const SizedBox(height: 48),
+                  Container(
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(32),
+                      gradient: const LinearGradient(
+                        colors: <Color>[Colors.purpleAccent, Colors.deepPurple],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      boxShadow: <BoxShadow>[
+                        BoxShadow(
+                          color: Colors.deepPurple.withOpacity(0.4),
+                          blurRadius: 12,
+                          offset: const Offset(0, 6),
+                        ),
+                      ],
+                    ),
                     child: ElevatedButton(
                       onPressed: () {
+                        context.read<GameBloc>().add(const ResetGameEvent());
                         context.go('/hub');
                       },
                       style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 24),
-                        textStyle: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                        backgroundColor: Colors.white,
-                        foregroundColor: Colors.deepPurple,
+                        padding: const EdgeInsets.symmetric(vertical: 20),
+                        backgroundColor: Colors.transparent,
+                        shadowColor: Colors.transparent,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(32),
+                        ),
                       ),
-                      child: const Text('Volver al Hub'),
+                      child: const Text(
+                        'Volver al Inicio',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                          letterSpacing: 1.2,
+                        ),
+                      ),
                     ),
                   ),
                 ],

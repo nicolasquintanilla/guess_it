@@ -8,6 +8,7 @@ class GameEntity extends Equatable {
   final String gameStatus;
   final String hostTeamName;
   final int turnDurationSeconds;
+  final String? groupId;
 
   const GameEntity({
     required List<TeamEntity> teams,
@@ -16,12 +17,14 @@ class GameEntity extends Equatable {
     required String gameStatus,
     required String hostTeamName,
     required int turnDurationSeconds,
+    String? groupId,
   })  : teams = teams,
         currentRound = currentRound,
         activeTeamIndex = activeTeamIndex,
         gameStatus = gameStatus,
         hostTeamName = hostTeamName,
-        turnDurationSeconds = turnDurationSeconds;
+        turnDurationSeconds = turnDurationSeconds,
+        groupId = groupId;
 
   GameEntity copyWith({
     List<TeamEntity>? teams,
@@ -30,6 +33,7 @@ class GameEntity extends Equatable {
     String? gameStatus,
     String? hostTeamName,
     int? turnDurationSeconds,
+    String? groupId,
   }) {
     return GameEntity(
       teams: teams ?? this.teams,
@@ -38,6 +42,7 @@ class GameEntity extends Equatable {
       gameStatus: gameStatus ?? this.gameStatus,
       hostTeamName: hostTeamName ?? this.hostTeamName,
       turnDurationSeconds: turnDurationSeconds ?? this.turnDurationSeconds,
+      groupId: groupId ?? this.groupId,
     );
   }
 
@@ -49,5 +54,6 @@ class GameEntity extends Equatable {
         gameStatus,
         hostTeamName,
         turnDurationSeconds,
+        groupId,
       ];
 }
