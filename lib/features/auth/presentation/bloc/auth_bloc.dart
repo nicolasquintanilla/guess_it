@@ -1,3 +1,5 @@
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 import 'package:hydrated_bloc/hydrated_bloc.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -123,9 +125,8 @@ class AuthBloc extends HydratedBloc<AuthEvent, AuthState> {
         errorMessage: failure.message,
       )),
       (user) {
-        try {
-          FirebaseAuth.instance.currentUser?.sendEmailVerification();
-        } catch (_) {}
+        // Se eliminó la verificación de Firebase de aquí.
+        // El correo de Bienvenida se envía en el AuthRemoteDataSource.
         emit(state.copyWith(
           status: AuthStatus.authenticated,
           user: user,
@@ -179,6 +180,34 @@ class AuthBloc extends HydratedBloc<AuthEvent, AuthState> {
     try {
       final FirebaseFirestore firestore = FirebaseFirestore.instance;
 
+      // Obtener datos del usuario autenticado para EmailJS antes de borrarlo
+      final User? firebaseUser = FirebaseAuth.instance.currentUser;
+      final String email = firebaseUser?.email ?? '';
+      final String username = firebaseUser?.displayName ?? user.username;
+
+      // 1. ENVÍO DE CORREO DE DESPEDIDA VÍA EMAILJS
+      if (email.isNotEmpty) {
+        try {
+          final Uri url = Uri.parse('https://api.emailjs.com/api/v1.0/email/send');
+          await http.post(
+            url,
+            headers: <String, String>{'Content-Type': 'application/json'},
+            body: json.encode(<String, dynamic>{
+              'service_id': 'service_u1e8bsh',
+              'template_id': 'template_zajudvl',
+              'user_id': '--bZrse3IJidU83YP',
+              'template_params': <String, dynamic>{
+                'to_name': username,
+                'to_email': email,
+              },
+            }),
+          );
+        } catch (e) {
+          print('Error EmailJS en BLoC: $e');
+        }
+      }
+
+      // 2. LIMPIEZA DE DATOS EN FIRESTORE
       final QuerySnapshot<Map<String, dynamic>> hostedGroups = await firestore
           .collection('groups')
           .where('hostId', isEqualTo: user.id)
@@ -200,7 +229,7 @@ class AuthBloc extends HydratedBloc<AuthEvent, AuthState> {
       }
 
       await firestore.collection('users').doc(user.id).delete();
-      await FirebaseAuth.instance.currentUser?.delete();
+      await firebaseUser?.delete();
 
       emit(AuthState.initial());
     } catch (e) {
