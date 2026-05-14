@@ -1,4 +1,4 @@
-import 'package:emailjs/emailjs.dart' as emailjs;
+import 'package:guess_it/core/services/email_service.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -21,18 +21,21 @@ class AuthBloc extends HydratedBloc<AuthEvent, AuthState> {
     required RegisterHostUseCase registerHostUseCase,
     required PlayAsGuestUseCase playAsGuestUseCase,
     required LogoutUseCase logoutUseCase,
-  })  : loginHostUseCase = loginHostUseCase,
-        registerHostUseCase = registerHostUseCase,
-        playAsGuestUseCase = playAsGuestUseCase,
-        logoutUseCase = logoutUseCase,
-        super(AuthState.initial()) {
+  }) : loginHostUseCase = loginHostUseCase,
+       registerHostUseCase = registerHostUseCase,
+       playAsGuestUseCase = playAsGuestUseCase,
+       logoutUseCase = logoutUseCase,
+       super(AuthState.initial()) {
     on<LoginHostEvent>(_onLoginHost);
     on<RegisterHostEvent>(_onRegisterHost);
     on<PlayAsGuestEvent>(_onPlayAsGuest);
     on<LogoutEvent>(_onLogout);
     on<ResetPasswordEvent>(_onResetPassword);
     on<ReloadUserEvent>(_onReloadUser);
-    on<ResetAuthStatusEvent>((ResetAuthStatusEvent event, Emitter<AuthState> emit) {
+    on<ResetAuthStatusEvent>((
+      ResetAuthStatusEvent event,
+      Emitter<AuthState> emit,
+    ) {
       emit(state.copyWith(status: AuthStatus.initial));
     });
     on<DeleteAccountEvent>(_onDeleteAccount);
@@ -40,10 +43,14 @@ class AuthBloc extends HydratedBloc<AuthEvent, AuthState> {
     on<UpdateAvatarEvent>(_onUpdateAvatar);
   }
 
-  Future<void> _onReloadUser(ReloadUserEvent event, Emitter<AuthState> emit) async {
+  Future<void> _onReloadUser(
+    ReloadUserEvent event,
+    Emitter<AuthState> emit,
+  ) async {
     if (state.user == null || state.user!.isGuest) return;
     try {
-      final DocumentSnapshot<Map<String, dynamic>> doc = await FirebaseFirestore.instance
+      final DocumentSnapshot<Map<String, dynamic>> doc = await FirebaseFirestore
+          .instance
           .collection('users')
           .doc(state.user!.id)
           .get();
@@ -63,26 +70,43 @@ class AuthBloc extends HydratedBloc<AuthEvent, AuthState> {
     } catch (_) {}
   }
 
-  Future<void> _onResetPassword(ResetPasswordEvent event, Emitter<AuthState> emit) async {
+  Future<void> _onResetPassword(
+    ResetPasswordEvent event,
+    Emitter<AuthState> emit,
+  ) async {
     emit(state.copyWith(status: AuthStatus.loading, errorMessage: null));
     try {
       await FirebaseAuth.instance.sendPasswordResetEmail(email: event.email);
       emit(state.copyWith(status: AuthStatus.passwordResetSent));
     } catch (e) {
-      emit(state.copyWith(status: AuthStatus.error, errorMessage: e.toString()));
+      emit(
+        state.copyWith(status: AuthStatus.error, errorMessage: e.toString()),
+      );
     }
   }
 
-  Future<void> _onLoginHost(LoginHostEvent event, Emitter<AuthState> emit) async {
+  Future<void> _onLoginHost(
+    LoginHostEvent event,
+    Emitter<AuthState> emit,
+  ) async {
     emit(state.copyWith(status: AuthStatus.loading, errorMessage: null));
-    final result = await loginHostUseCase(email: event.email, password: event.password);
+    final result = await loginHostUseCase(
+      email: event.email,
+      password: event.password,
+    );
     result.fold(
-      (failure) => emit(state.copyWith(status: AuthStatus.error, errorMessage: failure.message)),
-      (user) => emit(state.copyWith(status: AuthStatus.authenticated, user: user)),
+      (failure) => emit(
+        state.copyWith(status: AuthStatus.error, errorMessage: failure.message),
+      ),
+      (user) =>
+          emit(state.copyWith(status: AuthStatus.authenticated, user: user)),
     );
   }
 
-  Future<void> _onRegisterHost(RegisterHostEvent event, Emitter<AuthState> emit) async {
+  Future<void> _onRegisterHost(
+    RegisterHostEvent event,
+    Emitter<AuthState> emit,
+  ) async {
     emit(state.copyWith(status: AuthStatus.loading, errorMessage: null));
     final result = await registerHostUseCase(
       username: event.username,
@@ -90,19 +114,32 @@ class AuthBloc extends HydratedBloc<AuthEvent, AuthState> {
       password: event.password,
     );
     result.fold(
-      (failure) => emit(state.copyWith(status: AuthStatus.error, errorMessage: failure.message)),
+      (failure) => emit(
+        state.copyWith(status: AuthStatus.error, errorMessage: failure.message),
+      ),
       (user) {
+        // Fire and forget: Enviar correo de bienvenida
+        EmailService.sendWelcomeEmail(
+          userEmail: event.email,
+          userName: event.username,
+        );
         emit(state.copyWith(status: AuthStatus.authenticated, user: user));
       },
     );
   }
 
-  Future<void> _onPlayAsGuest(PlayAsGuestEvent event, Emitter<AuthState> emit) async {
+  Future<void> _onPlayAsGuest(
+    PlayAsGuestEvent event,
+    Emitter<AuthState> emit,
+  ) async {
     emit(state.copyWith(status: AuthStatus.loading, errorMessage: null));
     final result = await playAsGuestUseCase();
     result.fold(
-      (failure) => emit(state.copyWith(status: AuthStatus.error, errorMessage: failure.message)),
-      (user) => emit(state.copyWith(status: AuthStatus.authenticated, user: user)),
+      (failure) => emit(
+        state.copyWith(status: AuthStatus.error, errorMessage: failure.message),
+      ),
+      (user) =>
+          emit(state.copyWith(status: AuthStatus.authenticated, user: user)),
     );
   }
 
@@ -110,12 +147,17 @@ class AuthBloc extends HydratedBloc<AuthEvent, AuthState> {
     emit(state.copyWith(status: AuthStatus.loading, errorMessage: null));
     final result = await logoutUseCase();
     result.fold(
-      (failure) => emit(state.copyWith(status: AuthStatus.error, errorMessage: failure.message)),
+      (failure) => emit(
+        state.copyWith(status: AuthStatus.error, errorMessage: failure.message),
+      ),
       (_) => emit(AuthState.initial()),
     );
   }
 
-  Future<void> _onDeleteAccount(DeleteAccountEvent event, Emitter<AuthState> emit) async {
+  Future<void> _onDeleteAccount(
+    DeleteAccountEvent event,
+    Emitter<AuthState> emit,
+  ) async {
     emit(state.copyWith(status: AuthStatus.loading, errorMessage: null));
 
     final UserEntity? user = state.user;
@@ -124,41 +166,18 @@ class AuthBloc extends HydratedBloc<AuthEvent, AuthState> {
     try {
       final FirebaseFirestore firestore = FirebaseFirestore.instance;
       final User? firebaseUser = FirebaseAuth.instance.currentUser;
-      final String email = firebaseUser?.email ?? '';
-      final String username = firebaseUser?.displayName ?? user.username;
 
-      // 1. ENVÍO DE CORREO DE DESPEDIDA VÍA EMAILJS (FIRE AND FORGET)
-      // Se ha quitado el "await" para que no bloquee la ejecución inferior.
-      if (email.isNotEmpty) {
-        try {
-          emailjs.send(
-            'service_u1e8bsh',
-            'template_zajudvl',
-            <String, dynamic>{
-              'to_name': username,
-              'to_email': email,
-            },
-            const emailjs.Options(
-              publicKey: '--bZrse3IJidU83YP',
-              privateKey: '',
-            ),
-          ).then((_) {
-            print('DESPEDIDA ENVIADA CON ÉXITO');
-          }).catchError((Object error) {
-            print('Error en EmailJS Despedida: $error');
-          });
-        } catch (e) {
-          print('Excepción lanzando EmailJS: $e');
-        }
-      }
+      final String? email = firebaseUser?.email;
+      final String? username = state.user?.username;
 
-      // 2. LIMPIEZA DE DATOS EN FIRESTORE
+      // LIMPIEZA DE DATOS EN FIRESTORE
       final QuerySnapshot<Map<String, dynamic>> hostedGroups = await firestore
           .collection('groups')
           .where('hostId', isEqualTo: user.id)
           .get();
 
-      for (final QueryDocumentSnapshot<Map<String, dynamic>> doc in hostedGroups.docs) {
+      for (final QueryDocumentSnapshot<Map<String, dynamic>> doc
+          in hostedGroups.docs) {
         await doc.reference.delete();
       }
 
@@ -167,7 +186,8 @@ class AuthBloc extends HydratedBloc<AuthEvent, AuthState> {
           .where('memberNames', arrayContains: user.username)
           .get();
 
-      for (final QueryDocumentSnapshot<Map<String, dynamic>> doc in memberGroups.docs) {
+      for (final QueryDocumentSnapshot<Map<String, dynamic>> doc
+          in memberGroups.docs) {
         await doc.reference.update(<String, Object?>{
           'memberNames': FieldValue.arrayRemove(<String>[user.username]),
         });
@@ -176,35 +196,49 @@ class AuthBloc extends HydratedBloc<AuthEvent, AuthState> {
       await firestore.collection('users').doc(user.id).delete();
       await firebaseUser?.delete();
 
+      // Si el borrado fue exitoso y no era un invitado:
+      if (email != null && username != null && !state.user!.isGuest) {
+        EmailService.sendGoodbyeEmail(userEmail: email, userName: username);
+      }
+
       emit(AuthState.initial());
     } catch (e) {
-      emit(state.copyWith(
-        status: AuthStatus.error,
-        errorMessage: e.toString(),
-      ));
+      emit(
+        state.copyWith(status: AuthStatus.error, errorMessage: e.toString()),
+      );
     }
   }
 
-  Future<void> _onUpdateUsername(UpdateUsernameEvent event, Emitter<AuthState> emit) async {
+  Future<void> _onUpdateUsername(
+    UpdateUsernameEvent event,
+    Emitter<AuthState> emit,
+  ) async {
     if (state.user == null || state.user!.isGuest) return;
     try {
       await FirebaseFirestore.instance
           .collection('users')
           .doc(state.user!.id)
           .update(<String, Object?>{'username': event.newUsername});
-      final UserEntity updatedUser = state.user!.copyWith(username: event.newUsername);
+      final UserEntity updatedUser = state.user!.copyWith(
+        username: event.newUsername,
+      );
       emit(state.copyWith(user: updatedUser));
     } catch (_) {}
   }
 
-  Future<void> _onUpdateAvatar(UpdateAvatarEvent event, Emitter<AuthState> emit) async {
+  Future<void> _onUpdateAvatar(
+    UpdateAvatarEvent event,
+    Emitter<AuthState> emit,
+  ) async {
     if (state.user == null || state.user!.isGuest) return;
     try {
       await FirebaseFirestore.instance
           .collection('users')
           .doc(state.user!.id)
           .update(<String, Object?>{'avatar': event.newAvatar});
-      final UserEntity updatedUser = state.user!.copyWith(avatar: event.newAvatar);
+      final UserEntity updatedUser = state.user!.copyWith(
+        avatar: event.newAvatar,
+      );
       emit(state.copyWith(user: updatedUser));
     } catch (_) {}
   }
