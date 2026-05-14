@@ -74,6 +74,14 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> {
       child: PremiumScaffold(
         title: widget.group.name,
         showBackArrow: true,
+        helpText: 'Detalles del Grupo 👥\n\n'
+            'Aquí puedes ver y gestionar toda la información de esta sala.\n\n'
+            '🔗 Código de Invitación:\n'
+            'Cópialo o envíalo por WhatsApp para que tus amigos se unan.\n\n'
+            '🧑🤝🧑 Integrantes:\n'
+            'Lista de todos los jugadores unidos. El jugador con la corona (👑) es el Anfitrión. Si tú eres el Anfitrión, puedes expulsar a otros jugadores.\n\n'
+            '🏆 Ranking del Grupo:\n'
+            'Puntuaciones acumuladas por los miembros de este grupo en sus partidas conjuntas.',
         actions: <Widget>[
           IconButton(
             icon: const Icon(Icons.exit_to_app, color: Colors.redAccent),
@@ -204,7 +212,7 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> {
                       child: ListTile(
                         leading: const Icon(Icons.person, color: Colors.purple),
                         title: Text(
-                          memberName,
+                          index == 0 ? '👑 $memberName' : memberName,
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 18,

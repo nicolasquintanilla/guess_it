@@ -19,7 +19,11 @@ class HowToPlayPage extends StatelessWidget {
           children: <Widget>[
             const Text(
               'Objetivo del Juego',
-              style: TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: Colors.white),
+              style: TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.w900,
+                color: Colors.white,
+              ),
             ),
             const SizedBox(height: 16),
             const Text(
@@ -28,24 +32,27 @@ class HowToPlayPage extends StatelessWidget {
             ),
             const SizedBox(height: 32),
             const _RuleCard(
-              title: 'Ronda 1: Descripción Libres',
+              title: 'Ronda 1: Descripción Libre',
               icon: Icons.chat_bubble_outline,
               color: Colors.blueAccent,
-              description: 'En esta primera ronda, el jugador que tiene el móvil debe describir la palabra a su equipo usando cualquier frase o pista.\n\n❌ Prohibido: No puedes decir partes de la palabra, no puedes traducirla a otro idioma y no puedes usar la táctica de "empieza por la letra...".',
+              description:
+                  'En esta primera ronda, el jugador que tiene el móvil debe describir la palabra a su equipo usando cualquier frase o pista.\n\n❌ Prohibido: No puedes decir partes de la palabra, no puedes traducirla a otro idioma y no puedes usar la táctica de "empieza por la letra...".',
             ),
             const SizedBox(height: 16),
             const _RuleCard(
               title: 'Ronda 2: Solo Una Palabra',
               icon: Icons.looks_one,
               color: Colors.orangeAccent,
-              description: '¡Cuidado! Se usan las mismas palabras de la ronda anterior, pero ahora el jugador solo puede decir UNA única palabra como pista.\n\n❌ Prohibido: Hacer sonidos extra, gesticular o decir frases. El equipo solo tiene UN intento para adivinarla. Si fallan, debes pasar a la siguiente.',
+              description:
+                  '¡Cuidado! Se usan las mismas palabras de la ronda anterior, pero ahora el jugador solo puede decir UNA única palabra como pista.\n\n❌ Prohibido: Hacer sonidos extra, gesticular o decir frases.',
             ),
             const SizedBox(height: 16),
             const _RuleCard(
-              title: 'Ronda 3: Mímica Pura',
+              title: 'Ronda 3: Mímica',
               icon: Icons.sports_martial_arts,
               color: Colors.pinkAccent,
-              description: 'La prueba final. Con las mismas palabras, ahora debes hacer que tu equipo las adivine usando únicamente tu cuerpo.\n\n❌ Prohibido: Hablar, tararear, hacer efectos de sonido o señalar objetos de la habitación. ¡Solo mímica!',
+              description:
+                  'La prueba final. Con las mismas palabras, ahora debes hacer que tu equipo las adivine usando únicamente tu cuerpo.\n\n❌ Prohibido: Hablar, tararear, hacer efectos de sonido o señalar objetos de la habitación. ¡Solo mímica!',
             ),
             const SizedBox(height: 32),
           ],
@@ -69,11 +76,11 @@ class _RuleCard extends StatelessWidget {
     required String description,
     required IconData icon,
     required Color color,
-  })  : key = key,
-        title = title,
-        description = description,
-        icon = icon,
-        color = color;
+  }) : key = key,
+       title = title,
+       description = description,
+       icon = icon,
+       color = color;
 
   @override
   Widget build(BuildContext context) {
@@ -90,14 +97,21 @@ class _RuleCard extends StatelessWidget {
               children: <Widget>[
                 Container(
                   padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(color: color.withOpacity(0.1), shape: BoxShape.circle),
+                  decoration: BoxDecoration(
+                    color: color.withOpacity(0.1),
+                    shape: BoxShape.circle,
+                  ),
                   child: Icon(icon, color: color, size: 32),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
                   child: Text(
                     title,
-                    style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black87),
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
                   ),
                 ),
               ],
@@ -105,7 +119,12 @@ class _RuleCard extends StatelessWidget {
             const SizedBox(height: 16),
             Text(
               description,
-              style: const TextStyle(fontSize: 15, color: Colors.black54, height: 1.5, fontWeight: FontWeight.w500),
+              style: const TextStyle(
+                fontSize: 15,
+                color: Colors.black54,
+                height: 1.5,
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ],
         ),

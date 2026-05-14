@@ -74,7 +74,9 @@ class GamePlayPage extends StatelessWidget {
       builder: (BuildContext ctx) {
         return CupertinoAlertDialog(
           title: const Text('¿Terminar Partida?'),
-          content: const Text('Si sales ahora, todo el progreso de esta partida se perderá.'),
+          content: const Text(
+            'Si sales ahora, todo el progreso de esta partida se perderá.',
+          ),
           actions: <Widget>[
             CupertinoDialogAction(
               child: const Text('Cancelar'),
@@ -111,7 +113,8 @@ class GamePlayPage extends StatelessWidget {
           if (state.status == GameStatus.loading) {
             titleText = 'Generando Bolsa...';
           } else if (state.game != null) {
-            final TeamEntity activeTeam = state.game!.teams[state.game!.activeTeamIndex];
+            final TeamEntity activeTeam =
+                state.game!.teams[state.game!.activeTeamIndex];
             titleText = 'Turno de: ${activeTeam.name}';
           }
 
@@ -123,19 +126,26 @@ class GamePlayPage extends StatelessWidget {
             ),
           ];
 
-          if (state.remainingSeconds > 0 && state.status != GameStatus.turnReview) {
+          if (state.remainingSeconds > 0 &&
+              state.status != GameStatus.turnReview) {
             final bool isPaused = state.status == GameStatus.paused;
-            actions.insert(0, IconButton(
-              icon: Icon(isPaused ? Icons.play_arrow : Icons.pause, color: Colors.white),
-              iconSize: 32,
-              onPressed: () {
-                if (isPaused) {
-                  context.read<GameBloc>().add(const ResumeGameEvent());
-                } else {
-                  context.read<GameBloc>().add(const PauseGameEvent());
-                }
-              },
-            ));
+            actions.insert(
+              0,
+              IconButton(
+                icon: Icon(
+                  isPaused ? Icons.play_arrow : Icons.pause,
+                  color: Colors.white,
+                ),
+                iconSize: 32,
+                onPressed: () {
+                  if (isPaused) {
+                    context.read<GameBloc>().add(const ResumeGameEvent());
+                  } else {
+                    context.read<GameBloc>().add(const PauseGameEvent());
+                  }
+                },
+              ),
+            );
           }
 
           return PremiumScaffold(
@@ -147,16 +157,20 @@ class GamePlayPage extends StatelessWidget {
               child: Center(
                 child: Builder(
                   builder: (BuildContext context) {
-                    if (state.status == GameStatus.loading || state.game == null) {
-                      return const CircularProgressIndicator(color: Colors.white);
+                    if (state.status == GameStatus.loading ||
+                        state.game == null) {
+                      return const CircularProgressIndicator(
+                        color: Colors.white,
+                      );
                     }
 
                     final GameEntity game = state.game!;
 
                     if (state.status == GameStatus.turnReview) {
-                      final TeamEntity activeTeam = game.teams[game.activeTeamIndex];
-                      final bool isAi = activeTeam.name.startsWith('IA Guess It');
-                      
+                      final TeamEntity activeTeam =
+                          game.teams[game.activeTeamIndex];
+                      final bool isAi = activeTeam.name.startsWith('Gessi');
+
                       final List<String> allPlayedWords = <String>[
                         ...state.turnGuessedWords,
                         ...state.turnSkippedWords,
@@ -186,11 +200,14 @@ class GamePlayPage extends StatelessWidget {
                                 itemCount: allPlayedWords.length,
                                 itemBuilder: (BuildContext context, int index) {
                                   final String word = allPlayedWords[index];
-                                  final bool isGuessed = state.turnGuessedWords.contains(word);
+                                  final bool isGuessed = state.turnGuessedWords
+                                      .contains(word);
 
                                   return Card(
                                     elevation: 2,
-                                    margin: const EdgeInsets.symmetric(vertical: 8.0),
+                                    margin: const EdgeInsets.symmetric(
+                                      vertical: 8.0,
+                                    ),
                                     child: ListTile(
                                       title: Text(
                                         word,
@@ -202,14 +219,17 @@ class GamePlayPage extends StatelessWidget {
                                       trailing: CupertinoSwitch(
                                         value: isGuessed,
                                         activeColor: Colors.green,
-                                        onChanged: isAi ? null : (bool newValue) { // Bloqueado para la IA
-                                          context.read<GameBloc>().add(
-                                            ToggleWordReviewEvent(
-                                              word: word,
-                                              wasGuessed: newValue,
-                                            ),
-                                          );
-                                        },
+                                        onChanged: isAi
+                                            ? null
+                                            : (bool newValue) {
+                                                // Bloqueado para la IA
+                                                context.read<GameBloc>().add(
+                                                  ToggleWordReviewEvent(
+                                                    word: word,
+                                                    wasGuessed: newValue,
+                                                  ),
+                                                );
+                                              },
                                       ),
                                     ),
                                   );
@@ -220,11 +240,19 @@ class GamePlayPage extends StatelessWidget {
                             Center(
                               child: ElevatedButton(
                                 onPressed: () {
-                                  context.read<GameBloc>().add(const SwitchTurnEvent());
+                                  context.read<GameBloc>().add(
+                                    const SwitchTurnEvent(),
+                                  );
                                 },
                                 style: ElevatedButton.styleFrom(
-                                  padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 24),
-                                  textStyle: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 48,
+                                    vertical: 24,
+                                  ),
+                                  textStyle: const TextStyle(
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                   backgroundColor: Colors.white,
                                   foregroundColor: Colors.deepPurple,
                                 ),
@@ -237,7 +265,8 @@ class GamePlayPage extends StatelessWidget {
                       );
                     }
 
-                    final TeamEntity activeTeam = game.teams[game.activeTeamIndex];
+                    final TeamEntity activeTeam =
+                        game.teams[game.activeTeamIndex];
                     final int currentTurnScore = state.turnGuessedWords.length;
 
                     if (state.remainingSeconds == 0) {
@@ -246,7 +275,9 @@ class GamePlayPage extends StatelessWidget {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: <Widget>[
                             Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16.0,
+                              ),
                               child: Text(
                                 _getRoundRulesText(game.currentRound),
                                 style: const TextStyle(
@@ -260,15 +291,23 @@ class GamePlayPage extends StatelessWidget {
                             const SizedBox(height: 16),
                             OutlinedButton.icon(
                               onPressed: () => _showRulesDialog(context),
-                              icon: const Icon(Icons.menu_book, color: Colors.white),
-                              label: const Text('Repasar Reglas', style: TextStyle(color: Colors.white)),
+                              icon: const Icon(
+                                Icons.menu_book,
+                                color: Colors.white,
+                              ),
+                              label: const Text(
+                                'Repasar Reglas',
+                                style: TextStyle(color: Colors.white),
+                              ),
                               style: OutlinedButton.styleFrom(
                                 side: const BorderSide(color: Colors.white),
                               ),
                             ),
                             const SizedBox(height: 32),
                             Card(
-                              margin: const EdgeInsets.symmetric(horizontal: 32.0),
+                              margin: const EdgeInsets.symmetric(
+                                horizontal: 32.0,
+                              ),
                               elevation: 4,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(24),
@@ -288,36 +327,55 @@ class GamePlayPage extends StatelessWidget {
                                     const SizedBox(height: 16),
                                     ListView.builder(
                                       shrinkWrap: true,
-                                      physics: const NeverScrollableScrollPhysics(),
+                                      physics:
+                                          const NeverScrollableScrollPhysics(),
                                       itemCount: game.teams.length,
-                                      itemBuilder: (BuildContext context, int index) {
-                                        final TeamEntity team = game.teams[index];
-                                        final bool isActive = index == game.activeTeamIndex;
-                                        return Padding(
-                                          padding: const EdgeInsets.symmetric(vertical: 4.0),
-                                          child: Row(
-                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                            children: <Widget>[
-                                              Text(
-                                                team.name,
-                                                style: TextStyle(
-                                                  fontSize: 18,
-                                                  fontWeight: isActive ? FontWeight.w900 : FontWeight.w500,
-                                                  color: isActive ? Colors.deepPurpleAccent : Colors.black87,
-                                                ),
+                                      itemBuilder:
+                                          (BuildContext context, int index) {
+                                            final TeamEntity team =
+                                                game.teams[index];
+                                            final bool isActive =
+                                                index == game.activeTeamIndex;
+                                            return Padding(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    vertical: 4.0,
+                                                  ),
+                                              child: Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment
+                                                        .spaceBetween,
+                                                children: <Widget>[
+                                                  Text(
+                                                    team.name,
+                                                    style: TextStyle(
+                                                      fontSize: 18,
+                                                      fontWeight: isActive
+                                                          ? FontWeight.w900
+                                                          : FontWeight.w500,
+                                                      color: isActive
+                                                          ? Colors
+                                                                .deepPurpleAccent
+                                                          : Colors.black87,
+                                                    ),
+                                                  ),
+                                                  Text(
+                                                    '${team.score} pts',
+                                                    style: TextStyle(
+                                                      fontSize: 18,
+                                                      fontWeight: isActive
+                                                          ? FontWeight.w900
+                                                          : FontWeight.w500,
+                                                      color: isActive
+                                                          ? Colors
+                                                                .deepPurpleAccent
+                                                          : Colors.black87,
+                                                    ),
+                                                  ),
+                                                ],
                                               ),
-                                              Text(
-                                                '${team.score} pts',
-                                                style: TextStyle(
-                                                  fontSize: 18,
-                                                  fontWeight: isActive ? FontWeight.w900 : FontWeight.w500,
-                                                  color: isActive ? Colors.deepPurpleAccent : Colors.black87,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        );
-                                      },
+                                            );
+                                          },
                                     ),
                                   ],
                                 ),
@@ -326,14 +384,22 @@ class GamePlayPage extends StatelessWidget {
                             const SizedBox(height: 48),
                             ElevatedButton(
                               onPressed: () {
-                                context.read<GameBloc>().add(const StartTurnEvent());
+                                context.read<GameBloc>().add(
+                                  const StartTurnEvent(),
+                                );
                               },
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.white,
                                 foregroundColor: Colors.deepPurple,
                                 elevation: 8,
-                                padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 24),
-                                textStyle: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 48,
+                                  vertical: 24,
+                                ),
+                                textStyle: const TextStyle(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                               child: const Text('Empezar Turno'),
                             ),
@@ -365,7 +431,9 @@ class GamePlayPage extends StatelessWidget {
                         const Spacer(),
                         if (state.status == GameStatus.paused) ...<Widget>[
                           Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 24.0,
+                            ),
                             child: const FittedBox(
                               fit: BoxFit.scaleDown,
                               child: Text(
@@ -382,7 +450,9 @@ class GamePlayPage extends StatelessWidget {
                           const Spacer(),
                         ] else ...<Widget>[
                           Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 32.0),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 32.0,
+                            ),
                             child: Container(
                               width: double.infinity,
                               padding: const EdgeInsets.all(48.0),
@@ -419,7 +489,10 @@ class GamePlayPage extends StatelessWidget {
                                 SizedBox(height: 16),
                                 Text(
                                   'La IA está describiendo la palabra...',
-                                  style: TextStyle(color: Colors.white, fontSize: 18),
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 18,
+                                  ),
                                 ),
                               ],
                             )
@@ -430,12 +503,17 @@ class GamePlayPage extends StatelessWidget {
                                 ElevatedButton(
                                   onPressed: () {
                                     HapticFeedback.heavyImpact();
-                                    context.read<GameBloc>().add(const SkipWordEvent());
+                                    context.read<GameBloc>().add(
+                                      const SkipWordEvent(),
+                                    );
                                   },
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: Colors.red,
                                     foregroundColor: Colors.white,
-                                    padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 32,
+                                      vertical: 24,
+                                    ),
                                   ),
                                   child: const Text(
                                     'Pasar',
@@ -451,15 +529,23 @@ class GamePlayPage extends StatelessWidget {
                                         HapticFeedback.lightImpact();
                                       },
                                     );
-                                    context.read<GameBloc>().add(const CorrectAnswerEvent());
+                                    context.read<GameBloc>().add(
+                                      const CorrectAnswerEvent(),
+                                    );
                                   },
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: Colors.white,
-                                    padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 32,
+                                      vertical: 24,
+                                    ),
                                   ),
                                   child: const Text(
                                     '¡Correcto!',
-                                    style: TextStyle(color: Colors.green, fontSize: 24),
+                                    style: TextStyle(
+                                      color: Colors.green,
+                                      fontSize: 24,
+                                    ),
                                   ),
                                 ),
                               ],

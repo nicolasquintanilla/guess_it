@@ -49,6 +49,7 @@ dependencies:
   url_launcher: ^6.3.2
   flutter_native_splash: ^2.4.7
   http: ^1.6.0
+  emailjs: ^4.0.0
 
 dev_dependencies:
   flutter_test:
@@ -60,6 +61,7 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.14.4
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -77,8 +79,9 @@ flutter:
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
 
-assets:
-    - assets/logo.png
+  assets:
+    - assets/icon/
+    - assets/avatars/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
@@ -106,9 +109,22 @@ assets:
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
   
+
+# 1. Configuración de la Pantalla de Carga (Splash Screen)
+# Usamos la imagen con márgenes ESTRECHOS para que el logo se vea grande
 flutter_native_splash:
-  color: "#673AB7" 
-  image: assets/logo.png
-  android_12:
-    image: assets/logo.png
-    color: "#673AB7"
+  color: "#3F134A" # El color morado oscuro del fondo del logo
+  image: "assets/icon/logo_splash.png"
+  android: true
+  ios: true
+
+# 2. Configuración del Icono de la App (Launcher Icon)
+# Usamos la imagen con márgenes ANCHOS para que Android no la corte
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/icon/logo_icono.png"
+  min_sdk_android: 21
+  # Esto asegura que Android moderno no corte el icono
+  adaptive_icon_background: "#3F134A"
+  adaptive_icon_foreground: "assets/icon/logo_icono.png"

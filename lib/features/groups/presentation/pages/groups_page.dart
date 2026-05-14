@@ -85,10 +85,10 @@ class _GroupsPageState extends State<GroupsPage> {
               child: const Text('Crear'),
               onPressed: () {
                 context.read<GroupBloc>().add(
-                      CreateGroupEvent(
-                        groupName: _createGroupController.text.trim(),
-                      ),
-                    );
+                  CreateGroupEvent(
+                    groupName: _createGroupController.text.trim(),
+                  ),
+                );
                 Navigator.of(ctx).pop();
               },
             ),
@@ -123,10 +123,10 @@ class _GroupsPageState extends State<GroupsPage> {
               child: const Text('Unirse'),
               onPressed: () {
                 context.read<GroupBloc>().add(
-                      JoinGroupEvent(
-                        joinCode: _joinGroupController.text.trim().toUpperCase(),
-                      ),
-                    );
+                  JoinGroupEvent(
+                    joinCode: _joinGroupController.text.trim().toUpperCase(),
+                  ),
+                );
                 Navigator.of(ctx).pop();
               },
             ),
@@ -145,6 +145,15 @@ class _GroupsPageState extends State<GroupsPage> {
         return PremiumScaffold(
           title: 'Mis Grupos',
           showBackArrow: true,
+          helpText:
+              '¡Tu Zona de Juego Privada! 🚀\n\n'
+              'Aquí puedes gestionar los grupos fijos para jugar con tus amigos.\n\n'
+              '👑 Crear un Grupo:\n'
+              'Genera una sala permanente. Como Anfitrión, tendrás el control total sobre la sala.\n\n'
+              '🤝 Unirse con Código:\n'
+              'Introduce el PIN de 6 letras que te comparta un amigo para unirte a su grupo.\n\n'
+              '📋 Tus Grupos:\n'
+              'Accede rápidamente a tus salas habituales. Si eres el Anfitrión, podrás editarlas o eliminarlas.',
           floatingActionButton: isGuest
               ? null
               : Column(
@@ -198,13 +207,15 @@ class _GroupsPageState extends State<GroupsPage> {
                   ),
                 )
               : BlocConsumer<GroupBloc, GroupState>(
-                  listenWhen: (GroupState previous, GroupState current) => previous.status != current.status,
+                  listenWhen: (GroupState previous, GroupState current) =>
+                      previous.status != current.status,
                   listener: (BuildContext context, GroupState state) {
                     if (state.status == GroupStatus.error) {
                       _showErrorDialog(
                         context,
                         'Error',
-                        state.errorMessage ?? 'Ha ocurrido un error inesperado.',
+                        state.errorMessage ??
+                            'Ha ocurrido un error inesperado.',
                       );
                     } else if (state.status == GroupStatus.success) {
                       _createGroupController.clear();
@@ -212,7 +223,8 @@ class _GroupsPageState extends State<GroupsPage> {
                     }
                   },
                   builder: (BuildContext context, GroupState state) {
-                    if (state.status == GroupStatus.loading && state.groups.isEmpty) {
+                    if (state.status == GroupStatus.loading &&
+                        state.groups.isEmpty) {
                       return const Center(
                         child: CircularProgressIndicator(color: Colors.white),
                       );
@@ -223,11 +235,7 @@ class _GroupsPageState extends State<GroupsPage> {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: <Widget>[
-                            Icon(
-                              Icons.groups,
-                              color: Colors.white,
-                              size: 120,
-                            ),
+                            Icon(Icons.groups, color: Colors.white, size: 120),
                             SizedBox(height: 24),
                             Text(
                               'Tus grupos aparecerán aquí',
@@ -265,7 +273,9 @@ class _GroupsPageState extends State<GroupsPage> {
                                 fontSize: 22,
                               ),
                             ),
-                            subtitle: Text('${group.memberNames.length} miembros'),
+                            subtitle: Text(
+                              '${group.memberNames.length} miembros',
+                            ),
                             trailing: Chip(
                               label: Text(group.joinCode.toUpperCase()),
                               backgroundColor: Colors.green,

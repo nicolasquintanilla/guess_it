@@ -32,7 +32,8 @@ class _HubPageState extends State<HubPage> {
     return PremiumScaffold(
       title: '', // El título lo pondremos en el encabezado personalizado
       showBackArrow: false,
-      helpText: '¡Te damos la bienvenida al centro de mando de Guess It!\n\n'
+      helpText:
+          '¡Te damos la bienvenida al centro de mando de Guess It!\n\n'
           'Desde aquí puedes acceder a todas las funciones del juego:\n\n'
           '🎮 Empezar Partida: Configura los equipos, elige cuántas palabras queréis adivinar y lánzate a jugar.\n\n'
           '👥 Mis Grupos: Crea grupos cerrados con tus amigos. Cada vez que juguéis usando un grupo, se generará una clasificación interna para ver quién es el mejor de la pandilla.\n\n'
@@ -52,17 +53,46 @@ class _HubPageState extends State<HubPage> {
       ],
       child: BlocBuilder<AuthBloc, AuthState>(
         builder: (BuildContext context, AuthState state) {
-          final Map<String, IconData> availableAvatars = const <String, IconData>{
-            'default': Icons.account_circle,
-            'robot': Icons.smart_toy,
-            'alien': Icons.adb,
-            'ninja': Icons.visibility,
-            'pet': Icons.pets,
-            'rocket': Icons.rocket_launch,
-            'gamepad': Icons.sports_esports,
-            'diamond': Icons.diamond,
-            'star': Icons.star,
-            'fire': Icons.local_fire_department,
+          final Map<String, String> availableAvatars = const <String, String>{
+            'arana': 'assets/avatars/arana.png',
+            'astronauta': 'assets/avatars/astronauta.png',
+            'auto-de-choque': 'assets/avatars/auto-de-choque.png',
+            'buho': 'assets/avatars/buho.png',
+            'cangrejo': 'assets/avatars/cangrejo.png',
+            'casco-romano': 'assets/avatars/casco-romano.png',
+            'cerdo': 'assets/avatars/cerdo.png',
+            'cerezas': 'assets/avatars/cerezas.png',
+            'chile': 'assets/avatars/chile.png',
+            'coche-rc': 'assets/avatars/coche-rc.png',
+            'cohete': 'assets/avatars/cohete.png',
+            'craneo': 'assets/avatars/craneo.png',
+            'dinosaurio': 'assets/avatars/dinosaurio.png',
+            'elefante': 'assets/avatars/elefante.png',
+            'extraterrestre': 'assets/avatars/extraterrestre.png',
+            'flecha': 'assets/avatars/flecha.png',
+            'futbol': 'assets/avatars/futbol.png',
+            'gato': 'assets/avatars/gato.png',
+            'gorila': 'assets/avatars/gorila.png',
+            'hueso': 'assets/avatars/hueso.png',
+            'juego-de-azar': 'assets/avatars/juego-de-azar.png',
+            'leon': 'assets/avatars/leon.png',
+            'momia': 'assets/avatars/momia.png',
+            'ninja': 'assets/avatars/ninja.png',
+            'ojo': 'assets/avatars/ojo.png',
+            'ornitorrinco': 'assets/avatars/ornitorrinco.png',
+            'oveja': 'assets/avatars/oveja.png',
+            'pistola-de-agua': 'assets/avatars/pistola-de-agua.png',
+            'pollo': 'assets/avatars/pollo.png',
+            'robot': 'assets/avatars/robot.png',
+            'rosquilla': 'assets/avatars/rosquilla.png',
+            'saturno': 'assets/avatars/saturno.png',
+            'serpiente': 'assets/avatars/serpiente.png',
+            'shuriken': 'assets/avatars/shuriken.png',
+            'soldado': 'assets/avatars/soldado.png',
+            'tallarines': 'assets/avatars/tallarines.png',
+            'tortuga': 'assets/avatars/tortuga.png',
+            'trofeo': 'assets/avatars/trofeo.png',
+            'vaso': 'assets/avatars/vaso.png',
           };
           final bool isGuest = state.user?.isGuest ?? true;
           final String displayUsername = isGuest
@@ -81,14 +111,23 @@ class _HubPageState extends State<HubPage> {
                   // 1. Encabezado de Bienvenida
                   Row(
                     children: <Widget>[
-                      CircleAvatar(
-                        radius: 32,
-                        backgroundColor: Colors.white24,
-                        child: Icon(
-                          state.user != null ? (availableAvatars[state.user!.avatar] ?? Icons.account_circle) : Icons.account_circle,
-                          size: 36,
-                          color: Colors.white,
-                        ),
+                      Builder(
+                        builder: (context) {
+                          final String avatarKey = state.user?.avatar ?? 'none';
+                          final bool isSimple = avatarKey == 'none' || !availableAvatars.containsKey(avatarKey);
+                          final double avatarSize = 64;
+                          
+                          final Widget avatarWidget = isSimple
+                              ? Icon(Icons.person_pin, color: Colors.grey, size: avatarSize * 0.8)
+                              : Image.asset(availableAvatars[avatarKey]!, fit: BoxFit.contain);
+
+                          return Container(
+                            width: avatarSize,
+                            height: avatarSize,
+                            decoration: null, // Transparente 100%
+                            child: Center(child: avatarWidget),
+                          );
+                        },
                       ),
                       const SizedBox(width: 16),
                       Expanded(

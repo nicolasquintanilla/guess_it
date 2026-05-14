@@ -21,17 +21,48 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-  final Map<String, IconData> _availableAvatars = const <String, IconData>{
-    'default': Icons.account_circle,
-    'robot': Icons.smart_toy,
-    'alien': Icons.adb,
-    'ninja': Icons.visibility,
-    'pet': Icons.pets,
-    'rocket': Icons.rocket_launch,
-    'gamepad': Icons.sports_esports,
-    'diamond': Icons.diamond,
-    'star': Icons.star,
-    'fire': Icons.local_fire_department,
+  static const String _defaultSimpleAvatarKey = 'none'; // Clave para la silueta simple
+
+  final Map<String, String> _availableAvatars = const <String, String>{
+    'arana': 'assets/avatars/arana.png',
+    'astronauta': 'assets/avatars/astronauta.png',
+    'auto-de-choque': 'assets/avatars/auto-de-choque.png',
+    'buho': 'assets/avatars/buho.png',
+    'cangrejo': 'assets/avatars/cangrejo.png',
+    'casco-romano': 'assets/avatars/casco-romano.png',
+    'cerdo': 'assets/avatars/cerdo.png',
+    'cerezas': 'assets/avatars/cerezas.png',
+    'chile': 'assets/avatars/chile.png',
+    'coche-rc': 'assets/avatars/coche-rc.png',
+    'cohete': 'assets/avatars/cohete.png',
+    'craneo': 'assets/avatars/craneo.png',
+    'dinosaurio': 'assets/avatars/dinosaurio.png',
+    'elefante': 'assets/avatars/elefante.png',
+    'extraterrestre': 'assets/avatars/extraterrestre.png',
+    'flecha': 'assets/avatars/flecha.png',
+    'futbol': 'assets/avatars/futbol.png',
+    'gato': 'assets/avatars/gato.png',
+    'gorila': 'assets/avatars/gorila.png',
+    'hueso': 'assets/avatars/hueso.png',
+    'juego-de-azar': 'assets/avatars/juego-de-azar.png',
+    'leon': 'assets/avatars/leon.png',
+    'momia': 'assets/avatars/momia.png',
+    'ninja': 'assets/avatars/ninja.png',
+    'ojo': 'assets/avatars/ojo.png',
+    'ornitorrinco': 'assets/avatars/ornitorrinco.png',
+    'oveja': 'assets/avatars/oveja.png',
+    'pistola-de-agua': 'assets/avatars/pistola-de-agua.png',
+    'pollo': 'assets/avatars/pollo.png',
+    'robot': 'assets/avatars/robot.png',
+    'rosquilla': 'assets/avatars/rosquilla.png',
+    'saturno': 'assets/avatars/saturno.png',
+    'serpiente': 'assets/avatars/serpiente.png',
+    'shuriken': 'assets/avatars/shuriken.png',
+    'soldado': 'assets/avatars/soldado.png',
+    'tallarines': 'assets/avatars/tallarines.png',
+    'tortuga': 'assets/avatars/tortuga.png',
+    'trofeo': 'assets/avatars/trofeo.png',
+    'vaso': 'assets/avatars/vaso.png',
   };
 
   @override
@@ -46,7 +77,7 @@ class _ProfilePageState extends State<ProfilePage> {
       title: 'Mi Perfil',
       helpText: 'Tu Tarjeta de Identificación de Guess It.\n\n'
           '🎨 Personalización:\n'
-          'Toca tu icono actual en el centro de la pantalla para abrir el selector y elegir el avatar que mejor te represente. Usa el botón del lápiz para modificar tu nombre de usuario.\n\n'
+          'Toca tu icono actual en el centro de la pantalla para abrir el selector y elegir el avatar que mejor te represente. La silueta simple es el avatar por defecto. Usa el botón del lápiz para modificar tu nombre de usuario.\n\n'
           '📊 Tus Estadísticas:\n'
           '• Victorias: Partidas en las que tu equipo quedó en primer lugar.\n'
           '• Partidas: El total de veces que has jugado.\n'
@@ -112,18 +143,22 @@ class _ProfilePageState extends State<ProfilePage> {
                         showModalBottomSheet(
                           context: context,
                           backgroundColor: Colors.white,
+                          isScrollControlled: true, // ¡CRÍTICO PARA EL OVERFLOW!
                           shape: const RoundedRectangleBorder(
                             borderRadius: BorderRadius.vertical(top: Radius.circular(32.0)),
                           ),
                           builder: (BuildContext ctx) {
-                            return Padding(
-                              padding: const EdgeInsets.all(24.0),
+                            return SizedBox(
+                              height: MediaQuery.of(context).size.height * 0.75, // Ocupa el 75% de la pantalla
                               child: Column(
-                                mainAxisSize: MainAxisSize.min,
                                 children: <Widget>[
-                                  const Text('Elige tu Avatar', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.deepPurple)),
                                   const SizedBox(height: 24),
-                                  GridView.builder(
+                                  const Text('Elige tu Avatar', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.deepPurple)),
+                                  const SizedBox(height: 16),
+                                  Expanded( // Hace que el GridView ocupe el espacio sobrante y sea scrolleable
+                                    child: SingleChildScrollView(
+                                      padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
+                                      child: GridView.builder(
                                     shrinkWrap: true,
                                     physics: const NeverScrollableScrollPhysics(),
                                     gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -131,26 +166,24 @@ class _ProfilePageState extends State<ProfilePage> {
                                       crossAxisSpacing: 16,
                                       mainAxisSpacing: 16,
                                     ),
-                                    itemCount: _availableAvatars.length,
+                                    itemCount: _availableAvatars.length + 1,
                                     itemBuilder: (BuildContext context, int index) {
-                                      final String key = _availableAvatars.keys.elementAt(index);
-                                      final IconData icon = _availableAvatars[key]!;
+                                      final String key = index == 0 ? _defaultSimpleAvatarKey : _availableAvatars.keys.elementAt(index - 1);
                                       final bool isSelected = user.avatar == key;
                                       return GestureDetector(
                                         onTap: () {
                                           context.read<AuthBloc>().add(UpdateAvatarEvent(newAvatar: key));
                                           Navigator.pop(ctx);
                                         },
-                                        child: Container(
-                                          decoration: BoxDecoration(
-                                            color: isSelected ? Colors.deepPurple.withOpacity(0.2) : Colors.grey.shade100,
-                                            shape: BoxShape.circle,
-                                            border: isSelected ? Border.all(color: Colors.deepPurple, width: 3) : null,
-                                          ),
-                                          child: Icon(icon, size: 40, color: isSelected ? Colors.deepPurple : Colors.grey.shade700),
+                                        child: _renderAvatarImage(
+                                          avatarKey: key, // 'simple' o 'arana'...
+                                          size: 60, // Ajusta el tamaño de la cuadrícula
+                                          isSelected: isSelected,
                                         ),
                                       );
                                     },
+                                  ),
+                                    ),
                                   ),
                                   const SizedBox(height: 24),
                                 ],
@@ -162,15 +195,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       child: Stack(
                         alignment: Alignment.bottomRight,
                         children: <Widget>[
-                          Container(
-                            padding: const EdgeInsets.all(16),
-                            decoration: const BoxDecoration(color: Colors.white24, shape: BoxShape.circle),
-                            child: Icon(
-                              _availableAvatars[user.avatar] ?? Icons.account_circle,
-                              size: 100,
-                              color: Colors.white,
-                            ),
-                          ),
+                          _renderAvatarImage(avatarKey: user.avatar, size: 100),
                           Container(
                             padding: const EdgeInsets.all(8),
                             decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
@@ -349,6 +374,42 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
           );
         },
+      ),
+    );
+  }
+
+  Widget _renderAvatarImage({
+    required String? avatarKey,
+    required double size,
+    bool isSelected = false,
+  }) {
+    // Lógica para el avatar predeterminado 'Simple'
+    if (avatarKey == null || avatarKey == _defaultSimpleAvatarKey || !_availableAvatars.containsKey(avatarKey)) {
+      return Container(
+        width: size,
+        height: size,
+        decoration: null, // ¡Diseño Óptimo: 100% transparente para la silueta!
+        child: Center(
+          child: Icon(Icons.person_pin, size: size * 0.8, color: Colors.grey), // ¡Icono Gris!
+        ),
+      );
+    }
+
+    // Lógica para los 39 avatares PNG neón (Diseño Óptimo)
+    final String imagePath = _availableAvatars[avatarKey]!;
+    return Container(
+      width: size,
+      height: size,
+      decoration: isSelected 
+          ? BoxDecoration(shape: BoxShape.circle, color: Colors.deepPurple.withOpacity(0.2)) // Glow de selección
+          : null, // Sin fondo ni borde para que el neón destaque
+      padding: const EdgeInsets.all(4.0), // Margen para que no se corten los bordes
+      child: Image.asset(
+        imagePath,
+        fit: BoxFit.contain, // Muy importante para que no se corte y respete el PNG
+        errorBuilder: (context, error, stackTrace) => Container(
+          width: size, height: size, color: Colors.red.withOpacity(0.1), child: Icon(Icons.help_outline, color: Colors.white, size: size * 0.5),
+        ),
       ),
     );
   }

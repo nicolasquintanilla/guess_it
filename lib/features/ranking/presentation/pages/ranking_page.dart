@@ -17,6 +17,48 @@ class RankingPage extends StatefulWidget {
 }
 
 class _RankingPageState extends State<RankingPage> {
+  static const Map<String, String> _availableAvatars = <String, String>{
+    'arana': 'assets/avatars/arana.png',
+    'astronauta': 'assets/avatars/astronauta.png',
+    'auto-de-choque': 'assets/avatars/auto-de-choque.png',
+    'buho': 'assets/avatars/buho.png',
+    'cangrejo': 'assets/avatars/cangrejo.png',
+    'casco-romano': 'assets/avatars/casco-romano.png',
+    'cerdo': 'assets/avatars/cerdo.png',
+    'cerezas': 'assets/avatars/cerezas.png',
+    'chile': 'assets/avatars/chile.png',
+    'coche-rc': 'assets/avatars/coche-rc.png',
+    'cohete': 'assets/avatars/cohete.png',
+    'craneo': 'assets/avatars/craneo.png',
+    'dinosaurio': 'assets/avatars/dinosaurio.png',
+    'elefante': 'assets/avatars/elefante.png',
+    'extraterrestre': 'assets/avatars/extraterrestre.png',
+    'flecha': 'assets/avatars/flecha.png',
+    'futbol': 'assets/avatars/futbol.png',
+    'gato': 'assets/avatars/gato.png',
+    'gorila': 'assets/avatars/gorila.png',
+    'hueso': 'assets/avatars/hueso.png',
+    'juego-de-azar': 'assets/avatars/juego-de-azar.png',
+    'leon': 'assets/avatars/leon.png',
+    'momia': 'assets/avatars/momia.png',
+    'ninja': 'assets/avatars/ninja.png',
+    'ojo': 'assets/avatars/ojo.png',
+    'ornitorrinco': 'assets/avatars/ornitorrinco.png',
+    'oveja': 'assets/avatars/oveja.png',
+    'pistola-de-agua': 'assets/avatars/pistola-de-agua.png',
+    'pollo': 'assets/avatars/pollo.png',
+    'robot': 'assets/avatars/robot.png',
+    'rosquilla': 'assets/avatars/rosquilla.png',
+    'saturno': 'assets/avatars/saturno.png',
+    'serpiente': 'assets/avatars/serpiente.png',
+    'shuriken': 'assets/avatars/shuriken.png',
+    'soldado': 'assets/avatars/soldado.png',
+    'tallarines': 'assets/avatars/tallarines.png',
+    'tortuga': 'assets/avatars/tortuga.png',
+    'trofeo': 'assets/avatars/trofeo.png',
+    'vaso': 'assets/avatars/vaso.png',
+  };
+
   @override
   void initState() {
     super.initState();
@@ -24,17 +66,12 @@ class _RankingPageState extends State<RankingPage> {
   }
 
   Widget _buildPodiumAvatar(RankingEntity user, int rank) {
-    final Map<String, IconData> availableAvatars = const <String, IconData>{
-      'default': Icons.account_circle, 'robot': Icons.smart_toy, 'alien': Icons.adb,
-      'ninja': Icons.visibility, 'pet': Icons.pets, 'rocket': Icons.rocket_launch,
-      'gamepad': Icons.sports_esports, 'diamond': Icons.diamond, 'star': Icons.star,
-      'fire': Icons.local_fire_department,
-    };
-    final IconData userIcon = availableAvatars[user.avatar] ?? Icons.person;
+    final String avatarKey = user.avatar;
+    final bool isSimple = avatarKey == 'none' || !_availableAvatars.containsKey(avatarKey);
 
     final bool isFirst = rank == 1;
     final double size = isFirst ? 110.0 : 85.0;
-    
+
     Color podiumColor;
     if (rank == 1) {
       podiumColor = const Color(0xFFFFD700); // Oro
@@ -43,6 +80,15 @@ class _RankingPageState extends State<RankingPage> {
     } else {
       podiumColor = const Color(0xFFCD7F32); // Bronce
     }
+
+    final Widget avatarWidget = isSimple
+        ? Icon(Icons.person_pin, color: Colors.grey, size: size * 0.6)
+        : Image.asset(
+            _availableAvatars[avatarKey]!,
+            width: size * 0.7,
+            height: size * 0.7,
+            fit: BoxFit.contain,
+          );
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -59,8 +105,11 @@ class _RankingPageState extends State<RankingPage> {
                 height: size,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: Colors.white.withOpacity(0.1),
-                  border: Border.all(color: podiumColor, width: isFirst ? 4 : 3),
+                  color: Colors.transparent, // Fondo transparente
+                  border: Border.all(
+                    color: podiumColor,
+                    width: isFirst ? 4 : 3,
+                  ),
                   boxShadow: <BoxShadow>[
                     BoxShadow(
                       color: podiumColor.withOpacity(0.5),
@@ -70,18 +119,25 @@ class _RankingPageState extends State<RankingPage> {
                   ],
                 ),
                 child: Center(
-                  child: Icon(userIcon, size: size * 0.5, color: Colors.white),
+                  child: avatarWidget,
                 ),
               ),
               Positioned(
                 bottom: -10,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: podiumColor,
                     borderRadius: BorderRadius.circular(16),
                     boxShadow: const <BoxShadow>[
-                      BoxShadow(color: Colors.black26, blurRadius: 4, offset: Offset(0, 2)),
+                      BoxShadow(
+                        color: Colors.black26,
+                        blurRadius: 4,
+                        offset: Offset(0, 2),
+                      ),
                     ],
                   ),
                   child: Text(
@@ -112,10 +168,7 @@ class _RankingPageState extends State<RankingPage> {
         const SizedBox(height: 4),
         Text(
           '${user.victories} Victorias',
-          style: TextStyle(
-            color: Colors.white70,
-            fontSize: isFirst ? 14 : 12,
-          ),
+          style: TextStyle(color: Colors.white70, fontSize: isFirst ? 14 : 12),
         ),
       ],
     );
@@ -125,17 +178,20 @@ class _RankingPageState extends State<RankingPage> {
   Widget build(BuildContext context) {
     return PremiumScaffold(
       title: 'Ranking Global',
-      helpText: '¡El Salón de la Fama Global!\n\n'
+      helpText:
+          '¡El Salón de la Fama Global!\n\n'
           'Aquí se muestran los mejores jugadores de Guess It a nivel mundial.\n\n'
           '🏆 ¿Cómo se calculan los puntos?\n'
           'Cada vez que juegas una partida y tu equipo gana, sumas 1 Victoria a tu perfil. Además, todas las palabras que tu equipo adivine correctamente se sumarán a tus "Puntos Totales".\n\n'
           '⚡ El Podio:\n'
           'Los tres jugadores con más victorias aparecerán destacados en lo más alto (Oro, Plata y Bronce).\n\n'
-          'Nota: Solo las partidas jugadas con una cuenta registrada (no como invitado) cuentan para esta clasificación.',
+          'Nota: Solo las partidas jugadas Humanos vs Humanos y mínimo con una cuenta registrada (no como invitado) cuentan para esta clasificación.',
       child: BlocBuilder<RankingBloc, RankingState>(
         builder: (BuildContext context, RankingState state) {
           if (state is RankingInitial || state is RankingLoading) {
-            return const Center(child: CircularProgressIndicator(color: Colors.white));
+            return const Center(
+              child: CircularProgressIndicator(color: Colors.white),
+            );
           } else if (state is RankingError) {
             return Center(
               child: Text(
@@ -145,8 +201,11 @@ class _RankingPageState extends State<RankingPage> {
               ),
             );
           } else if (state is RankingLoaded) {
-            final List<RankingEntity> sortedRankings = List<RankingEntity>.from(state.rankings)
-              ..sort((RankingEntity a, RankingEntity b) => b.rankScore.compareTo(a.rankScore));
+            final List<RankingEntity> sortedRankings =
+                List<RankingEntity>.from(state.rankings)..sort(
+                  (RankingEntity a, RankingEntity b) =>
+                      b.rankScore.compareTo(a.rankScore),
+                );
 
             if (sortedRankings.isEmpty) {
               return const Center(
@@ -176,10 +235,12 @@ class _RankingPageState extends State<RankingPage> {
                             if (top3.length >= 2)
                               Expanded(child: _buildPodiumAvatar(top3[1], 2)),
                             if (top3.isNotEmpty)
-                              Expanded(child: Padding(
-                                padding: const EdgeInsets.only(bottom: 24.0),
-                                child: _buildPodiumAvatar(top3[0], 1),
-                              )),
+                              Expanded(
+                                child: Padding(
+                                  padding: const EdgeInsets.only(bottom: 24.0),
+                                  child: _buildPodiumAvatar(top3[0], 1),
+                                ),
+                              ),
                             if (top3.length >= 3)
                               Expanded(child: _buildPodiumAvatar(top3[2], 3))
                             else if (top3.length == 2)
@@ -193,9 +254,15 @@ class _RankingPageState extends State<RankingPage> {
                     Container(
                       decoration: const BoxDecoration(
                         color: Colors.white,
-                        borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+                        borderRadius: BorderRadius.vertical(
+                          top: Radius.circular(32),
+                        ),
                       ),
-                      padding: const EdgeInsets.only(top: 24, left: 16, right: 16),
+                      padding: const EdgeInsets.only(
+                        top: 24,
+                        left: 16,
+                        right: 16,
+                      ),
                       child: ListView.builder(
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
@@ -212,14 +279,36 @@ class _RankingPageState extends State<RankingPage> {
                             ),
                             color: Colors.white,
                             child: ListTile(
-                              contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                              leading: Text(
-                                '#$rank',
-                                style: const TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black54,
-                                ),
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 20,
+                                vertical: 8,
+                              ),
+                              leading: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: <Widget>[
+                                  Text(
+                                    '#$rank',
+                                    style: const TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.black54,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Container(
+                                    width: 40,
+                                    height: 40,
+                                    decoration: null, // Transparente 100%
+                                    child: Center(
+                                      child: (user.avatar == 'none' || !_availableAvatars.containsKey(user.avatar))
+                                          ? const Icon(Icons.person_pin, color: Colors.grey, size: 32)
+                                          : Image.asset(
+                                              _availableAvatars[user.avatar]!,
+                                              fit: BoxFit.contain,
+                                            ),
+                                    ),
+                                  ),
+                                ],
                               ),
                               title: Text(
                                 user.hostName,
@@ -267,7 +356,7 @@ class _RankingPageState extends State<RankingPage> {
               ),
             );
           }
-          
+
           return const SizedBox.shrink();
         },
       ),

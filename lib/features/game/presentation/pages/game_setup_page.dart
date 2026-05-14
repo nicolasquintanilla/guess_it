@@ -271,13 +271,13 @@ class _GameSetupPageState extends State<GameSetupPage> {
           '¡Prepárate para jugar a Guess It!\n\n'
           'Sigue estos pasos para configurar tu partida perfecta:\n\n'
           '👥 1. Crea los equipos:\n'
-          'Puedes ponerles el nombre que quieras. Por defecto hay dos, pero puedes añadir más.\n\n'
+          'Puedes ponerles el nombre que quieras, pero no el mismo nombre para dos equipos. Por defecto hay dos, pero puedes añadir más.\n\n'
           '✉️ 2. Añade a los jugadores:\n'
           'Escribe el nombre de tus amigos debajo de su equipo y pulsa Enter. ¡Ojo! Si quieres que sus victorias se guarden en su Perfil Global, debes escribir su correo electrónico registrado en lugar de su nombre.\n\n'
           '📥 3. Cargar desde Grupo:\n'
-          'Si ya tienes una "escuadra" guardada en la pestaña de Grupos, pulsa este botón para rellenar los equipos automáticamente. ¡Además, las victorias contarán para el Ranking Interno de ese grupo!\n\n'
-          '🤖 4. Jugar contra la IA:\n'
-          '¿Os falta gente? Activa esta opción y el Equipo 2 será controlado por nuestra Inteligencia Artificial. ¡Cuidado, es muy rápida!\n\n'
+          'Si ya tienes un "grupo" guardado en la pestaña de Grupos, pulsa este botón para rellenar los equipos automáticamente. ¡Además, las victorias contarán para el Ranking Interno de ese grupo!\n\n'
+          '🤖 4. Jugar contra Gessi:\n'
+          '¿Os falta gente? Activa esta opción y el Equipo 2 será controlado por nuestro Bot.\n\n'
           '👑 5. El Anfitrión:\n'
           'No olvides marcar en qué equipo estás tú para que los puntos se sumen a tu cuenta si ganas.',
       child: SingleChildScrollView(
@@ -449,7 +449,8 @@ class _GameSetupPageState extends State<GameSetupPage> {
                 );
               }),
 
-              if (teamControllers.length < 6 && !isAiOpponent) // Si hay IA, no se pueden añadir más de 2 equipos
+              if (teamControllers.length < 6 &&
+                  !isAiOpponent) // Si hay IA, no se pueden añadir más de 2 equipos
                 Padding(
                   padding: const EdgeInsets.only(bottom: 24.0),
                   child: ElevatedButton.icon(
@@ -590,14 +591,14 @@ class _GameSetupPageState extends State<GameSetupPage> {
 
               SwitchListTile(
                 title: const Text(
-                  '¿Jugar contra la IA?',
+                  '¿Jugar contra el Bot?',
                   style: TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 subtitle: const Text(
-                  'El Equipo 2 será controlado por la máquina',
+                  'El Equipo 2 será controlado por Gessi',
                   style: TextStyle(color: Colors.white70),
                 ),
                 value: isAiOpponent,
