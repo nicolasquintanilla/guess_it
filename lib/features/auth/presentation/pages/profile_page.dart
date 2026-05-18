@@ -7,6 +7,8 @@ import 'package:guess_it/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:guess_it/features/auth/presentation/bloc/auth_event.dart';
 import 'package:guess_it/features/auth/presentation/bloc/auth_state.dart';
 import 'package:guess_it/core/widgets/premium_scaffold.dart';
+import 'package:guess_it/features/groups/presentation/bloc/group_bloc.dart';
+import 'package:guess_it/features/groups/presentation/bloc/group_event.dart';
 
 class ProfilePage extends StatefulWidget {
   @override
@@ -21,7 +23,8 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-  static const String _defaultSimpleAvatarKey = 'none'; // Clave para la silueta simple
+  static const String _defaultSimpleAvatarKey =
+      'none'; // Clave para la silueta simple
 
   final Map<String, String> _availableAvatars = const <String, String>{
     'arana': 'assets/avatars/arana.png',
@@ -75,7 +78,8 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget build(BuildContext context) {
     return PremiumScaffold(
       title: 'Mi Perfil',
-      helpText: 'Tu Tarjeta de Identificación de Guess It.\n\n'
+      helpText:
+          'Tu Tarjeta de Identificación de Guess It.\n\n'
           '🎨 Personalización:\n'
           'Toca tu icono actual en el centro de la pantalla para abrir el selector y elegir el avatar que mejor te represente. La silueta simple es el avatar por defecto. Usa el botón del lápiz para modificar tu nombre de usuario.\n\n'
           '📊 Tus Estadísticas:\n'
@@ -143,46 +147,75 @@ class _ProfilePageState extends State<ProfilePage> {
                         showModalBottomSheet(
                           context: context,
                           backgroundColor: Colors.white,
-                          isScrollControlled: true, // ¡CRÍTICO PARA EL OVERFLOW!
+                          isScrollControlled:
+                              true, // ¡CRÍTICO PARA EL OVERFLOW!
                           shape: const RoundedRectangleBorder(
-                            borderRadius: BorderRadius.vertical(top: Radius.circular(32.0)),
+                            borderRadius: BorderRadius.vertical(
+                              top: Radius.circular(32.0),
+                            ),
                           ),
                           builder: (BuildContext ctx) {
                             return SizedBox(
-                              height: MediaQuery.of(context).size.height * 0.75, // Ocupa el 75% de la pantalla
+                              height:
+                                  MediaQuery.of(context).size.height *
+                                  0.75, // Ocupa el 75% de la pantalla
                               child: Column(
                                 children: <Widget>[
                                   const SizedBox(height: 24),
-                                  const Text('Elige tu Avatar', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.deepPurple)),
-                                  const SizedBox(height: 16),
-                                  Expanded( // Hace que el GridView ocupe el espacio sobrante y sea scrolleable
-                                    child: SingleChildScrollView(
-                                      padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
-                                      child: GridView.builder(
-                                    shrinkWrap: true,
-                                    physics: const NeverScrollableScrollPhysics(),
-                                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                                      crossAxisCount: 4,
-                                      crossAxisSpacing: 16,
-                                      mainAxisSpacing: 16,
+                                  const Text(
+                                    'Elige tu Avatar',
+                                    style: TextStyle(
+                                      fontSize: 24,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.deepPurple,
                                     ),
-                                    itemCount: _availableAvatars.length + 1,
-                                    itemBuilder: (BuildContext context, int index) {
-                                      final String key = index == 0 ? _defaultSimpleAvatarKey : _availableAvatars.keys.elementAt(index - 1);
-                                      final bool isSelected = user.avatar == key;
-                                      return GestureDetector(
-                                        onTap: () {
-                                          context.read<AuthBloc>().add(UpdateAvatarEvent(newAvatar: key));
-                                          Navigator.pop(ctx);
-                                        },
-                                        child: _renderAvatarImage(
-                                          avatarKey: key, // 'simple' o 'arana'...
-                                          size: 60, // Ajusta el tamaño de la cuadrícula
-                                          isSelected: isSelected,
-                                        ),
-                                      );
-                                    },
                                   ),
+                                  const SizedBox(height: 16),
+                                  Expanded(
+                                    // Hace que el GridView ocupe el espacio sobrante y sea scrolleable
+                                    child: SingleChildScrollView(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 24.0,
+                                        vertical: 8.0,
+                                      ),
+                                      child: GridView.builder(
+                                        shrinkWrap: true,
+                                        physics:
+                                            const NeverScrollableScrollPhysics(),
+                                        gridDelegate:
+                                            const SliverGridDelegateWithFixedCrossAxisCount(
+                                              crossAxisCount: 4,
+                                              crossAxisSpacing: 16,
+                                              mainAxisSpacing: 16,
+                                            ),
+                                        itemCount: _availableAvatars.length + 1,
+                                        itemBuilder:
+                                            (BuildContext context, int index) {
+                                              final String key = index == 0
+                                                  ? _defaultSimpleAvatarKey
+                                                  : _availableAvatars.keys
+                                                        .elementAt(index - 1);
+                                              final bool isSelected =
+                                                  user.avatar == key;
+                                              return GestureDetector(
+                                                onTap: () {
+                                                  context.read<AuthBloc>().add(
+                                                    UpdateAvatarEvent(
+                                                      newAvatar: key,
+                                                    ),
+                                                  );
+                                                  Navigator.pop(ctx);
+                                                },
+                                                child: _renderAvatarImage(
+                                                  avatarKey:
+                                                      key, // 'simple' o 'arana'...
+                                                  size:
+                                                      60, // Ajusta el tamaño de la cuadrícula
+                                                  isSelected: isSelected,
+                                                ),
+                                              );
+                                            },
+                                      ),
                                     ),
                                   ),
                                   const SizedBox(height: 24),
@@ -198,8 +231,15 @@ class _ProfilePageState extends State<ProfilePage> {
                           _renderAvatarImage(avatarKey: user.avatar, size: 100),
                           Container(
                             padding: const EdgeInsets.all(8),
-                            decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
-                            child: const Icon(Icons.edit, color: Colors.deepPurple, size: 20),
+                            decoration: const BoxDecoration(
+                              color: Colors.white,
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.edit,
+                              color: Colors.deepPurple,
+                              size: 20,
+                            ),
                           ),
                         ],
                       ),
@@ -208,18 +248,27 @@ class _ProfilePageState extends State<ProfilePage> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: <Widget>[
-                        Text(
-                          user.username,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 36,
-                            fontWeight: FontWeight.w900,
+                        const SizedBox(
+                          width: 48,
+                        ), // Espacio fantasma para equilibrar el icono
+                        Expanded(
+                          child: Text(
+                            user.username,
+                            textAlign: TextAlign.center,
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 36,
+                              fontWeight: FontWeight.w900,
+                            ),
                           ),
                         ),
                         IconButton(
                           icon: const Icon(Icons.edit, color: Colors.white70),
                           onPressed: () {
-                            final TextEditingController nameController = TextEditingController(text: user.username);
+                            final TextEditingController nameController =
+                                TextEditingController(text: user.username);
                             showCupertinoDialog(
                               context: context,
                               builder: (BuildContext ctx) {
@@ -229,8 +278,10 @@ class _ProfilePageState extends State<ProfilePage> {
                                     padding: const EdgeInsets.only(top: 16.0),
                                     child: CupertinoTextField(
                                       controller: nameController,
+                                      maxLength: 10,
                                       placeholder: 'Nuevo nombre',
-                                      textCapitalization: TextCapitalization.words,
+                                      textCapitalization:
+                                          TextCapitalization.words,
                                     ),
                                   ),
                                   actions: <Widget>[
@@ -241,9 +292,16 @@ class _ProfilePageState extends State<ProfilePage> {
                                     CupertinoDialogAction(
                                       child: const Text('Guardar'),
                                       onPressed: () {
-                                        final String newName = nameController.text.trim();
-                                        if (newName.isNotEmpty && newName != user.username) {
-                                          context.read<AuthBloc>().add(UpdateUsernameEvent(newUsername: newName));
+                                        final String newName = nameController
+                                            .text
+                                            .trim();
+                                        if (newName.isNotEmpty &&
+                                            newName != user.username) {
+                                          context.read<AuthBloc>().add(
+                                            UpdateUsernameEvent(
+                                              newUsername: newName,
+                                            ),
+                                          );
                                         }
                                         Navigator.of(ctx).pop();
                                       },
@@ -285,9 +343,12 @@ class _ProfilePageState extends State<ProfilePage> {
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(24.0),
                         gradient: LinearGradient(
-                          colors: winRate >= 50 
+                          colors: winRate >= 50
                               ? <Color>[Colors.orangeAccent, Colors.deepOrange]
-                              : <Color>[Colors.blueGrey.shade400, Colors.blueGrey.shade700],
+                              : <Color>[
+                                  Colors.blueGrey.shade400,
+                                  Colors.blueGrey.shade700,
+                                ],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ),
@@ -300,7 +361,10 @@ class _ProfilePageState extends State<ProfilePage> {
                         ],
                       ),
                       child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 32.0, horizontal: 16.0),
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 32.0,
+                          horizontal: 16.0,
+                        ),
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: <Widget>[
@@ -344,7 +408,8 @@ class _ProfilePageState extends State<ProfilePage> {
                             return CupertinoAlertDialog(
                               title: const Text('Eliminar cuenta'),
                               content: const Text(
-                                  '¿Estás seguro? Esta acción borrará todos tus datos y grupos de forma permanente'),
+                                '¿Estás seguro? Esta acción borrará todos tus datos y grupos de forma permanente',
+                              ),
                               actions: <Widget>[
                                 CupertinoDialogAction(
                                   child: const Text('Cancelar'),
@@ -357,7 +422,12 @@ class _ProfilePageState extends State<ProfilePage> {
                                   child: const Text('Eliminar'),
                                   onPressed: () {
                                     Navigator.of(ctx).pop();
-                                    context.read<AuthBloc>().add(const DeleteAccountEvent());
+                                    context.read<GroupBloc>().add(
+                                      const ClearGroupsEvent(),
+                                    );
+                                    context.read<AuthBloc>().add(
+                                      const DeleteAccountEvent(),
+                                    );
                                   },
                                 ),
                               ],
@@ -384,13 +454,19 @@ class _ProfilePageState extends State<ProfilePage> {
     bool isSelected = false,
   }) {
     // Lógica para el avatar predeterminado 'Simple'
-    if (avatarKey == null || avatarKey == _defaultSimpleAvatarKey || !_availableAvatars.containsKey(avatarKey)) {
+    if (avatarKey == null ||
+        avatarKey == _defaultSimpleAvatarKey ||
+        !_availableAvatars.containsKey(avatarKey)) {
       return Container(
         width: size,
         height: size,
         decoration: null, // ¡Diseño Óptimo: 100% transparente para la silueta!
         child: Center(
-          child: Icon(Icons.person_pin, size: size * 0.8, color: Colors.grey), // ¡Icono Gris!
+          child: Icon(
+            Icons.person_pin,
+            size: size * 0.8,
+            color: Colors.grey,
+          ), // ¡Icono Gris!
         ),
       );
     }
@@ -400,15 +476,28 @@ class _ProfilePageState extends State<ProfilePage> {
     return Container(
       width: size,
       height: size,
-      decoration: isSelected 
-          ? BoxDecoration(shape: BoxShape.circle, color: Colors.deepPurple.withOpacity(0.2)) // Glow de selección
+      decoration: isSelected
+          ? BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.deepPurple.withOpacity(0.2),
+            ) // Glow de selección
           : null, // Sin fondo ni borde para que el neón destaque
-      padding: const EdgeInsets.all(4.0), // Margen para que no se corten los bordes
+      padding: const EdgeInsets.all(
+        4.0,
+      ), // Margen para que no se corten los bordes
       child: Image.asset(
         imagePath,
-        fit: BoxFit.contain, // Muy importante para que no se corte y respete el PNG
+        fit: BoxFit
+            .contain, // Muy importante para que no se corte y respete el PNG
         errorBuilder: (context, error, stackTrace) => Container(
-          width: size, height: size, color: Colors.red.withOpacity(0.1), child: Icon(Icons.help_outline, color: Colors.white, size: size * 0.5),
+          width: size,
+          height: size,
+          color: Colors.red.withOpacity(0.1),
+          child: Icon(
+            Icons.help_outline,
+            color: Colors.white,
+            size: size * 0.5,
+          ),
         ),
       ),
     );
@@ -429,30 +518,24 @@ class _StatCard extends StatelessWidget {
     required Color iconColor,
     required String value,
     required String title,
-  })  : key = key,
-        icon = icon,
-        iconColor = iconColor,
-        value = value,
-        title = title;
+  }) : key = key,
+       icon = icon,
+       iconColor = iconColor,
+       value = value,
+       title = title;
 
   @override
   Widget build(BuildContext context) {
     return Card(
       elevation: 4,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(24.0),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24.0)),
       color: Colors.white,
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 24.0, horizontal: 8.0),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
-            Icon(
-              icon,
-              size: 40,
-              color: iconColor,
-            ),
+            Icon(icon, size: 40, color: iconColor),
             const SizedBox(height: 16),
             Text(
               value,

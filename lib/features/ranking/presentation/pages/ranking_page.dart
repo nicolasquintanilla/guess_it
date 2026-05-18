@@ -67,7 +67,8 @@ class _RankingPageState extends State<RankingPage> {
 
   Widget _buildPodiumAvatar(RankingEntity user, int rank) {
     final String avatarKey = user.avatar;
-    final bool isSimple = avatarKey == 'none' || !_availableAvatars.containsKey(avatarKey);
+    final bool isSimple =
+        avatarKey == 'none' || !_availableAvatars.containsKey(avatarKey);
 
     final bool isFirst = rank == 1;
     final double size = isFirst ? 110.0 : 85.0;
@@ -118,9 +119,7 @@ class _RankingPageState extends State<RankingPage> {
                     ),
                   ],
                 ),
-                child: Center(
-                  child: avatarWidget,
-                ),
+                child: Center(child: avatarWidget),
               ),
               Positioned(
                 bottom: -10,
@@ -300,8 +299,16 @@ class _RankingPageState extends State<RankingPage> {
                                     height: 40,
                                     decoration: null, // Transparente 100%
                                     child: Center(
-                                      child: (user.avatar == 'none' || !_availableAvatars.containsKey(user.avatar))
-                                          ? const Icon(Icons.person_pin, color: Colors.grey, size: 32)
+                                      child:
+                                          (user.avatar == 'none' ||
+                                              !_availableAvatars.containsKey(
+                                                user.avatar,
+                                              ))
+                                          ? const Icon(
+                                              Icons.person_pin,
+                                              color: Colors.grey,
+                                              size: 32,
+                                            )
                                           : Image.asset(
                                               _availableAvatars[user.avatar]!,
                                               fit: BoxFit.contain,
@@ -312,6 +319,8 @@ class _RankingPageState extends State<RankingPage> {
                               ),
                               title: Text(
                                 user.hostName,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                                 style: const TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,
@@ -330,13 +339,15 @@ class _RankingPageState extends State<RankingPage> {
                                       color: Colors.deepPurple,
                                     ),
                                   ),
-                                  Text(
-                                    '${user.totalPointsScored} pts',
-                                    style: const TextStyle(
-                                      fontSize: 12,
-                                      color: Colors.black54,
+                                  if (rank <
+                                      4) // Solo muestra puntos si está en el podio (aunque en esta lista siempre es >= 4)
+                                    Text(
+                                      '${user.totalPointsScored} pts',
+                                      style: const TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.black54,
+                                      ),
                                     ),
-                                  ),
                                 ],
                               ),
                             ),

@@ -104,10 +104,13 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
 
     await firestore.collection('users').doc(user.uid).set(<String, dynamic>{
       'username': username,
+      'email': email.toLowerCase(),
       'isGuest': false,
-      'createdAt': createdAt,
       'gamesPlayed': 0,
       'victories': 0,
+      'totalPointsScored': 0,
+      'avatar': 'none',
+      'createdAt': createdAt,
     });
 
     return UserEntity(

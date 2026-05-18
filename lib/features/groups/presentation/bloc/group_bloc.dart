@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:guess_it/features/groups/domain/repositories/group_repository.dart';
 import 'package:guess_it/features/groups/presentation/bloc/group_event.dart';
@@ -6,12 +7,13 @@ import 'package:guess_it/features/groups/domain/entities/group_entity.dart';
 
 class GroupBloc extends Bloc<GroupEvent, GroupState> {
   final GroupRepository repository;
+  StreamSubscription<List<GroupEntity>>? _groupsSubscription;
 
-  GroupBloc({
-    required GroupRepository repository,
-  })  : repository = repository,
-        super(const GroupState()) {
+  GroupBloc({required GroupRepository repository})
+    : repository = repository,
+      super(const GroupState()) {
     on<LoadGroupsEvent>(_onLoadGroups);
+    on<GroupsUpdatedEvent>(_onGroupsUpdated);
     on<CreateGroupEvent>(_onCreateGroup);
     on<JoinGroupEvent>(_onJoinGroup);
     on<DeleteGroupEvent>(_onDeleteGroup);
@@ -26,12 +28,11 @@ class GroupBloc extends Bloc<GroupEvent, GroupState> {
   ) async {
     emit(state.copyWith(status: GroupStatus.loading));
     try {
-      final List<GroupEntity> groups = await repository.getUserGroups();
-      emit(
-        state.copyWith(
-          status: GroupStatus.success,
-          groups: groups,
-        ),
+      await _groupsSubscription?.cancel();
+      _groupsSubscription = repository.getUserGroups().listen(
+        (List<GroupEntity> groups) => add(GroupsUpdatedEvent(groups: groups)),
+        onError: (Object e) =>
+            add(GroupsUpdatedEvent(groups: const <GroupEntity>[])),
       );
     } catch (e) {
       emit(
@@ -42,6 +43,10 @@ class GroupBloc extends Bloc<GroupEvent, GroupState> {
         ),
       );
     }
+  }
+
+  void _onGroupsUpdated(GroupsUpdatedEvent event, Emitter<GroupState> emit) {
+    emit(state.copyWith(status: GroupStatus.success, groups: event.groups));
   }
 
   Future<void> _onCreateGroup(
@@ -60,10 +65,7 @@ class GroupBloc extends Bloc<GroupEvent, GroupState> {
       );
     } catch (e) {
       emit(
-        state.copyWith(
-          status: GroupStatus.error,
-          errorMessage: e.toString(),
-        ),
+        state.copyWith(status: GroupStatus.error, errorMessage: e.toString()),
       );
     }
   }
@@ -84,10 +86,7 @@ class GroupBloc extends Bloc<GroupEvent, GroupState> {
       );
     } catch (e) {
       emit(
-        state.copyWith(
-          status: GroupStatus.error,
-          errorMessage: e.toString(),
-        ),
+        state.copyWith(status: GroupStatus.error, errorMessage: e.toString()),
       );
     }
   }
@@ -108,10 +107,7 @@ class GroupBloc extends Bloc<GroupEvent, GroupState> {
       );
     } catch (e) {
       emit(
-        state.copyWith(
-          status: GroupStatus.error,
-          errorMessage: e.toString(),
-        ),
+        state.copyWith(status: GroupStatus.error, errorMessage: e.toString()),
       );
     }
   }
@@ -132,18 +128,14 @@ class GroupBloc extends Bloc<GroupEvent, GroupState> {
       );
     } catch (e) {
       emit(
-        state.copyWith(
-          status: GroupStatus.error,
-          errorMessage: e.toString(),
-        ),
+        state.copyWith(status: GroupStatus.error, errorMessage: e.toString()),
       );
     }
   }
 
-  void _onClearGroups(
-    ClearGroupsEvent event,
-    Emitter<GroupState> emit,
-  ) {
+  void _onClearGroups(ClearGroupsEvent event, Emitter<GroupState> emit) {
+    _groupsSubscription?.cancel();
+    _groupsSubscription = null;
     emit(const GroupState());
   }
 
@@ -153,7 +145,11 @@ class GroupBloc extends Bloc<GroupEvent, GroupState> {
   ) async {
     emit(state.copyWith(status: GroupStatus.loading));
     try {
-      await repository.kickMember(event.groupId, event.memberName, event.memberEmail);
+      await repository.kickMember(
+        event.groupId,
+        event.memberName,
+        event.memberEmail,
+      );
       add(const LoadGroupsEvent()); // Recargamos para ver la lista actualizada
       emit(
         state.copyWith(
@@ -163,11 +159,14 @@ class GroupBloc extends Bloc<GroupEvent, GroupState> {
       );
     } catch (e) {
       emit(
-        state.copyWith(
-          status: GroupStatus.error,
-          errorMessage: e.toString(),
-        ),
+        state.copyWith(status: GroupStatus.error, errorMessage: e.toString()),
       );
     }
+  }
+
+  @override
+  Future<void> close() async {
+    await _groupsSubscription?.cancel();
+    return super.close();
   }
 }

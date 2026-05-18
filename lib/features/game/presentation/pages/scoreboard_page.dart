@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:guess_it/features/game/domain/entities/game_entity.dart';
 import 'package:guess_it/features/game/domain/entities/team_entity.dart';
 import 'package:guess_it/features/game/presentation/bloc/game_bloc.dart';
 import 'package:guess_it/features/game/presentation/bloc/game_event.dart';
 import 'package:guess_it/features/game/presentation/bloc/game_state.dart';
-import 'package:guess_it/features/ranking/presentation/bloc/ranking_bloc.dart';
 import 'package:guess_it/core/widgets/premium_scaffold.dart';
 
 class ScoreboardPage extends StatefulWidget {
@@ -25,31 +23,6 @@ class _ScoreboardPageState extends State<ScoreboardPage> {
   @override
   void initState() {
     super.initState();
-    _evaluateCompetitiveMode();
-  }
-
-  void _evaluateCompetitiveMode() {
-    final GameBloc gameBloc = context.read<GameBloc>();
-    final GameEntity? game = gameBloc.state.game;
-
-    if (game != null && game.teams.isNotEmpty) {
-      final TeamEntity hostTeam = game.teams.firstWhere(
-        (TeamEntity team) => team.name == game.hostTeamName,
-        orElse: () => game.teams.first,
-      );
-
-      final int maxScore = game.teams.fold(
-        0,
-        (int currentMax, TeamEntity team) =>
-            team.score > currentMax ? team.score : currentMax,
-      );
-
-      final bool isVictory = hostTeam.score == maxScore;
-
-      context.read<RankingBloc>().add(
-        SubmitWinEvent(points: hostTeam.score, isVictory: isVictory),
-      );
-    }
   }
 
   @override
@@ -121,6 +94,7 @@ class _ScoreboardPageState extends State<ScoreboardPage> {
                               Text(
                                 team.name,
                                 textAlign: TextAlign.center,
+                                overflow: TextOverflow.ellipsis,
                                 style: const TextStyle(
                                   fontSize: 32,
                                   fontWeight: FontWeight.w900,
@@ -165,6 +139,7 @@ class _ScoreboardPageState extends State<ScoreboardPage> {
                           ),
                           title: Text(
                             team.name,
+                            overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.bold,

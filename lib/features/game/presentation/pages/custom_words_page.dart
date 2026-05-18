@@ -38,6 +38,7 @@ class CustomWordsPage extends StatefulWidget {
 
 class _CustomWordsPageState extends State<CustomWordsPage> {
   final List<String> addedWords = <String>[];
+  final List<bool> _obscureWords = <bool>[];
   final TextEditingController wordController = TextEditingController();
 
   @override
@@ -66,6 +67,7 @@ class _CustomWordsPageState extends State<CustomWordsPage> {
 
     setState(() {
       addedWords.add(newWord);
+      _obscureWords.add(true); // nueva palabra oculta por defecto
       wordController.clear();
     });
   }
@@ -122,16 +124,46 @@ class _CustomWordsPageState extends State<CustomWordsPage> {
                   physics: const NeverScrollableScrollPhysics(),
                   itemCount: addedWords.length,
                   itemBuilder: (BuildContext context, int index) {
+                    final bool isObscured = _obscureWords[index];
                     return Card(
                       child: ListTile(
-                        title: Text(addedWords[index]),
-                        trailing: IconButton(
-                          icon: const Icon(Icons.delete, color: Colors.red),
-                          onPressed: () {
-                            setState(() {
-                              addedWords.removeAt(index);
-                            });
-                          },
+                        title: Text(
+                          isObscured
+                              ? '••••••'
+                              : addedWords[index],
+                          style: const TextStyle(
+                            fontSize: 16,
+                            letterSpacing: 1.2,
+                          ),
+                        ),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: <Widget>[
+                            IconButton(
+                              icon: Icon(
+                                isObscured
+                                    ? Icons.visibility_off
+                                    : Icons.visibility,
+                                color: Colors.purple,
+                              ),
+                              tooltip: isObscured ? 'Mostrar' : 'Ocultar',
+                              onPressed: () {
+                                setState(() {
+                                  _obscureWords[index] = !_obscureWords[index];
+                                });
+                              },
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.delete, color: Colors.red),
+                              tooltip: 'Eliminar',
+                              onPressed: () {
+                                setState(() {
+                                  addedWords.removeAt(index);
+                                  _obscureWords.removeAt(index);
+                                });
+                              },
+                            ),
+                          ],
                         ),
                       ),
                     );

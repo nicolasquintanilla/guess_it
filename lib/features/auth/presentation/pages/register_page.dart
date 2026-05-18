@@ -38,7 +38,9 @@ class _RegisterPageState extends State<RegisterPage> {
       return 'La contraseña es muy débil. Usa al menos 6 caracteres.';
     } else if (error.contains('invalid-email')) {
       return 'El formato del correo no es válido.';
-    } else if (error.contains('user-not-found') || error.contains('invalid-credential') || error.contains('wrong-password')) {
+    } else if (error.contains('user-not-found') ||
+        error.contains('invalid-credential') ||
+        error.contains('wrong-password')) {
       return 'El correo o la contraseña son incorrectos.';
     } else if (error.contains('email-already-in-use')) {
       return 'Este correo ya está registrado en otra cuenta.';
@@ -84,7 +86,8 @@ class _RegisterPageState extends State<RegisterPage> {
         ),
       ),
       body: BlocConsumer<AuthBloc, AuthState>(
-        listenWhen: (AuthState previous, AuthState current) => previous.status != current.status,
+        listenWhen: (AuthState previous, AuthState current) =>
+            previous.status != current.status,
         listener: (BuildContext context, AuthState state) {
           if (!ModalRoute.of(context)!.isCurrent) return;
 
@@ -160,9 +163,13 @@ class _RegisterPageState extends State<RegisterPage> {
                             else ...<Widget>[
                               TextField(
                                 controller: usernameController,
+                                maxLength: 10,
                                 decoration: InputDecoration(
                                   labelText: 'Nombre de usuario',
-                                  prefixIcon: const Icon(Icons.person_outline, color: Colors.deepPurple),
+                                  prefixIcon: const Icon(
+                                    Icons.person_outline,
+                                    color: Colors.deepPurple,
+                                  ),
                                   filled: true,
                                   fillColor: Colors.grey.shade100,
                                   border: OutlineInputBorder(
@@ -176,7 +183,10 @@ class _RegisterPageState extends State<RegisterPage> {
                                 controller: emailController,
                                 decoration: InputDecoration(
                                   labelText: 'Correo electrónico',
-                                  prefixIcon: const Icon(Icons.email_outlined, color: Colors.deepPurple),
+                                  prefixIcon: const Icon(
+                                    Icons.email_outlined,
+                                    color: Colors.deepPurple,
+                                  ),
                                   filled: true,
                                   fillColor: Colors.grey.shade100,
                                   border: OutlineInputBorder(
@@ -191,7 +201,10 @@ class _RegisterPageState extends State<RegisterPage> {
                                 controller: passwordController,
                                 decoration: InputDecoration(
                                   labelText: 'Contraseña',
-                                  prefixIcon: const Icon(Icons.lock_outline, color: Colors.deepPurple),
+                                  prefixIcon: const Icon(
+                                    Icons.lock_outline,
+                                    color: Colors.deepPurple,
+                                  ),
                                   filled: true,
                                   fillColor: Colors.grey.shade100,
                                   border: OutlineInputBorder(
@@ -207,25 +220,41 @@ class _RegisterPageState extends State<RegisterPage> {
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(32),
                                   gradient: const LinearGradient(
-                                    colors: <Color>[Colors.orangeAccent, Colors.pinkAccent],
+                                    colors: <Color>[
+                                      Colors.orangeAccent,
+                                      Colors.pinkAccent,
+                                    ],
                                     begin: Alignment.topLeft,
                                     end: Alignment.bottomRight,
                                   ),
                                   boxShadow: const <BoxShadow>[
-                                    BoxShadow(color: Colors.black26, blurRadius: 8, offset: Offset(0, 4))
+                                    BoxShadow(
+                                      color: Colors.black26,
+                                      blurRadius: 8,
+                                      offset: Offset(0, 4),
+                                    ),
                                   ],
                                 ),
                                 child: ElevatedButton(
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: Colors.transparent,
                                     shadowColor: Colors.transparent,
-                                    padding: const EdgeInsets.symmetric(vertical: 16),
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(32)),
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 16,
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(32),
+                                    ),
                                   ),
                                   onPressed: () {
-                                    final String username = usernameController.text.trim();
-                                    final String email = emailController.text.trim();
-                                    final String password = passwordController.text.trim();
+                                    final String username = usernameController
+                                        .text
+                                        .trim();
+                                    final String email = emailController.text
+                                        .trim();
+                                    final String password = passwordController
+                                        .text
+                                        .trim();
 
                                     if (username.isEmpty ||
                                         email.isEmpty ||
@@ -246,7 +275,14 @@ class _RegisterPageState extends State<RegisterPage> {
                                       ),
                                     );
                                   },
-                                  child: const Text('Registrarse', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+                                  child: const Text(
+                                    'Registrarse',
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
+                                  ),
                                 ),
                               ),
                               const SizedBox(height: 16),
@@ -256,7 +292,10 @@ class _RegisterPageState extends State<RegisterPage> {
                                 },
                                 child: const Text(
                                   '¿Ya tienes cuenta? Inicia sesión',
-                                  style: TextStyle(color: Colors.deepPurple, fontWeight: FontWeight.bold),
+                                  style: TextStyle(
+                                    color: Colors.deepPurple,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
                               ),
                             ],

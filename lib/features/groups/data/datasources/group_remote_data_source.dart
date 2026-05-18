@@ -10,8 +10,8 @@ class GroupRemoteDataSource {
   const GroupRemoteDataSource({
     required FirebaseFirestore firestore,
     required FirebaseAuth auth,
-  })  : firestore = firestore,
-        auth = auth;
+  }) : firestore = firestore,
+       auth = auth;
 
   Future<String> createGroup(String groupName) async {
     final User? currentUser = auth.currentUser;
@@ -19,25 +19,30 @@ class GroupRemoteDataSource {
       throw Exception('Usuario no autenticado');
     }
 
-    final DocumentSnapshot<Map<String, dynamic>> userDoc =
-        await firestore.collection('users').doc(currentUser.uid).get();
+    final DocumentSnapshot<Map<String, dynamic>> userDoc = await firestore
+        .collection('users')
+        .doc(currentUser.uid)
+        .get();
 
     if (!userDoc.exists) {
       throw Exception('Usuario no encontrado en la base de datos');
     }
 
-    final String username = userDoc.data()?['username'] as String? ?? 'Desconocido';
+    final String username =
+        userDoc.data()?['username'] as String? ?? 'Desconocido';
     final String email = currentUser.email ?? '';
     final String joinCode = _generateJoinCode();
 
-    final DocumentReference<Map<String, dynamic>> docRef = await firestore.collection('groups').add(<String, dynamic>{
-      'name': groupName,
-      'hostId': currentUser.uid,
-      'joinCode': joinCode,
-      'memberNames': <String>[username],
-      'memberEmails': <String>[email],
-      'createdAt': DateTime.now().toIso8601String(),
-    });
+    final DocumentReference<Map<String, dynamic>> docRef = await firestore
+        .collection('groups')
+        .add(<String, dynamic>{
+          'name': groupName,
+          'hostId': currentUser.uid,
+          'joinCode': joinCode,
+          'memberNames': <String>[username],
+          'memberEmails': <String>[email],
+          'createdAt': DateTime.now().toIso8601String(),
+        });
 
     return docRef.id;
   }
@@ -48,14 +53,17 @@ class GroupRemoteDataSource {
       throw Exception('Usuario no autenticado');
     }
 
-    final DocumentSnapshot<Map<String, dynamic>> userDoc =
-        await firestore.collection('users').doc(currentUser.uid).get();
+    final DocumentSnapshot<Map<String, dynamic>> userDoc = await firestore
+        .collection('users')
+        .doc(currentUser.uid)
+        .get();
 
     if (!userDoc.exists) {
       throw Exception('Usuario no encontrado en la base de datos');
     }
 
-    final String username = userDoc.data()?['username'] as String? ?? 'Desconocido';
+    final String username =
+        userDoc.data()?['username'] as String? ?? 'Desconocido';
     final String email = currentUser.email ?? '';
 
     final QuerySnapshot<Map<String, dynamic>> querySnapshot = await firestore
@@ -68,54 +76,56 @@ class GroupRemoteDataSource {
       throw Exception('Código de grupo no válido');
     }
 
-    final DocumentSnapshot<Map<String, dynamic>> groupDoc = querySnapshot.docs.first;
+    final DocumentSnapshot<Map<String, dynamic>> groupDoc =
+        querySnapshot.docs.first;
 
-    await firestore.collection('groups').doc(groupDoc.id).update(<String, dynamic>{
-      'memberNames': FieldValue.arrayUnion(<String>[username]),
-      'memberEmails': FieldValue.arrayUnion(<String>[email]),
-    });
+    await firestore.collection('groups').doc(groupDoc.id).update(
+      <String, dynamic>{
+        'memberNames': FieldValue.arrayUnion(<String>[username]),
+        'memberEmails': FieldValue.arrayUnion(<String>[email]),
+      },
+    );
   }
 
-  Future<List<GroupEntity>> getUserGroups() async {
+  Stream<List<GroupEntity>> getUserGroups() {
     final User? currentUser = auth.currentUser;
     if (currentUser == null) {
       throw Exception('Usuario no autenticado');
     }
 
-    final DocumentSnapshot<Map<String, dynamic>> userDoc =
-        await firestore.collection('users').doc(currentUser.uid).get();
-
-    if (!userDoc.exists) {
-      throw Exception('Usuario no encontrado en la base de datos');
-    }
-
-    final String username = userDoc.data()?['username'] as String? ?? 'Desconocido';
-
-    final QuerySnapshot<Map<String, dynamic>> querySnapshot = await firestore
+    return firestore
         .collection('groups')
         .where('memberEmails', arrayContains: currentUser.email ?? '')
-        .get();
-
-    return querySnapshot.docs.map((QueryDocumentSnapshot<Map<String, dynamic>> doc) {
-      final Map<String, dynamic> data = doc.data();
-      Map<String, int> parsedScores = <String, int>{};
-      if (data['scores'] != null) {
-        final Map<dynamic, dynamic> rawScores = data['scores'] as Map<dynamic, dynamic>;
-        rawScores.forEach((dynamic key, dynamic value) {
-          parsedScores[key.toString()] = (value as num).toInt();
-        });
-      }
-      return GroupEntity(
-        id: doc.id,
-        name: data['name'] as String? ?? '',
-        hostId: data['hostId'] as String? ?? '',
-        joinCode: data['joinCode'] as String? ?? '',
-        memberNames: List<String>.from(data['memberNames'] as List<dynamic>? ?? <String>[]),
-        memberEmails: List<String>.from(data['memberEmails'] as List<dynamic>? ?? <String>[]),
-        createdAt: data['createdAt'] as String? ?? '',
-        scores: parsedScores,
-      );
-    }).toList();
+        .snapshots()
+        .map((QuerySnapshot<Map<String, dynamic>> querySnapshot) {
+      return querySnapshot.docs.map((
+        QueryDocumentSnapshot<Map<String, dynamic>> doc,
+      ) {
+        final Map<String, dynamic> data = doc.data();
+        Map<String, int> parsedScores = <String, int>{};
+        if (data['scores'] != null) {
+          final Map<dynamic, dynamic> rawScores =
+              data['scores'] as Map<dynamic, dynamic>;
+          rawScores.forEach((dynamic key, dynamic value) {
+            parsedScores[key.toString()] = (value as num).toInt();
+          });
+        }
+        return GroupEntity(
+          id: doc.id,
+          name: data['name'] as String? ?? '',
+          hostId: data['hostId'] as String? ?? '',
+          joinCode: data['joinCode'] as String? ?? '',
+          memberNames: List<String>.from(
+            data['memberNames'] as List<dynamic>? ?? <String>[],
+          ),
+          memberEmails: List<String>.from(
+            data['memberEmails'] as List<dynamic>? ?? <String>[],
+          ),
+          createdAt: data['createdAt'] as String? ?? '',
+          scores: parsedScores,
+        );
+      }).toList();
+    });
   }
 
   String _generateJoinCode() {
@@ -135,19 +145,26 @@ class GroupRemoteDataSource {
   Future<void> leaveGroup(String groupId) async {
     final User? currentUser = auth.currentUser;
     if (currentUser == null) throw Exception('No autenticado');
-    final DocumentSnapshot<Map<String, dynamic>> userDoc = await firestore.collection('users').doc(currentUser.uid).get();
+    final DocumentSnapshot<Map<String, dynamic>> userDoc = await firestore
+        .collection('users')
+        .doc(currentUser.uid)
+        .get();
     final String username = userDoc.data()?['username'] as String? ?? '';
     final String email = currentUser.email ?? '';
     await firestore.collection('groups').doc(groupId).update(<String, dynamic>{
       'memberNames': FieldValue.arrayRemove(<String>[username]),
-      'memberEmails': FieldValue.arrayRemove(<String>[email])
+      'memberEmails': FieldValue.arrayRemove(<String>[email]),
     });
   }
 
-  Future<void> kickMember(String groupId, String memberName, String memberEmail) async {
+  Future<void> kickMember(
+    String groupId,
+    String memberName,
+    String memberEmail,
+  ) async {
     await firestore.collection('groups').doc(groupId).update(<String, dynamic>{
       'memberNames': FieldValue.arrayRemove(<String>[memberName]),
-      'memberEmails': FieldValue.arrayRemove(<String>[memberEmail])
+      'memberEmails': FieldValue.arrayRemove(<String>[memberEmail]),
     });
   }
 }

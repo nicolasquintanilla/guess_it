@@ -11,6 +11,8 @@ import 'package:guess_it/features/game/domain/repositories/word_repository.dart'
 class GameBloc extends Bloc<GameEvent, GameState> {
   final WordRepository wordRepository;
   Timer? _turnTimer;
+  String? _activeGroupId;
+  bool _isFinishingGame = false;
 
   GameBloc({required WordRepository wordRepository})
     : wordRepository = wordRepository,
@@ -41,6 +43,8 @@ class GameBloc extends Bloc<GameEvent, GameState> {
     InitializeGameEvent event,
     Emitter<GameState> emit,
   ) async {
+    _activeGroupId = event.groupId;
+    _isFinishingGame = false;
     emit(state.copyWith(status: GameStatus.loading));
 
     final List<String> generatedBag = await wordRepository.generateWordBag(
@@ -161,7 +165,14 @@ class GameBloc extends Bloc<GameEvent, GameState> {
         );
       } else {
         // Fin del juego
+        if (_isFinishingGame) {
+          print('DEBUG: Evitando Race Condition (ejecución duplicada del fin de juego)');
+          return;
+        }
+        _isFinishingGame = true; // <-- BLOQUEAMOS NUEVAS ENTRADAS
+
         updatedGame = updatedGame.copyWith(gameStatus: 'finished');
+        print('DEBUG: Iniciando proceso de ranking...');
 
         try {
           final FirebaseFirestore firestore = FirebaseFirestore.instance;
@@ -169,89 +180,87 @@ class GameBloc extends Bloc<GameEvent, GameState> {
           for (final TeamEntity team in updatedGame.teams) {
             if (team.score > maxScore) maxScore = team.score;
           }
+          print('DEBUG: Puntuación máxima: $maxScore');
 
-        // --- LÓGICA ANTI-TRAMPAS RANKING GLOBAL ---
-        final bool isAiGame = updatedGame.teams.any((TeamEntity t) => t.name.startsWith('IA Guess It'));
-        
-        int totalRegisteredEmails = 0;
-        for (final TeamEntity team in updatedGame.teams) {
-          // Contamos solo correos que tengan formato real
-          totalRegisteredEmails += team.registeredEmails.where((String e) => e.contains('@')).length;
-        }
-        
-        // REGLA DE ORO: Solo si hay 2+ humanos registrados, no hay IA, y hay puntos.
-        if (!isAiGame && totalRegisteredEmails >= 2 && maxScore > 0) {
-          for (final TeamEntity team in updatedGame.teams) {
-            final bool isWinner = team.score == maxScore;
-            for (final String emailOrName in team.registeredEmails) {
-              final String cleanEmail = emailOrName.trim().toLowerCase();
-              if (!cleanEmail.contains('@')) continue; 
+          final bool isAiGame = updatedGame.teams.any((TeamEntity t) => t.name.toLowerCase().contains('gessi'));
 
-              final QuerySnapshot<Map<String, dynamic>> userQuery =
-                  await firestore.collection('users').where('email', isEqualTo: cleanEmail).limit(1).get();
+          // 1. ACTUALIZACIÓN RANKING GLOBAL
+          if (!isAiGame && maxScore > 0) {
+            for (final TeamEntity team in updatedGame.teams) {
+              final bool isWinner = team.score == maxScore;
+              
+              // DEDUPLICACIÓN DE CORREOS PARA EVITAR DOBLE PUNTUACIÓN
+              final Set<String> uniqueCleanEmails = team.registeredEmails
+                  .map((String e) => e.trim().toLowerCase())
+                  .where((String e) => e.contains('@'))
+                  .toSet();
 
-              if (userQuery.docs.isNotEmpty) {
-                final DocumentReference<Map<String, dynamic>> userRef = userQuery.docs.first.reference;
-                await userRef.update(<String, dynamic>{
-                  'gamesPlayed': FieldValue.increment(1),
-                  'totalPointsScored': FieldValue.increment(team.score),
-                  if (isWinner) 'victories': FieldValue.increment(1),
-                });
+              for (final String cleanEmail in uniqueCleanEmails) {
+                try {
+                  final QuerySnapshot<Map<String, dynamic>> userQuery = await firestore.collection('users').where('email', isEqualTo: cleanEmail).limit(1).get();
+                  if (userQuery.docs.isNotEmpty) {
+                    await userQuery.docs.first.reference.update(<String, dynamic>{
+                      'gamesPlayed': FieldValue.increment(1),
+                      'totalPointsScored': FieldValue.increment(team.score),
+                      if (isWinner) 'victories': FieldValue.increment(1),
+                    });
+                    print('DEBUG SUCCESS: Puntos globales subidos para $cleanEmail');
+                  } else {
+                    print('DEBUG WARNING: No existe documento de usuario para $cleanEmail');
+                  }
+                } catch (e) {
+                  print('DEBUG ERROR GLOBAL ($cleanEmail): $e');
+                }
               }
             }
           }
-        }
 
-          // --- LÓGICA DE RANKING DE GRUPO ---
-          if (updatedGame.groupId != null && updatedGame.groupId!.isNotEmpty) {
-            final DocumentReference<Map<String, dynamic>> groupRef = firestore.collection('groups').doc(updatedGame.groupId);
+          // 2. ACTUALIZACIÓN RANKING GRUPO
+          final String? currentGroupId = _activeGroupId; // <-- LEEMOS DE LA VARIABLE INTERNA DIRECTAMENTE
+          if (currentGroupId != null && currentGroupId.isNotEmpty) {
+            final DocumentReference<Map<String, dynamic>> groupRef = firestore.collection('groups').doc(currentGroupId);
             final DocumentSnapshot<Map<String, dynamic>> groupDoc = await groupRef.get();
-            
+
             if (groupDoc.exists) {
               final Map<String, dynamic> data = groupDoc.data()!;
               Map<String, int> groupScores = <String, int>{};
-              
-              // Extraer el mapa de puntuaciones si existe, forzando los tipos correctos
               if (data.containsKey('scores') && data['scores'] is Map) {
                 final Map<dynamic, dynamic> rawScores = data['scores'] as Map<dynamic, dynamic>;
                 rawScores.forEach((dynamic key, dynamic value) {
                   if (key is String && value is num) {
-                    groupScores[key] = value.toInt();
+                    groupScores[key.toString()] = value.toInt();
                   }
                 });
               }
 
-              // Repartir puntos a los miembros que jugaron esta partida
-              for (final TeamEntity team in updatedGame.teams) {
-                final bool isWinner = team.score == maxScore && maxScore > 0;
-                final int pointsToAssign = isWinner ? 3 : 1;
-
-                for (final String email in team.registeredEmails) {
-                  final String cleanEmail = email.trim().toLowerCase();
-                  if (cleanEmail.isEmpty) continue;
-
-                  final QuerySnapshot<Map<String, dynamic>> userQuery = await firestore
-                      .collection('users')
-                      .where('email', isEqualTo: cleanEmail)
-                      .limit(1)
-                      .get();
-
-                  if (userQuery.docs.isNotEmpty) {
-                    final String username = userQuery.docs.first.data()['username'] as String? ?? 'Jugador';
-                    
-                    // Sumar puntos al jugador dentro del grupo
-                    final int currentScore = groupScores[username] ?? 0;
-                    groupScores[username] = currentScore + pointsToAssign;
-                  }
+              final List<dynamic> rawNames = data['memberNames'] as List<dynamic>? ?? <dynamic>[];
+              final List<dynamic> rawEmails = data['memberEmails'] as List<dynamic>? ?? <dynamic>[];
+              final Map<String, String> emailToName = <String, String>{};
+              for (int i = 0; i < rawEmails.length; i++) {
+                if (i < rawNames.length) {
+                  emailToName[rawEmails[i].toString().trim().toLowerCase()] = rawNames[i].toString();
                 }
               }
-              
-              // Guardar el mapa de puntuaciones actualizado en Firebase
-              await groupRef.update(<String, dynamic>{'scores': groupScores});
+
+              for (final TeamEntity team in updatedGame.teams) {
+                final int points = (team.score == maxScore && maxScore > 0) ? 3 : 1;
+                
+                // DEDUPLICACIÓN TAMBIÉN EN EL GRUPO
+                final Set<String> uniqueIdentifiers = team.registeredEmails
+                    .map((String e) => e.trim().toLowerCase())
+                    .toSet();
+
+                for (final String cleanId in uniqueIdentifiers) {
+                  final String playerName = cleanId.contains('@') ? (emailToName[cleanId] ?? cleanId.split('@').first) : cleanId;
+                  groupScores[playerName] = (groupScores[playerName] ?? 0) + points;
+                }
+              }
+              await groupRef.set(<String, dynamic>{'scores': groupScores}, SetOptions(merge: true));
+              print('DEBUG SUCCESS: Ranking de grupo actualizado');
             }
           }
         } catch (e) {
-          print('Error actualizando estadísticas: $e');
+          print('DEBUG ERROR CRÍTICO: $e');
         }
 
         emit(
@@ -321,7 +330,9 @@ class GameBloc extends Bloc<GameEvent, GameState> {
       add(const TickTimerEvent());
     });
 
-    if (state.game!.teams[state.game!.activeTeamIndex].name.startsWith('IA Guess It')) {
+    if (state.game!.teams[state.game!.activeTeamIndex].name.startsWith(
+      'Gessi',
+    )) {
       add(const ProcessAiTurnEvent());
     }
   }
@@ -351,9 +362,9 @@ class GameBloc extends Bloc<GameEvent, GameState> {
 
     final Random rnd = Random();
     if (isClosed || state.status != GameStatus.playing) return;
-    
+
     _turnTimer?.cancel();
-    
+
     int wordsToGuess = minWords + rnd.nextInt((maxWords - minWords) + 1);
     if (wordsToGuess > state.currentBag.length) {
       wordsToGuess = state.currentBag.length;
@@ -372,13 +383,15 @@ class GameBloc extends Bloc<GameEvent, GameState> {
       newSkipped.add(newBag.removeAt(0));
     }
 
-    emit(state.copyWith(
-      remainingSeconds: 0,
-      currentWord: '',
-      currentBag: newBag,
-      turnGuessedWords: newGuessed,
-      turnSkippedWords: newSkipped,
-    ));
+    emit(
+      state.copyWith(
+        remainingSeconds: 0,
+        currentWord: '',
+        currentBag: newBag,
+        turnGuessedWords: newGuessed,
+        turnSkippedWords: newSkipped,
+      ),
+    );
 
     add(const TimeUpEvent());
   }

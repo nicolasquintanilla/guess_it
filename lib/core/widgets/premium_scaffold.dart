@@ -18,17 +18,19 @@ class PremiumScaffold extends StatelessWidget {
     List<Widget>? actions,
     Widget? floatingActionButton,
     String? helpText,
-  })  : key = key,
-        child = child,
-        title = title,
-        showBackArrow = showBackArrow,
-        actions = actions,
-        floatingActionButton = floatingActionButton,
-        helpText = helpText;
+  }) : key = key,
+       child = child,
+       title = title,
+       showBackArrow = showBackArrow,
+       actions = actions,
+       floatingActionButton = floatingActionButton,
+       helpText = helpText;
 
   @override
   Widget build(BuildContext context) {
-    final List<Widget> currentActions = List<Widget>.from(actions ?? <Widget>[]);
+    final List<Widget> currentActions = List<Widget>.from(
+      actions ?? <Widget>[],
+    );
 
     if (helpText != null) {
       currentActions.insert(
@@ -46,7 +48,9 @@ class PremiumScaffold extends StatelessWidget {
               builder: (BuildContext ctx) {
                 return Container(
                   constraints: BoxConstraints(
-                    maxHeight: MediaQuery.of(ctx).size.height * 0.85, // Deja espacio arriba
+                    maxHeight:
+                        MediaQuery.of(ctx).size.height *
+                        0.85, // Deja espacio arriba
                   ),
                   child: SafeArea(
                     child: Padding(
@@ -56,19 +60,35 @@ class PremiumScaffold extends StatelessWidget {
                         top: 24.0,
                         bottom: MediaQuery.of(ctx).viewInsets.bottom + 24.0,
                       ),
-                    child: SingleChildScrollView(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        const Text('Instrucciones', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.deepPurple)),
-                        const SizedBox(height: 16),
-                        Text(helpText!, style: const TextStyle(fontSize: 16, color: Colors.black87, height: 1.5)),
-                        const SizedBox(height: 24),
-                      ],
+                      child: SingleChildScrollView(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                            const Text(
+                              'Instrucciones',
+                              style: TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.deepPurple,
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              helpText!,
+                              style: const TextStyle(
+                                fontSize: 16,
+                                color: Colors.black87,
+                                height: 1.5,
+                              ),
+                            ),
+                            const SizedBox(height: 24),
+                          ],
+                        ),
+                      ),
                     ),
                   ),
-                )));
+                );
               },
             );
           },
@@ -76,7 +96,10 @@ class PremiumScaffold extends StatelessWidget {
       );
     }
 
-    final bool hasAppBar = showBackArrow || (title != null && title!.isNotEmpty) || currentActions.isNotEmpty;
+    final bool hasAppBar =
+        showBackArrow ||
+        (title != null && title!.isNotEmpty) ||
+        currentActions.isNotEmpty;
 
     return Scaffold(
       extendBodyBehindAppBar: true,
@@ -85,13 +108,26 @@ class PremiumScaffold extends StatelessWidget {
       resizeToAvoidBottomInset: true,
       appBar: hasAppBar
           ? AppBar(
-              title: title != null ? Text(title!) : null,
+              title: title != null
+                  ? Text(title!, maxLines: 1, overflow: TextOverflow.ellipsis)
+                  : null,
               backgroundColor: Colors.transparent,
               elevation: 0,
               centerTitle: true,
               automaticallyImplyLeading: showBackArrow,
               iconTheme: const IconThemeData(color: Colors.white),
-              titleTextStyle: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.w900, shadows: <Shadow>[Shadow(color: Colors.black54, blurRadius: 4, offset: Offset(0, 2))]),
+              titleTextStyle: const TextStyle(
+                color: Colors.white,
+                fontSize: 24,
+                fontWeight: FontWeight.w900,
+                shadows: <Shadow>[
+                  Shadow(
+                    color: Colors.black54,
+                    blurRadius: 4,
+                    offset: Offset(0, 2),
+                  ),
+                ],
+              ),
               actions: currentActions.isNotEmpty ? currentActions : null,
             )
           : null,
@@ -109,12 +145,30 @@ class PremiumScaffold extends StatelessWidget {
               ),
             ),
           ),
-          Positioned(top: -50, right: -50, child: Icon(Icons.videogame_asset, size: 300, color: Colors.white.withOpacity(0.05))),
-          Positioned(bottom: -50, left: -50, child: Icon(Icons.extension, size: 250, color: Colors.white.withOpacity(0.05))),
+          Positioned(
+            top: -50,
+            right: -50,
+            child: Icon(
+              Icons.videogame_asset,
+              size: 300,
+              color: Colors.white.withOpacity(0.05),
+            ),
+          ),
+          Positioned(
+            bottom: -50,
+            left: -50,
+            child: Icon(
+              Icons.extension,
+              size: 250,
+              color: Colors.white.withOpacity(0.05),
+            ),
+          ),
           SafeArea(
             // Al no poner bottom: false, Flutter respeta la barra nativa de Android/iOS
             child: Padding(
-              padding: const EdgeInsets.only(bottom: 24.0), // Respiro para los botones
+              padding: const EdgeInsets.only(
+                bottom: 24.0,
+              ), // Respiro para los botones
               child: child,
             ),
           ),

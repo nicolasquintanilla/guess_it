@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:guess_it/features/groups/domain/entities/group_entity.dart';
 
 abstract class GroupEvent extends Equatable {
   const GroupEvent();
@@ -14,12 +15,19 @@ class LoadGroupsEvent extends GroupEvent {
   List<Object?> get props => <Object?>[];
 }
 
+class GroupsUpdatedEvent extends GroupEvent {
+  final List<GroupEntity> groups;
+
+  const GroupsUpdatedEvent({required this.groups});
+
+  @override
+  List<Object?> get props => <Object?>[groups];
+}
+
 class CreateGroupEvent extends GroupEvent {
   final String groupName;
 
-  const CreateGroupEvent({
-    required String groupName,
-  }) : groupName = groupName;
+  const CreateGroupEvent({required String groupName}) : groupName = groupName;
 
   @override
   List<Object?> get props => <Object?>[groupName];
@@ -28,9 +36,7 @@ class CreateGroupEvent extends GroupEvent {
 class JoinGroupEvent extends GroupEvent {
   final String joinCode;
 
-  const JoinGroupEvent({
-    required String joinCode,
-  }) : joinCode = joinCode;
+  const JoinGroupEvent({required String joinCode}) : joinCode = joinCode;
 
   @override
   List<Object?> get props => <Object?>[joinCode];

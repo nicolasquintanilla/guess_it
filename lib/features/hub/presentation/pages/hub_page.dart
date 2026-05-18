@@ -21,10 +21,64 @@ class HubPage extends StatefulWidget {
 }
 
 class _HubPageState extends State<HubPage> {
+  static const Map<String, String> _availableAvatars = <String, String>{
+    'arana': 'assets/avatars/arana.png',
+    'astronauta': 'assets/avatars/astronauta.png',
+    'auto-de-choque': 'assets/avatars/auto-de-choque.png',
+    'buho': 'assets/avatars/buho.png',
+    'cangrejo': 'assets/avatars/cangrejo.png',
+    'casco-romano': 'assets/avatars/casco-romano.png',
+    'cerdo': 'assets/avatars/cerdo.png',
+    'cerezas': 'assets/avatars/cerezas.png',
+    'chile': 'assets/avatars/chile.png',
+    'coche-rc': 'assets/avatars/coche-rc.png',
+    'cohete': 'assets/avatars/cohete.png',
+    'craneo': 'assets/avatars/craneo.png',
+    'dinosaurio': 'assets/avatars/dinosaurio.png',
+    'elefante': 'assets/avatars/elefante.png',
+    'extraterrestre': 'assets/avatars/extraterrestre.png',
+    'flecha': 'assets/avatars/flecha.png',
+    'futbol': 'assets/avatars/futbol.png',
+    'gato': 'assets/avatars/gato.png',
+    'gorila': 'assets/avatars/gorila.png',
+    'hueso': 'assets/avatars/hueso.png',
+    'juego-de-azar': 'assets/avatars/juego-de-azar.png',
+    'leon': 'assets/avatars/leon.png',
+    'momia': 'assets/avatars/momia.png',
+    'ninja': 'assets/avatars/ninja.png',
+    'ojo': 'assets/avatars/ojo.png',
+    'ornitorrinco': 'assets/avatars/ornitorrinco.png',
+    'oveja': 'assets/avatars/oveja.png',
+    'pistola-de-agua': 'assets/avatars/pistola-de-agua.png',
+    'pollo': 'assets/avatars/pollo.png',
+    'robot': 'assets/avatars/robot.png',
+    'rosquilla': 'assets/avatars/rosquilla.png',
+    'saturno': 'assets/avatars/saturno.png',
+    'serpiente': 'assets/avatars/serpiente.png',
+    'shuriken': 'assets/avatars/shuriken.png',
+    'soldado': 'assets/avatars/soldado.png',
+    'tallarines': 'assets/avatars/tallarines.png',
+    'tortuga': 'assets/avatars/tortuga.png',
+    'trofeo': 'assets/avatars/trofeo.png',
+    'vaso': 'assets/avatars/vaso.png',
+  };
+
   @override
   void initState() {
     super.initState();
     context.read<AuthBloc>().add(const ReloadUserEvent());
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final AuthState authState = context.read<AuthBloc>().state;
+    final String? avatarKey = authState.user?.avatar;
+    if (avatarKey != null &&
+        avatarKey != 'none' &&
+        _availableAvatars.containsKey(avatarKey)) {
+      precacheImage(AssetImage(_availableAvatars[avatarKey]!), context);
+    }
   }
 
   @override
@@ -53,47 +107,6 @@ class _HubPageState extends State<HubPage> {
       ],
       child: BlocBuilder<AuthBloc, AuthState>(
         builder: (BuildContext context, AuthState state) {
-          final Map<String, String> availableAvatars = const <String, String>{
-            'arana': 'assets/avatars/arana.png',
-            'astronauta': 'assets/avatars/astronauta.png',
-            'auto-de-choque': 'assets/avatars/auto-de-choque.png',
-            'buho': 'assets/avatars/buho.png',
-            'cangrejo': 'assets/avatars/cangrejo.png',
-            'casco-romano': 'assets/avatars/casco-romano.png',
-            'cerdo': 'assets/avatars/cerdo.png',
-            'cerezas': 'assets/avatars/cerezas.png',
-            'chile': 'assets/avatars/chile.png',
-            'coche-rc': 'assets/avatars/coche-rc.png',
-            'cohete': 'assets/avatars/cohete.png',
-            'craneo': 'assets/avatars/craneo.png',
-            'dinosaurio': 'assets/avatars/dinosaurio.png',
-            'elefante': 'assets/avatars/elefante.png',
-            'extraterrestre': 'assets/avatars/extraterrestre.png',
-            'flecha': 'assets/avatars/flecha.png',
-            'futbol': 'assets/avatars/futbol.png',
-            'gato': 'assets/avatars/gato.png',
-            'gorila': 'assets/avatars/gorila.png',
-            'hueso': 'assets/avatars/hueso.png',
-            'juego-de-azar': 'assets/avatars/juego-de-azar.png',
-            'leon': 'assets/avatars/leon.png',
-            'momia': 'assets/avatars/momia.png',
-            'ninja': 'assets/avatars/ninja.png',
-            'ojo': 'assets/avatars/ojo.png',
-            'ornitorrinco': 'assets/avatars/ornitorrinco.png',
-            'oveja': 'assets/avatars/oveja.png',
-            'pistola-de-agua': 'assets/avatars/pistola-de-agua.png',
-            'pollo': 'assets/avatars/pollo.png',
-            'robot': 'assets/avatars/robot.png',
-            'rosquilla': 'assets/avatars/rosquilla.png',
-            'saturno': 'assets/avatars/saturno.png',
-            'serpiente': 'assets/avatars/serpiente.png',
-            'shuriken': 'assets/avatars/shuriken.png',
-            'soldado': 'assets/avatars/soldado.png',
-            'tallarines': 'assets/avatars/tallarines.png',
-            'tortuga': 'assets/avatars/tortuga.png',
-            'trofeo': 'assets/avatars/trofeo.png',
-            'vaso': 'assets/avatars/vaso.png',
-          };
           final bool isGuest = state.user?.isGuest ?? true;
           final String displayUsername = isGuest
               ? 'Invitado'
@@ -114,12 +127,24 @@ class _HubPageState extends State<HubPage> {
                       Builder(
                         builder: (context) {
                           final String avatarKey = state.user?.avatar ?? 'none';
-                          final bool isSimple = avatarKey == 'none' || !availableAvatars.containsKey(avatarKey);
+                          final bool isSimple =
+                              avatarKey == 'none' ||
+                              !_availableAvatars.containsKey(avatarKey);
                           final double avatarSize = 64;
-                          
+
                           final Widget avatarWidget = isSimple
-                              ? Icon(Icons.person_pin, color: Colors.grey, size: avatarSize * 0.8)
-                              : Image.asset(availableAvatars[avatarKey]!, fit: BoxFit.contain);
+                              ? Icon(
+                                  Icons.person_pin,
+                                  key: const ValueKey<String>('simple_avatar'),
+                                  color: Colors.grey,
+                                  size: avatarSize * 0.8,
+                                )
+                              : Image.asset(
+                                  _availableAvatars[avatarKey]!,
+                                  key: ValueKey<String>(avatarKey),
+                                  fit: BoxFit.contain,
+                                  gaplessPlayback: true,
+                                );
 
                           return Container(
                             width: avatarSize,

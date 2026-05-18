@@ -1,9 +1,12 @@
+import 'dart:io';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:guess_it/core/widgets/premium_scaffold.dart';
+import 'package:guess_it/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:guess_it/features/game/domain/entities/team_entity.dart';
 import 'package:guess_it/features/groups/domain/entities/group_entity.dart';
 import 'package:guess_it/features/groups/presentation/bloc/group_bloc.dart';
@@ -51,10 +54,10 @@ class _GameSetupPageState extends State<GameSetupPage> {
   void _updateAiName() {
     if (isAiOpponent && teamControllers.length > 1) {
       const List<String> diffs = <String>['Fácil', 'Media', 'Difícil'];
-      teamControllers[1].text = 'IA Guess It - ${diffs[aiDifficulty]}';
+      teamControllers[1].text = 'Gessi - ${diffs[aiDifficulty]}';
     } else if (!isAiOpponent &&
         teamControllers.length > 1 &&
-        teamControllers[1].text.startsWith('IA Guess It')) {
+        teamControllers[1].text.startsWith('Gessi')) {
       teamControllers[1].text = '';
     }
   }
@@ -140,7 +143,7 @@ class _GameSetupPageState extends State<GameSetupPage> {
     }
   }
 
-  void _loadGroup(GroupEntity group) {
+  void _loadGroup(GroupEntity group, {bool keepHostIndex = false}) {
     final String? hostEmail = FirebaseAuth.instance.currentUser?.email
         ?.toLowerCase();
     final List<String> filteredEmails = group.memberEmails
@@ -153,7 +156,7 @@ class _GameSetupPageState extends State<GameSetupPage> {
         _showCupertinoAlert(
           context,
           'Grupo insuficiente',
-          'Necesitas al menos 2 personas en total (Tú + 1 amigo) para enfrentaros a la IA.',
+          'Necesitas al menos 2 personas en total (Tú + 1 amigo) para enfrentaros a la maquina.',
         );
         return;
       }
@@ -179,12 +182,24 @@ class _GameSetupPageState extends State<GameSetupPage> {
 
       if (isAiOpponent) {
         // Modo Cooperativo: Todos los amigos van al equipo del Anfitrión
-        teamEmailsLists[selectedHostIndex].addAll(shuffled);
+        selectedHostIndex = 0;
+        teamEmailsLists[0].addAll(shuffled);
       } else {
-        // Modo Competitivo: Reparto equitativo entre todos los equipos creados
-        for (int i = 0; i < shuffled.length; i++) {
-          final int teamIndex = i % teamControllers.length;
-          teamEmailsLists[teamIndex].add(shuffled[i]);
+        // Modo Competitivo: respetamos el equipo del anfitrión si keepHostIndex=true
+        if (!keepHostIndex) selectedHostIndex = 0;
+
+        final int rivalTeamIndex = selectedHostIndex == 0 ? 1 : 0;
+
+        if (shuffled.isNotEmpty) {
+          // El primero de la lista va al equipo rival para asegurar al menos un rival
+          teamEmailsLists[rivalTeamIndex].add(shuffled.first);
+
+          // Repartimos el resto alternando entre el equipo del host y el rival
+          for (int i = 1; i < shuffled.length; i++) {
+            final int teamIndex =
+                i % 2 == 1 ? selectedHostIndex : rivalTeamIndex;
+            teamEmailsLists[teamIndex].add(shuffled[i]);
+          }
         }
       }
     });
@@ -366,14 +381,25 @@ class _GameSetupPageState extends State<GameSetupPage> {
                           const SizedBox(height: 16),
                           TextField(
                             controller: controller,
-                            decoration: const InputDecoration(
+                            maxLength: 15,
+                            enabled: !(isAiOpponent && index == 1),
+                            style: TextStyle(
+                              color: (isAiOpponent && index == 1)
+                                  ? Colors.grey
+                                  : Colors.black87,
+                            ),
+                            decoration: InputDecoration(
                               labelText: 'Nombre del Equipo',
-                              border: OutlineInputBorder(
+                              filled: isAiOpponent && index == 1,
+                              fillColor: (isAiOpponent && index == 1)
+                                  ? Colors.grey.withOpacity(0.1)
+                                  : null,
+                              border: const OutlineInputBorder(
                                 borderRadius: BorderRadius.all(
                                   Radius.circular(12),
                                 ),
                               ),
-                              prefixIcon: Icon(Icons.group),
+                              prefixIcon: const Icon(Icons.group),
                             ),
                           ),
                           const SizedBox(height: 16),
@@ -528,9 +554,15 @@ class _GameSetupPageState extends State<GameSetupPage> {
                             label: Text('Equipo ${index + 1}'),
                             selected: isSelected,
                             onSelected: (bool selected) {
-                              if (selected) {
+                              if (selected && selectedHostIndex != index) {
                                 setState(() {
                                   selectedHostIndex = index;
+                                  if (selectedGroup != null) {
+                                    _loadGroup(
+                                      selectedGroup!,
+                                      keepHostIndex: true,
+                                    );
+                                  }
                                 });
                               }
                             },
@@ -714,7 +746,8 @@ class _GameSetupPageState extends State<GameSetupPage> {
                   ],
                 ),
                 child: ElevatedButton(
-                  onPressed: () {
+                  onPressed: () async {
+                    // 1. VALIDACIONES LOCALES BÁSICAS (Nombres vacíos, cantidades, etc.)
                     final bool hasEmptyTeam = teamControllers.any(
                       (TextEditingController c) => c.text.trim().isEmpty,
                     );
@@ -724,45 +757,6 @@ class _GameSetupPageState extends State<GameSetupPage> {
                         context,
                         'Equipos Incompletos',
                         'Por favor, introduce un nombre para todos los equipos.',
-                      );
-                      return;
-                    }
-
-                    int totalHumanPlayers = 1; // El anfitrión cuenta como 1
-                    for (int i = 0; i < teamControllers.length; i++) {
-                      if (isAiOpponent && i == 1)
-                        continue; // No contamos a la máquina
-                      totalHumanPlayers += teamEmailsLists[i].length;
-                    }
-
-                    if (isAiOpponent && totalHumanPlayers < 2) {
-                      _showCupertinoAlert(
-                        context,
-                        'Faltan Jugadores',
-                        'Para jugar contra la IA necesitáis ser al menos 2 personas en tu equipo. Es necesarios escribir el correo electrnico de los jugadores si estan dados de alta en el sistema o poner su nombre en caso de que no lo esten.',
-                      );
-                      return;
-                    } else if (!isAiOpponent && totalHumanPlayers < 4) {
-                      _showCupertinoAlert(
-                        context,
-                        'Faltan Jugadores',
-                        'Para jugar Humanos vs Humanos necesitáis ser al menos 4 personas en total. Es necesarios escribir el correo electrnico de los jugadores si estan dados de alta en el sistema o poner su nombre en caso de que no lo esten.',
-                      );
-                      return;
-                    }
-
-                    final List<String> teamNames = teamControllers
-                        .map((TextEditingController c) => c.text.trim())
-                        .toList();
-                    final Set<String> uniqueNames = teamNames
-                        .map((String name) => name.toUpperCase())
-                        .toSet();
-
-                    if (uniqueNames.length != teamNames.length) {
-                      _showCupertinoAlert(
-                        context,
-                        'Nombres Repetidos',
-                        'Por favor, introduce nombres únicos para cada equipo.',
                       );
                       return;
                     }
@@ -787,31 +781,111 @@ class _GameSetupPageState extends State<GameSetupPage> {
                       return;
                     }
 
-                    final String hostTeamName =
-                        teamControllers[selectedHostIndex].text.trim();
+                    // 2. COMPROBACIÓN EXPLICITA DE INTERNET / COBERTURA
+                    try {
+                      final List<dynamic> result = await InternetAddress.lookup('google.com')
+                          .timeout(const Duration(seconds: 4));
+                      if (result.isEmpty || result[0].rawAddress.isEmpty) {
+                        throw Exception();
+                      }
+                    } catch (_) {
+                      _showCupertinoAlert(
+                        context,
+                        'Sin Conexión',
+                        'No tienes acceso a internet. Solo se puede jugar incluyendo palabras manualmente en la siguiente pantalla, ya que no se pueden descargar palabras de la base de datos.',
+                      );
+                      return;
+                    }
 
-                    final String? hostEmail =
-                        FirebaseAuth.instance.currentUser?.email;
+                    // 3. INDICADOR DE CARGA ASÍNCRONO
+                    showDialog<void>(
+                      context: context,
+                      barrierDismissible: false,
+                      builder: (BuildContext ctx) => const Center(
+                        child: CircularProgressIndicator(color: Colors.white),
+                      ),
+                    );
+
+                    try {
+                      // Leemos el estado del AuthBloc para saber si es invitado
+                      final authState = context.read<AuthBloc>().state;
+                      final bool isGuest = authState.user?.isGuest ?? true;
+                      bool allTeamsValid = true;
+
+                      // SOLO VALIDAMOS SI NO ES INVITADO
+                      if (!isGuest) {
+                        final String? hostEmail = FirebaseAuth.instance.currentUser?.email?.toLowerCase();
+
+                        for (int i = 0; i < teamControllers.length; i++) {
+                          if (isAiOpponent && i == 1) continue;
+
+                          bool hasRegisteredInTeam = false;
+
+                          if (i == selectedHostIndex && hostEmail != null && hostEmail.isNotEmpty) {
+                            hasRegisteredInTeam = true;
+                          }
+
+                          if (!hasRegisteredInTeam) {
+                            for (final String emailOrName in teamEmailsLists[i]) {
+                              final String cleanEmail = emailOrName.trim().toLowerCase();
+                              if (cleanEmail.contains('@')) {
+                                final QuerySnapshot<Map<String, dynamic>> query = await FirebaseFirestore.instance
+                                    .collection('users')
+                                    .where('email', isEqualTo: cleanEmail)
+                                    .limit(1)
+                                    .get();
+                                if (query.docs.isNotEmpty) {
+                                  hasRegisteredInTeam = true;
+                                  break;
+                                }
+                              }
+                            }
+                          }
+
+                          if (!hasRegisteredInTeam) {
+                            allTeamsValid = false;
+                            break;
+                          }
+                        }
+                      }
+
+                      if (mounted) Navigator.of(context).pop(); // Cierra el indicador de carga
+
+                      if (!isGuest && !allTeamsValid) {
+                        _showCupertinoAlert(
+                          context,
+                          'Falta un Capitán',
+                          'Cada equipo humano necesita al menos un jugador con cuenta registrada (email) para jugar.',
+                        );
+                        return;
+                      }
+                    } catch (e) {
+                      if (mounted) Navigator.of(context).pop();
+                      return;
+                    }
+
+                    // 4. CONTINUAR CON LA NAVEGACIÓN SI TODO ES CORRECTO
+                    if (!mounted) return;
+                    final String hostTeamName = teamControllers[selectedHostIndex].text.trim();
+                    
+                    // LECTURA SEGURA: Comprobamos el estado del BLoC en lugar de fiarnos del caché de Firebase
+                    final authState = context.read<AuthBloc>().state;
+                    final bool isGuest = authState.user?.isGuest ?? true;
+                    final String? hostEmail = isGuest ? null : FirebaseAuth.instance.currentUser?.email?.toLowerCase();
+
                     final List<TeamEntity> initialTeams = <TeamEntity>[];
 
                     for (int i = 0; i < teamControllers.length; i++) {
-                      final List<String> emails = List<String>.from(
-                        teamEmailsLists[i],
-                      );
-
+                      final List<String> emails = List<String>.from(teamEmailsLists[i]);
+                      
+                      // Solo inyectamos al anfitrión si de verdad tiene una cuenta activa y no es invitado
                       if (hostEmail != null && hostEmail.isNotEmpty) {
-                        // 1. Eliminamos el correo del anfitrión de TODOS los equipos por si lo metió a mano por error
-                        emails.removeWhere(
-                          (String email) =>
-                              email.toLowerCase() == hostEmail.toLowerCase(),
-                        );
-
-                        // 2. Lo inyectamos EXCLUSIVAMENTE en el equipo que ha marcado como Anfitrión
+                        emails.removeWhere((String email) => email.toLowerCase() == hostEmail);
                         if (i == selectedHostIndex) {
                           emails.add(hostEmail);
                         }
                       }
-
+                      
                       initialTeams.add(
                         TeamEntity(
                           name: teamControllers[i].text.trim(),

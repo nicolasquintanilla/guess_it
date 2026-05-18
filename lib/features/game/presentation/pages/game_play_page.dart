@@ -346,19 +346,26 @@ class GamePlayPage extends StatelessWidget {
                                                     MainAxisAlignment
                                                         .spaceBetween,
                                                 children: <Widget>[
-                                                  Text(
-                                                    team.name,
-                                                    style: TextStyle(
-                                                      fontSize: 18,
-                                                      fontWeight: isActive
-                                                          ? FontWeight.w900
-                                                          : FontWeight.w500,
-                                                      color: isActive
-                                                          ? Colors
-                                                                .deepPurpleAccent
-                                                          : Colors.black87,
+                                                  Expanded(
+                                                    child: Text(
+                                                      team.name,
+                                                      textAlign:
+                                                          TextAlign.center,
+                                                      overflow:
+                                                          TextOverflow.ellipsis,
+                                                      style: TextStyle(
+                                                        fontSize: 18,
+                                                        fontWeight: isActive
+                                                            ? FontWeight.w900
+                                                            : FontWeight.w500,
+                                                        color: isActive
+                                                            ? Colors
+                                                                  .deepPurpleAccent
+                                                            : Colors.black87,
+                                                      ),
                                                     ),
                                                   ),
+                                                  const SizedBox(width: 8),
                                                   Text(
                                                     '${team.score} pts',
                                                     style: TextStyle(
@@ -482,13 +489,13 @@ class GamePlayPage extends StatelessWidget {
                             ),
                           ),
                           const Spacer(),
-                          if (activeTeam.name == 'IA Guess It')
+                          if (activeTeam.name.startsWith('Gessi'))
                             const Column(
                               children: <Widget>[
                                 CircularProgressIndicator(color: Colors.white),
                                 SizedBox(height: 16),
                                 Text(
-                                  'La IA está describiendo la palabra...',
+                                  'Gessi está describiendo la palabra...',
                                   style: TextStyle(
                                     color: Colors.white,
                                     fontSize: 18,
@@ -497,58 +504,62 @@ class GamePlayPage extends StatelessWidget {
                               ],
                             )
                           else
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                              children: <Widget>[
-                                ElevatedButton(
-                                  onPressed: () {
-                                    HapticFeedback.heavyImpact();
-                                    context.read<GameBloc>().add(
-                                      const SkipWordEvent(),
-                                    );
-                                  },
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.red,
-                                    foregroundColor: Colors.white,
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 32,
-                                      vertical: 24,
+                            IgnorePointer(
+                              ignoring: activeTeam.name.startsWith('Gessi'),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceEvenly,
+                                children: <Widget>[
+                                  ElevatedButton(
+                                    onPressed: () {
+                                      HapticFeedback.heavyImpact();
+                                      context.read<GameBloc>().add(
+                                        const SkipWordEvent(),
+                                      );
+                                    },
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.red,
+                                      foregroundColor: Colors.white,
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 32,
+                                        vertical: 24,
+                                      ),
+                                    ),
+                                    child: const Text(
+                                      'Pasar',
+                                      style: TextStyle(fontSize: 24),
                                     ),
                                   ),
-                                  child: const Text(
-                                    'Pasar',
-                                    style: TextStyle(fontSize: 24),
-                                  ),
-                                ),
-                                ElevatedButton(
-                                  onPressed: () {
-                                    HapticFeedback.lightImpact();
-                                    Future<void>.delayed(
-                                      const Duration(milliseconds: 100),
-                                      () {
-                                        HapticFeedback.lightImpact();
-                                      },
-                                    );
-                                    context.read<GameBloc>().add(
-                                      const CorrectAnswerEvent(),
-                                    );
-                                  },
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.white,
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 32,
-                                      vertical: 24,
+                                  ElevatedButton(
+                                    onPressed: () {
+                                      HapticFeedback.lightImpact();
+                                      Future<void>.delayed(
+                                        const Duration(milliseconds: 100),
+                                        () {
+                                          HapticFeedback.lightImpact();
+                                        },
+                                      );
+                                      context.read<GameBloc>().add(
+                                        const CorrectAnswerEvent(),
+                                      );
+                                    },
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.white,
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 32,
+                                        vertical: 24,
+                                      ),
+                                    ),
+                                    child: const Text(
+                                      '¡Correcto!',
+                                      style: TextStyle(
+                                        color: Colors.green,
+                                        fontSize: 24,
+                                      ),
                                     ),
                                   ),
-                                  child: const Text(
-                                    '¡Correcto!',
-                                    style: TextStyle(
-                                      color: Colors.green,
-                                      fontSize: 24,
-                                    ),
-                                  ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
                           const SizedBox(height: 48),
                         ],

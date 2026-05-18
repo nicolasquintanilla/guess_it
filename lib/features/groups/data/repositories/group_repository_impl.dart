@@ -5,9 +5,8 @@ import 'package:guess_it/features/groups/data/datasources/group_remote_data_sour
 class GroupRepositoryImpl implements GroupRepository {
   final GroupRemoteDataSource remoteDataSource;
 
-  const GroupRepositoryImpl({
-    required GroupRemoteDataSource remoteDataSource,
-  }) : remoteDataSource = remoteDataSource;
+  const GroupRepositoryImpl({required GroupRemoteDataSource remoteDataSource})
+    : remoteDataSource = remoteDataSource;
 
   @override
   Future<String> createGroup(String groupName) async {
@@ -20,8 +19,8 @@ class GroupRepositoryImpl implements GroupRepository {
   }
 
   @override
-  Future<List<GroupEntity>> getUserGroups() async {
-    return await remoteDataSource.getUserGroups();
+  Stream<List<GroupEntity>> getUserGroups() {
+    return remoteDataSource.getUserGroups();
   }
 
   @override
@@ -35,7 +34,11 @@ class GroupRepositoryImpl implements GroupRepository {
   }
 
   @override
-  Future<void> kickMember(String groupId, String memberName, String memberEmail) async {
+  Future<void> kickMember(
+    String groupId,
+    String memberName,
+    String memberEmail,
+  ) async {
     return await remoteDataSource.kickMember(groupId, memberName, memberEmail);
   }
 }

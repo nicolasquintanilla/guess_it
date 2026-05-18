@@ -190,6 +190,10 @@ class AuthBloc extends HydratedBloc<AuthEvent, AuthState> {
           in memberGroups.docs) {
         await doc.reference.update(<String, Object?>{
           'memberNames': FieldValue.arrayRemove(<String>[user.username]),
+          'memberEmails': FieldValue.arrayRemove(<String>[email ?? '']),
+          'memberIds': FieldValue.arrayRemove(<String>[
+            user.id,
+          ]), // Por si se está usando
         });
       }
 
@@ -215,15 +219,42 @@ class AuthBloc extends HydratedBloc<AuthEvent, AuthState> {
   ) async {
     if (state.user == null || state.user!.isGuest) return;
     try {
+      final QuerySnapshot<Map<String, dynamic>> query = await FirebaseFirestore
+          .instance
+          .collection('users')
+          .where('username', isEqualTo: event.newUsername)
+          .get();
+
+      if (query.docs.isNotEmpty) {
+        emit(
+          state.copyWith(
+            status: AuthStatus.error,
+            errorMessage: 'Ese nombre de usuario ya está en uso.',
+          ),
+        );
+        return;
+      }
+
       await FirebaseFirestore.instance
           .collection('users')
           .doc(state.user!.id)
           .update(<String, Object?>{'username': event.newUsername});
+
       final UserEntity updatedUser = state.user!.copyWith(
         username: event.newUsername,
       );
-      emit(state.copyWith(user: updatedUser));
-    } catch (_) {}
+      emit(
+        state.copyWith(
+          user: updatedUser,
+          status: AuthStatus.authenticated,
+          errorMessage: null,
+        ),
+      );
+    } catch (e) {
+      emit(
+        state.copyWith(status: AuthStatus.error, errorMessage: e.toString()),
+      );
+    }
   }
 
   Future<void> _onUpdateAvatar(
