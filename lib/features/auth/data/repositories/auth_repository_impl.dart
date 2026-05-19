@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:guess_it/core/errors/failure.dart';
 import 'package:guess_it/features/auth/domain/entities/user_entity.dart';
@@ -16,6 +17,31 @@ class AuthRepositoryImpl implements AuthRepository {
   }) : remoteDataSource = remoteDataSource,
        localDataSource = localDataSource;
 
+  String _mapFirebaseError(Object e) {
+    if (e is FirebaseAuthException) {
+      switch (e.code) {
+        case 'email-already-in-use':
+          return 'Este correo ya está registrado.';
+        case 'weak-password':
+          return 'La contraseña es demasiado débil. Usa al menos 6 caracteres.';
+        case 'invalid-credential':
+        case 'wrong-password':
+        case 'user-not-found':
+          return 'Correo o contraseña incorrectos.';
+        case 'permission-denied':
+          return 'Error de permisos al crear la cuenta. Inténtalo de nuevo.';
+        default:
+          return 'Ha ocurrido un error inesperado. Por favor, inténtalo más tarde.';
+      }
+    } else if (e is FirebaseException) {
+      if (e.code == 'permission-denied') {
+        return 'Error de permisos al crear la cuenta. Inténtalo de nuevo.';
+      }
+      return 'Ha ocurrido un error inesperado. Por favor, inténtalo más tarde.';
+    }
+    return 'Ha ocurrido un error inesperado. Por favor, inténtalo más tarde.';
+  }
+
   @override
   Future<Either<Failure, UserEntity>> loginHost({
     required String email,
@@ -28,7 +54,7 @@ class AuthRepositoryImpl implements AuthRepository {
       );
       return Right(user);
     } catch (e) {
-      return Left(ServerFailure(message: e.toString()));
+      return Left(ServerFailure(message: _mapFirebaseError(e)));
     }
   }
 
@@ -61,7 +87,7 @@ class AuthRepositoryImpl implements AuthRepository {
       );
       return Right(user);
     } catch (e) {
-      return Left(ServerFailure(message: e.toString()));
+      return Left(ServerFailure(message: _mapFirebaseError(e)));
     }
   }
 

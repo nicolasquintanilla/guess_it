@@ -147,7 +147,7 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> {
               },
             ),
           ],
-          child: Padding(
+          child: SingleChildScrollView(
             padding: const EdgeInsets.all(24.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -234,9 +234,10 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> {
                   textAlign: TextAlign.left,
                 ),
                 const SizedBox(height: 16),
-                Expanded(
-                  child: ListView.builder(
-                    itemCount: liveGroup.memberNames.length,
+                ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: liveGroup.memberNames.length,
                     itemBuilder: (BuildContext context, int index) {
                       final String memberName = liveGroup.memberNames[index];
                       final String memberEmail =
@@ -315,7 +316,6 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> {
                       );
                     },
                   ),
-                ),
                 const SizedBox(height: 32),
                 const Text(
                   'Ranking del Grupo',
@@ -326,74 +326,42 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> {
                   ),
                 ),
                 const SizedBox(height: 16),
-                if (liveGroup.scores.isEmpty)
-                  const Text(
-                    'Aún no hay puntuaciones. ¡Jugad una partida!',
-                    style: TextStyle(color: Colors.white70),
-                  )
-                else
-                  Expanded(
-                    child: ListView.builder(
-                      itemCount: liveGroup.scores.length,
-                      itemBuilder: (BuildContext context, int index) {
-                        final List<MapEntry<String, int>> sortedScores =
-                            liveGroup.scores.entries.toList()..sort(
-                              (
-                                MapEntry<String, int> a,
-                                MapEntry<String, int> b,
-                              ) => b.value.compareTo(a.value),
-                            );
-                        final MapEntry<String, int> entry = sortedScores[index];
-
-                        return Card(
-                          color: index == 0
-                              ? Colors.amber.shade300
-                              : Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12.0),
-                          ),
-                          child: ListTile(
-                            leading: index == 0
-                                ? const Icon(
-                                    Icons.emoji_events,
-                                    color: Colors.white,
-                                    size: 32,
-                                  )
-                                : CircleAvatar(
-                                    backgroundColor: Colors.grey.shade200,
-                                    child: Text(
-                                      '#${index + 1}',
-                                      style: const TextStyle(
-                                        color: Colors.black87,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ),
-                            title: Text(
-                              entry.key,
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 18,
-                                color: index == 0
-                                    ? Colors.white
-                                    : Colors.black87,
-                              ),
-                            ),
-                            trailing: Text(
-                              '${entry.value} pts',
-                              style: TextStyle(
-                                fontWeight: FontWeight.w900,
-                                fontSize: 20,
-                                color: index == 0
-                                    ? Colors.white
-                                    : Colors.deepPurple,
-                              ),
-                            ),
-                          ),
-                        );
-                      },
-                    ),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 16),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: Colors.purpleAccent.withOpacity(0.3), width: 1),
                   ),
+                  child: const Column(
+                    children: <Widget>[
+                      Icon(
+                        Icons.construction_rounded,
+                        size: 48,
+                        color: Colors.purpleAccent,
+                      ),
+                      SizedBox(height: 16),
+                      Text(
+                        '¡Próximamente!',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                      SizedBox(height: 8),
+                      Text(
+                        'El ranking interno de los grupos estará disponible en la próxima actualización.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.white70,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ],
             ),
           ),

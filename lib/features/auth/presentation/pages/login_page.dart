@@ -22,6 +22,7 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
+  bool _obscurePassword = true;
 
   @override
   void dispose() {
@@ -48,8 +49,15 @@ class _LoginPageState extends State<LoginPage> {
       return 'Demasiados intentos. Inténtalo más tarde.';
     } else if (error.contains('User data not found')) {
       return 'Este usuario no existe.';
+    } else if (error.contains('permission-denied')) {
+      return 'Error de permisos al crear la cuenta. Inténtalo de nuevo.';
     }
-    return 'Error inesperado: $error';
+
+    if (error.isNotEmpty && !error.contains('[') && !error.contains('/')) {
+      return error;
+    }
+
+    return 'Ha ocurrido un error inesperado. Por favor, inténtalo más tarde.';
   }
 
   void _showCupertinoAlert(BuildContext context, String title, String message) {
@@ -193,6 +201,17 @@ class _LoginPageState extends State<LoginPage> {
                                 decoration: InputDecoration(
                                   labelText: 'Contraseña',
                                   prefixIcon: const Icon(Icons.lock_outline, color: Colors.deepPurple),
+                                  suffixIcon: IconButton(
+                                    icon: Icon(
+                                      _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                                      color: Colors.grey,
+                                    ),
+                                    onPressed: () {
+                                      setState(() {
+                                        _obscurePassword = !_obscurePassword;
+                                      });
+                                    },
+                                  ),
                                   filled: true,
                                   fillColor: Colors.grey.shade100,
                                   border: OutlineInputBorder(
@@ -200,7 +219,7 @@ class _LoginPageState extends State<LoginPage> {
                                     borderSide: BorderSide.none,
                                   ),
                                 ),
-                                obscureText: true,
+                                obscureText: _obscurePassword,
                               ),
                               Align(
                                 alignment: Alignment.centerRight,

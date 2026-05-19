@@ -22,6 +22,7 @@ class _RegisterPageState extends State<RegisterPage> {
   final TextEditingController usernameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
+  bool _obscurePassword = true;
 
   @override
   void dispose() {
@@ -46,8 +47,15 @@ class _RegisterPageState extends State<RegisterPage> {
       return 'Este correo ya está registrado en otra cuenta.';
     } else if (error.contains('too-many-requests')) {
       return 'Demasiados intentos. Inténtalo más tarde.';
+    } else if (error.contains('permission-denied')) {
+      return 'Error de permisos al crear la cuenta. Inténtalo de nuevo.';
     }
-    return 'Error inesperado: $error';
+
+    if (error.isNotEmpty && !error.contains('[') && !error.contains('/')) {
+      return error;
+    }
+
+    return 'Ha ocurrido un error inesperado. Por favor, inténtalo más tarde.';
   }
 
   void _showCupertinoAlert(BuildContext context, String title, String message) {
@@ -205,6 +213,17 @@ class _RegisterPageState extends State<RegisterPage> {
                                     Icons.lock_outline,
                                     color: Colors.deepPurple,
                                   ),
+                                  suffixIcon: IconButton(
+                                    icon: Icon(
+                                      _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                                      color: Colors.grey,
+                                    ),
+                                    onPressed: () {
+                                      setState(() {
+                                        _obscurePassword = !_obscurePassword;
+                                      });
+                                    },
+                                  ),
                                   filled: true,
                                   fillColor: Colors.grey.shade100,
                                   border: OutlineInputBorder(
@@ -212,7 +231,7 @@ class _RegisterPageState extends State<RegisterPage> {
                                     borderSide: BorderSide.none,
                                   ),
                                 ),
-                                obscureText: true,
+                                obscureText: _obscurePassword,
                               ),
                               const SizedBox(height: 32),
                               Container(

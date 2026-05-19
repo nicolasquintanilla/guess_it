@@ -54,6 +54,14 @@ class HowToPlayPage extends StatelessWidget {
               description:
                   'La prueba final. Con las mismas palabras, ahora debes hacer que tu equipo las adivine usando únicamente tu cuerpo.\n\n❌ Prohibido: Hablar, tararear, hacer efectos de sonido o señalar objetos de la habitación. ¡Solo mímica!',
             ),
+            const SizedBox(height: 16),
+            const _RuleCard(
+              title: '¡Regla de Oro para Pasar Palabra!',
+              icon: Icons.warning_amber_rounded,
+              color: Colors.redAccent,
+              description:
+                  'Solo puedes pasar una palabra si la acabas de leer y aún no has empezado a actuar. Si ya has empezado a hacer alguna acción y tu equipo se atasca... ¡No puedes pasarla! Tendréis que adivinarla obligatoriamente para poder avanzar a la siguiente.',
+            ),
             const SizedBox(height: 32),
           ],
         ),

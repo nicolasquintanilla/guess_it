@@ -9,7 +9,7 @@ import 'package:guess_it/features/auth/domain/usecases/login_host_usecase.dart';
 import 'package:guess_it/features/auth/domain/usecases/register_host_usecase.dart';
 import 'package:guess_it/features/auth/domain/usecases/play_as_guest_usecase.dart';
 import 'package:guess_it/features/auth/domain/usecases/logout_usecase.dart';
-
+import 'package:guess_it/core/utils/network_checker.dart';
 class AuthBloc extends HydratedBloc<AuthEvent, AuthState> {
   final LoginHostUseCase loginHostUseCase;
   final RegisterHostUseCase registerHostUseCase;
@@ -75,6 +75,13 @@ class AuthBloc extends HydratedBloc<AuthEvent, AuthState> {
     Emitter<AuthState> emit,
   ) async {
     emit(state.copyWith(status: AuthStatus.loading, errorMessage: null));
+    if (!await NetworkChecker.hasConnection()) {
+      emit(state.copyWith(
+        status: AuthStatus.error,
+        errorMessage: 'No hay conexión a internet. Por favor, comprueba tu red.',
+      ));
+      return;
+    }
     try {
       await FirebaseAuth.instance.sendPasswordResetEmail(email: event.email);
       emit(state.copyWith(status: AuthStatus.passwordResetSent));
@@ -90,6 +97,13 @@ class AuthBloc extends HydratedBloc<AuthEvent, AuthState> {
     Emitter<AuthState> emit,
   ) async {
     emit(state.copyWith(status: AuthStatus.loading, errorMessage: null));
+    if (!await NetworkChecker.hasConnection()) {
+      emit(state.copyWith(
+        status: AuthStatus.error,
+        errorMessage: 'No hay conexión a internet. Por favor, comprueba tu red.',
+      ));
+      return;
+    }
     final result = await loginHostUseCase(
       email: event.email,
       password: event.password,
@@ -108,6 +122,13 @@ class AuthBloc extends HydratedBloc<AuthEvent, AuthState> {
     Emitter<AuthState> emit,
   ) async {
     emit(state.copyWith(status: AuthStatus.loading, errorMessage: null));
+    if (!await NetworkChecker.hasConnection()) {
+      emit(state.copyWith(
+        status: AuthStatus.error,
+        errorMessage: 'No hay conexión a internet. Por favor, comprueba tu red.',
+      ));
+      return;
+    }
     final result = await registerHostUseCase(
       username: event.username,
       email: event.email,
@@ -159,6 +180,13 @@ class AuthBloc extends HydratedBloc<AuthEvent, AuthState> {
     Emitter<AuthState> emit,
   ) async {
     emit(state.copyWith(status: AuthStatus.loading, errorMessage: null));
+    if (!await NetworkChecker.hasConnection()) {
+      emit(state.copyWith(
+        status: AuthStatus.error,
+        errorMessage: 'No hay conexión a internet. Por favor, comprueba tu red.',
+      ));
+      return;
+    }
 
     final UserEntity? user = state.user;
     if (user == null || user.isGuest) return;
@@ -218,6 +246,14 @@ class AuthBloc extends HydratedBloc<AuthEvent, AuthState> {
     Emitter<AuthState> emit,
   ) async {
     if (state.user == null || state.user!.isGuest) return;
+    emit(state.copyWith(status: AuthStatus.loading, errorMessage: null));
+    if (!await NetworkChecker.hasConnection()) {
+      emit(state.copyWith(
+        status: AuthStatus.error,
+        errorMessage: 'No hay conexión a internet. Por favor, comprueba tu red.',
+      ));
+      return;
+    }
     try {
       final QuerySnapshot<Map<String, dynamic>> query = await FirebaseFirestore
           .instance

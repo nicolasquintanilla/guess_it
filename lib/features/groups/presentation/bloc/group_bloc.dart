@@ -4,6 +4,7 @@ import 'package:guess_it/features/groups/domain/repositories/group_repository.da
 import 'package:guess_it/features/groups/presentation/bloc/group_event.dart';
 import 'package:guess_it/features/groups/presentation/bloc/group_state.dart';
 import 'package:guess_it/features/groups/domain/entities/group_entity.dart';
+import 'package:guess_it/core/utils/network_checker.dart';
 
 class GroupBloc extends Bloc<GroupEvent, GroupState> {
   final GroupRepository repository;
@@ -27,6 +28,13 @@ class GroupBloc extends Bloc<GroupEvent, GroupState> {
     Emitter<GroupState> emit,
   ) async {
     emit(state.copyWith(status: GroupStatus.loading));
+    if (!await NetworkChecker.hasConnection()) {
+      emit(state.copyWith(
+        status: GroupStatus.error,
+        errorMessage: 'No hay conexión a internet. Por favor, comprueba tu red.',
+      ));
+      return;
+    }
     try {
       await _groupsSubscription?.cancel();
       _groupsSubscription = repository.getUserGroups().listen(
@@ -54,6 +62,13 @@ class GroupBloc extends Bloc<GroupEvent, GroupState> {
     Emitter<GroupState> emit,
   ) async {
     emit(state.copyWith(status: GroupStatus.loading));
+    if (!await NetworkChecker.hasConnection()) {
+      emit(state.copyWith(
+        status: GroupStatus.error,
+        errorMessage: 'No hay conexión a internet. Por favor, comprueba tu red.',
+      ));
+      return;
+    }
     try {
       await repository.createGroup(event.groupName);
       add(const LoadGroupsEvent());
@@ -75,6 +90,13 @@ class GroupBloc extends Bloc<GroupEvent, GroupState> {
     Emitter<GroupState> emit,
   ) async {
     emit(state.copyWith(status: GroupStatus.loading));
+    if (!await NetworkChecker.hasConnection()) {
+      emit(state.copyWith(
+        status: GroupStatus.error,
+        errorMessage: 'No hay conexión a internet. Por favor, comprueba tu red.',
+      ));
+      return;
+    }
     try {
       await repository.joinGroup(event.joinCode);
       add(const LoadGroupsEvent());
@@ -96,6 +118,13 @@ class GroupBloc extends Bloc<GroupEvent, GroupState> {
     Emitter<GroupState> emit,
   ) async {
     emit(state.copyWith(status: GroupStatus.loading));
+    if (!await NetworkChecker.hasConnection()) {
+      emit(state.copyWith(
+        status: GroupStatus.error,
+        errorMessage: 'No hay conexión a internet. Por favor, comprueba tu red.',
+      ));
+      return;
+    }
     try {
       await repository.deleteGroup(event.groupId);
       add(const LoadGroupsEvent());
@@ -117,6 +146,13 @@ class GroupBloc extends Bloc<GroupEvent, GroupState> {
     Emitter<GroupState> emit,
   ) async {
     emit(state.copyWith(status: GroupStatus.loading));
+    if (!await NetworkChecker.hasConnection()) {
+      emit(state.copyWith(
+        status: GroupStatus.error,
+        errorMessage: 'No hay conexión a internet. Por favor, comprueba tu red.',
+      ));
+      return;
+    }
     try {
       await repository.leaveGroup(event.groupId);
       add(const LoadGroupsEvent());
@@ -144,6 +180,13 @@ class GroupBloc extends Bloc<GroupEvent, GroupState> {
     Emitter<GroupState> emit,
   ) async {
     emit(state.copyWith(status: GroupStatus.loading));
+    if (!await NetworkChecker.hasConnection()) {
+      emit(state.copyWith(
+        status: GroupStatus.error,
+        errorMessage: 'No hay conexión a internet. Por favor, comprueba tu red.',
+      ));
+      return;
+    }
     try {
       await repository.kickMember(
         event.groupId,

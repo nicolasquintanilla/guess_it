@@ -7,6 +7,7 @@ import 'package:guess_it/features/game/presentation/bloc/game_state.dart';
 import 'package:guess_it/features/game/domain/entities/game_entity.dart';
 import 'package:guess_it/features/game/domain/entities/team_entity.dart';
 import 'package:guess_it/features/game/domain/repositories/word_repository.dart';
+import 'package:guess_it/core/utils/network_checker.dart';
 
 class GameBloc extends Bloc<GameEvent, GameState> {
   final WordRepository wordRepository;
@@ -175,6 +176,9 @@ class GameBloc extends Bloc<GameEvent, GameState> {
         print('DEBUG: Iniciando proceso de ranking...');
 
         try {
+          if (!await NetworkChecker.hasConnection()) {
+            throw Exception('No hay conexión a internet. Por favor, comprueba tu red.');
+          }
           final FirebaseFirestore firestore = FirebaseFirestore.instance;
           int maxScore = -1;
           for (final TeamEntity team in updatedGame.teams) {

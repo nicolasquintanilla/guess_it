@@ -220,55 +220,66 @@ class _GameSetupPageState extends State<GameSetupPage> {
         return BlocBuilder<GroupBloc, GroupState>(
           builder: (BuildContext context, GroupState state) {
             if (state.groups.isEmpty) {
-              return const Padding(
-                padding: EdgeInsets.all(32),
-                child: Text(
-                  'No tienes grupos.',
-                  style: TextStyle(fontSize: 18),
+              return SafeArea(
+                child: Padding(
+                  padding: EdgeInsets.only(
+                    top: 32,
+                    left: 32,
+                    right: 32,
+                    bottom: MediaQuery.of(context).padding.bottom + 32, // Padding extra para evitar la barra
+                  ),
+                  child: const Text(
+                    'No tienes grupos.',
+                    style: TextStyle(fontSize: 18),
+                    textAlign: TextAlign.center,
+                  ),
                 ),
               );
             }
-            return Padding(
-              padding: const EdgeInsets.all(24.0),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: <Widget>[
-                  const Text(
-                    'Selecciona un Grupo',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 16),
-                  Expanded(
-                    child: ListView.builder(
-                      shrinkWrap: true,
-                      itemCount: state.groups.length,
-                      itemBuilder: (BuildContext context, int index) {
-                        final GroupEntity group = state.groups[index];
-                        return ListTile(
-                          leading: const Icon(
-                            Icons.group,
-                            color: Colors.purple,
-                          ),
-                          title: Text(
-                            group.name,
-                            style: const TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          subtitle: Text(
-                            '${group.memberNames.length} integrantes',
-                          ),
-                          onTap: () {
-                            Navigator.pop(
-                              ctx,
-                            ); // Cierra el selector de grupos primero
-                            _loadGroup(
-                              group,
-                            ); // Ejecuta la carga y muestra la alerta si falla
-                          },
-                        );
-                      },
+            return SafeArea(
+              bottom: true,
+              child: Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    const Text(
+                      'Selecciona un Grupo',
+                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 16),
+                    Expanded(
+                      child: ListView.builder(
+                        shrinkWrap: true,
+                        itemCount: state.groups.length,
+                        itemBuilder: (BuildContext context, int index) {
+                          final GroupEntity group = state.groups[index];
+                          return ListTile(
+                            leading: const Icon(
+                              Icons.group,
+                              color: Colors.purple,
+                            ),
+                            title: Text(
+                              group.name,
+                              style: const TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            subtitle: Text(
+                              '${group.memberNames.length} integrantes',
+                            ),
+                            onTap: () {
+                              Navigator.pop(
+                                ctx,
+                              ); // Cierra el selector de grupos primero
+                              _loadGroup(
+                                group,
+                              ); // Ejecuta la carga y muestra la alerta si falla
+                            },
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                ),
               ),
             );
           },
@@ -781,87 +792,131 @@ class _GameSetupPageState extends State<GameSetupPage> {
                       return;
                     }
 
-                    // 2. COMPROBACIÓN EXPLICITA DE INTERNET / COBERTURA
+                    // 2. COMPROBACIÓN EXPLICITA DE INTERNET Y CACHÉ LOCAL
+                    bool hasInternet = true;
                     try {
                       final List<dynamic> result = await InternetAddress.lookup('google.com')
                           .timeout(const Duration(seconds: 4));
                       if (result.isEmpty || result[0].rawAddress.isEmpty) {
-                        throw Exception();
+                        hasInternet = false;
                       }
                     } catch (_) {
-                      _showCupertinoAlert(
-                        context,
-                        'Sin Conexión',
-                        'No tienes acceso a internet. Solo se puede jugar incluyendo palabras manualmente en la siguiente pantalla, ya que no se pueden descargar palabras de la base de datos.',
-                      );
-                      return;
+                      hasInternet = false;
                     }
 
-                    // 3. INDICADOR DE CARGA ASÍNCRONO
-                    showDialog<void>(
-                      context: context,
-                      barrierDismissible: false,
-                      builder: (BuildContext ctx) => const Center(
-                        child: CircularProgressIndicator(color: Colors.white),
-                      ),
-                    );
+                    if (!hasInternet) {
+                      bool hasCachedWords = false;
+                      try {
+                        // Comprobamos si hay palabras cacheadas localmente
+                        final QuerySnapshot<Map<String, dynamic>> cacheQuery = await FirebaseFirestore.instance
+                            .collection('words') // Colección de palabras de Firestore
+                            .limit(1)
+                            .get(const GetOptions(source: Source.cache));
+                        hasCachedWords = cacheQuery.docs.isNotEmpty;
+                      } catch (e) {
+                        hasCachedWords = false;
+                      }
 
-                    try {
-                      // Leemos el estado del AuthBloc para saber si es invitado
-                      final authState = context.read<AuthBloc>().state;
-                      final bool isGuest = authState.user?.isGuest ?? true;
-                      bool allTeamsValid = true;
+                      if (hasCachedWords) {
+                        // No hay internet, pero SÍ hay caché
+                        await showCupertinoDialog<void>(
+                          context: context,
+                          builder: (BuildContext ctx) => CupertinoAlertDialog(
+                            title: const Text('Modo Offline'),
+                            content: const Text('Jugarás sin conexión usando las palabras guardadas en tu dispositivo. Las victorias se sincronizarán la próxima vez que te conectes.'),
+                            actions: <Widget>[
+                              CupertinoDialogAction(
+                                child: const Text('Entendido'),
+                                onPressed: () => Navigator.of(ctx).pop(),
+                              ),
+                            ],
+                          ),
+                        );
+                      } else {
+                        // No hay internet y NO hay caché
+                        await showCupertinoDialog<void>(
+                          context: context,
+                          builder: (BuildContext ctx) => CupertinoAlertDialog(
+                            title: const Text('Sin Conexión'),
+                            content: const Text('No tienes acceso a internet ni palabras descargadas previamente. Solo se puede jugar incluyendo palabras manualmente en la siguiente pantalla.'),
+                            actions: <Widget>[
+                              CupertinoDialogAction(
+                                child: const Text('Entendido'),
+                                onPressed: () => Navigator.of(ctx).pop(),
+                              ),
+                            ],
+                          ),
+                        );
+                      }
+                    }
 
-                      // SOLO VALIDAMOS SI NO ES INVITADO
-                      if (!isGuest) {
-                        final String? hostEmail = FirebaseAuth.instance.currentUser?.email?.toLowerCase();
+                    if (hasInternet) {
+                      // 3. INDICADOR DE CARGA ASÍNCRONO
+                      showDialog<void>(
+                        context: context,
+                        barrierDismissible: false,
+                        builder: (BuildContext ctx) => const Center(
+                          child: CircularProgressIndicator(color: Colors.white),
+                        ),
+                      );
 
-                        for (int i = 0; i < teamControllers.length; i++) {
-                          if (isAiOpponent && i == 1) continue;
+                      try {
+                        // Leemos el estado del AuthBloc para saber si es invitado
+                        final authState = context.read<AuthBloc>().state;
+                        final bool isGuest = authState.user?.isGuest ?? true;
+                        bool allTeamsValid = true;
 
-                          bool hasRegisteredInTeam = false;
+                        // SOLO VALIDAMOS SI NO ES INVITADO
+                        if (!isGuest) {
+                          final String? hostEmail = FirebaseAuth.instance.currentUser?.email?.toLowerCase();
 
-                          if (i == selectedHostIndex && hostEmail != null && hostEmail.isNotEmpty) {
-                            hasRegisteredInTeam = true;
-                          }
+                          for (int i = 0; i < teamControllers.length; i++) {
+                            if (isAiOpponent && i == 1) continue;
 
-                          if (!hasRegisteredInTeam) {
-                            for (final String emailOrName in teamEmailsLists[i]) {
-                              final String cleanEmail = emailOrName.trim().toLowerCase();
-                              if (cleanEmail.contains('@')) {
-                                final QuerySnapshot<Map<String, dynamic>> query = await FirebaseFirestore.instance
-                                    .collection('users')
-                                    .where('email', isEqualTo: cleanEmail)
-                                    .limit(1)
-                                    .get();
-                                if (query.docs.isNotEmpty) {
-                                  hasRegisteredInTeam = true;
-                                  break;
+                            bool hasRegisteredInTeam = false;
+
+                            if (i == selectedHostIndex && hostEmail != null && hostEmail.isNotEmpty) {
+                              hasRegisteredInTeam = true;
+                            }
+
+                            if (!hasRegisteredInTeam) {
+                              for (final String emailOrName in teamEmailsLists[i]) {
+                                final String cleanEmail = emailOrName.trim().toLowerCase();
+                                if (cleanEmail.contains('@')) {
+                                  final QuerySnapshot<Map<String, dynamic>> query = await FirebaseFirestore.instance
+                                      .collection('users')
+                                      .where('email', isEqualTo: cleanEmail)
+                                      .limit(1)
+                                      .get();
+                                  if (query.docs.isNotEmpty) {
+                                    hasRegisteredInTeam = true;
+                                    break;
+                                  }
                                 }
                               }
                             }
-                          }
 
-                          if (!hasRegisteredInTeam) {
-                            allTeamsValid = false;
-                            break;
+                            if (!hasRegisteredInTeam) {
+                              allTeamsValid = false;
+                              break;
+                            }
                           }
                         }
-                      }
 
-                      if (mounted) Navigator.of(context).pop(); // Cierra el indicador de carga
+                        if (mounted) Navigator.of(context).pop(); // Cierra el indicador de carga
 
-                      if (!isGuest && !allTeamsValid) {
-                        _showCupertinoAlert(
-                          context,
-                          'Falta un Capitán',
-                          'Cada equipo humano necesita al menos un jugador con cuenta registrada (email) para jugar.',
-                        );
+                        if (!isGuest && !allTeamsValid) {
+                          _showCupertinoAlert(
+                            context,
+                            'Falta un Capitán',
+                            'Cada equipo humano necesita al menos un jugador con cuenta registrada (email) para jugar.',
+                          );
+                          return;
+                        }
+                      } catch (e) {
+                        if (mounted) Navigator.of(context).pop();
                         return;
                       }
-                    } catch (e) {
-                      if (mounted) Navigator.of(context).pop();
-                      return;
                     }
 
                     // 4. CONTINUAR CON LA NAVEGACIÓN SI TODO ES CORRECTO

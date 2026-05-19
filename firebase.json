@@ -1,1 +1,36 @@
-{"flutter":{"platforms":{"android":{"default":{"projectId":"guess-it-tfg","appId":"1:638542701605:android:b14d8d1e4b606d80420bcc","fileOutput":"android/app/google-services.json"}},"dart":{"lib/firebase_options.dart":{"projectId":"guess-it-tfg","configurations":{"android":"1:638542701605:android:b14d8d1e4b606d80420bcc","ios":"1:638542701605:ios:97c7826139226445420bcc"}}}}}}
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "guess-it-tfg",
+          "appId": "1:638542701605:android:b14d8d1e4b606d80420bcc",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "guess-it-tfg",
+          "configurations": {
+            "android": "1:638542701605:android:b14d8d1e4b606d80420bcc",
+            "ios": "1:638542701605:ios:97c7826139226445420bcc"
+          }
+        }
+      }
+    }
+  },
+  "functions": [
+    {
+      "source": "functions",
+      "codebase": "default",
+      "disallowLegacyRuntimeConfig": true,
+      "ignore": [
+        "node_modules",
+        ".git",
+        "firebase-debug.log",
+        "firebase-debug.*.log",
+        "*.local"
+      ]
+    }
+  ]
+}
