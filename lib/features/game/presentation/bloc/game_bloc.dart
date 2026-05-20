@@ -170,7 +170,7 @@ class GameBloc extends Bloc<GameEvent, GameState> {
           print('DEBUG: Evitando Race Condition (ejecución duplicada del fin de juego)');
           return;
         }
-        _isFinishingGame = true; // <-- BLOQUEAMOS NUEVAS ENTRADAS
+        _isFinishingGame = true;
 
         updatedGame = updatedGame.copyWith(gameStatus: 'finished');
         print('DEBUG: Iniciando proceso de ranking...');
@@ -220,7 +220,7 @@ class GameBloc extends Bloc<GameEvent, GameState> {
           }
 
           // 2. ACTUALIZACIÓN RANKING GRUPO
-          final String? currentGroupId = _activeGroupId; // <-- LEEMOS DE LA VARIABLE INTERNA DIRECTAMENTE
+          final String? currentGroupId = _activeGroupId;
           if (currentGroupId != null && currentGroupId.isNotEmpty) {
             final DocumentReference<Map<String, dynamic>> groupRef = firestore.collection('groups').doc(currentGroupId);
             final DocumentSnapshot<Map<String, dynamic>> groupDoc = await groupRef.get();
@@ -249,7 +249,7 @@ class GameBloc extends Bloc<GameEvent, GameState> {
               for (final TeamEntity team in updatedGame.teams) {
                 final int points = (team.score == maxScore && maxScore > 0) ? 3 : 1;
                 
-                // DEDUPLICACIÓN TAMBIÉN EN EL GRUPO
+                // DEDUPLICACIÓN EN EL GRUPO
                 final Set<String> uniqueIdentifiers = team.registeredEmails
                     .map((String e) => e.trim().toLowerCase())
                     .toSet();

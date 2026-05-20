@@ -117,7 +117,7 @@ class _GameSetupPageState extends State<GameSetupPage> {
       return;
     }
 
-    // Comprobar si ya existe en ALGÚN equipo
+    // Comprobar si ya existe en algún equipo
     bool exists = false;
     for (final List<String> list in teamEmailsLists) {
       if (list.any((String e) => e.toLowerCase() == input.toLowerCase())) {
@@ -226,7 +226,7 @@ class _GameSetupPageState extends State<GameSetupPage> {
                     top: 32,
                     left: 32,
                     right: 32,
-                    bottom: MediaQuery.of(context).padding.bottom + 32, // Padding extra para evitar la barra
+                    bottom: MediaQuery.of(context).padding.bottom + 32,
                   ),
                   child: const Text(
                     'No tienes grupos.',
@@ -269,10 +269,10 @@ class _GameSetupPageState extends State<GameSetupPage> {
                             onTap: () {
                               Navigator.pop(
                                 ctx,
-                              ); // Cierra el selector de grupos primero
+                              );
                               _loadGroup(
                                 group,
-                              ); // Ejecuta la carga y muestra la alerta si falla
+                              );
                             },
                           );
                         },

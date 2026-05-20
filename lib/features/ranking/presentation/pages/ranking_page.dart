@@ -106,7 +106,7 @@ class _RankingPageState extends State<RankingPage> {
                 height: size,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: Colors.transparent, // Fondo transparente
+                  color: Colors.transparent,
                   border: Border.all(
                     color: podiumColor,
                     width: isFirst ? 4 : 3,
@@ -297,7 +297,7 @@ class _RankingPageState extends State<RankingPage> {
                                   Container(
                                     width: 40,
                                     height: 40,
-                                    decoration: null, // Transparente 100%
+                                    decoration: null,
                                     child: Center(
                                       child:
                                           (user.avatar == 'none' ||
@@ -339,8 +339,7 @@ class _RankingPageState extends State<RankingPage> {
                                       color: Colors.deepPurple,
                                     ),
                                   ),
-                                  if (rank <
-                                      4) // Solo muestra puntos si está en el podio (aunque en esta lista siempre es >= 4)
+                                  if (rank < 4) 
                                     Text(
                                       '${user.totalPointsScored} pts',
                                       style: const TextStyle(

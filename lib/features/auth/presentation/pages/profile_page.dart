@@ -148,7 +148,7 @@ class _ProfilePageState extends State<ProfilePage> {
                           context: context,
                           backgroundColor: Colors.white,
                           isScrollControlled:
-                              true, // ¡CRÍTICO PARA EL OVERFLOW!
+                              true,
                           shape: const RoundedRectangleBorder(
                             borderRadius: BorderRadius.vertical(
                               top: Radius.circular(32.0),
@@ -158,7 +158,7 @@ class _ProfilePageState extends State<ProfilePage> {
                             return SizedBox(
                               height:
                                   MediaQuery.of(context).size.height *
-                                  0.75, // Ocupa el 75% de la pantalla
+                                  0.75,
                               child: Column(
                                 children: <Widget>[
                                   const SizedBox(height: 24),
@@ -172,7 +172,6 @@ class _ProfilePageState extends State<ProfilePage> {
                                   ),
                                   const SizedBox(height: 16),
                                   Expanded(
-                                    // Hace que el GridView ocupe el espacio sobrante y sea scrolleable
                                     child: SingleChildScrollView(
                                       padding: const EdgeInsets.symmetric(
                                         horizontal: 24.0,
@@ -208,9 +207,9 @@ class _ProfilePageState extends State<ProfilePage> {
                                                 },
                                                 child: _renderAvatarImage(
                                                   avatarKey:
-                                                      key, // 'simple' o 'arana'...
+                                                      key,
                                                   size:
-                                                      60, // Ajusta el tamaño de la cuadrícula
+                                                      60,
                                                   isSelected: isSelected,
                                                 ),
                                               );
@@ -250,7 +249,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       children: <Widget>[
                         const SizedBox(
                           width: 48,
-                        ), // Espacio fantasma para equilibrar el icono
+                        ),
                         Expanded(
                           child: Text(
                             user.username,
@@ -460,18 +459,18 @@ class _ProfilePageState extends State<ProfilePage> {
       return Container(
         width: size,
         height: size,
-        decoration: null, // ¡Diseño Óptimo: 100% transparente para la silueta!
+        decoration: null,
         child: Center(
           child: Icon(
             Icons.person_pin,
             size: size * 0.8,
             color: Colors.grey,
-          ), // ¡Icono Gris!
+          ),
         ),
       );
     }
 
-    // Lógica para los 39 avatares PNG neón (Diseño Óptimo)
+    // Lógica para los 39 avatares PNG
     final String imagePath = _availableAvatars[avatarKey]!;
     return Container(
       width: size,
@@ -480,15 +479,15 @@ class _ProfilePageState extends State<ProfilePage> {
           ? BoxDecoration(
               shape: BoxShape.circle,
               color: Colors.deepPurple.withOpacity(0.2),
-            ) // Glow de selección
-          : null, // Sin fondo ni borde para que el neón destaque
+            )
+          : null,
       padding: const EdgeInsets.all(
         4.0,
-      ), // Margen para que no se corten los bordes
+      ),
       child: Image.asset(
         imagePath,
         fit: BoxFit
-            .contain, // Muy importante para que no se corte y respete el PNG
+            .contain,
         errorBuilder: (context, error, stackTrace) => Container(
           width: size,
           height: size,

@@ -56,8 +56,6 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> {
   @override
   Widget build(BuildContext context) {
     final String? currentUserId = context.read<AuthBloc>().state.user?.id;
-    // Buscamos el grupo actualizado en el estado del BLoC. Si aún no ha llegado,
-    // usamos el objeto estático que llegó por el router como fallback.
     final GroupEntity group = context.read<GroupBloc>().state.groups.firstWhere(
       (GroupEntity g) => g.id == widget.group.id,
       orElse: () => widget.group,
@@ -84,7 +82,6 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> {
         }
       },
       builder: (BuildContext context, GroupState blocState) {
-        // Obtenemos la versión más actualizada del grupo desde el estado
         final GroupEntity liveGroup = blocState.groups.firstWhere(
           (GroupEntity g) => g.id == widget.group.id,
           orElse: () => group,

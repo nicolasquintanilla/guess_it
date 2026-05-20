@@ -17,7 +17,6 @@ class RankingEntity extends Equatable {
     required this.victories,
   });
 
-  // Fórmula Anti-Trampas: Eficacia penaliza a los que se dejan ganar.
   double get winRate => gamesPlayed > 0 ? (victories / gamesPlayed) : 0.0;
   double get rankScore => (victories * winRate * 100) + (totalPointsScored * 0.1);
 

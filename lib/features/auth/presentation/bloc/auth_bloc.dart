@@ -221,14 +221,14 @@ class AuthBloc extends HydratedBloc<AuthEvent, AuthState> {
           'memberEmails': FieldValue.arrayRemove(<String>[email ?? '']),
           'memberIds': FieldValue.arrayRemove(<String>[
             user.id,
-          ]), // Por si se está usando
+          ]),
         });
       }
 
       await firestore.collection('users').doc(user.id).delete();
       await firebaseUser?.delete();
 
-      // Si el borrado fue exitoso y no era un invitado:
+      // Si el borrado fue exitoso y no era un invitado
       if (email != null && username != null && !state.user!.isGuest) {
         EmailService.sendGoodbyeEmail(userEmail: email, userName: username);
       }

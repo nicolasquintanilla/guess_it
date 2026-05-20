@@ -50,7 +50,7 @@ class PremiumScaffold extends StatelessWidget {
                   constraints: BoxConstraints(
                     maxHeight:
                         MediaQuery.of(ctx).size.height *
-                        0.85, // Deja espacio arriba
+                        0.85,
                   ),
                   child: SafeArea(
                     child: Padding(
@@ -104,7 +104,7 @@ class PremiumScaffold extends StatelessWidget {
     return Scaffold(
       extendBodyBehindAppBar: true,
       extendBody: true,
-      backgroundColor: Colors.deepPurple, // Previene huecos en blanco/morados
+      backgroundColor: Colors.deepPurple,
       resizeToAvoidBottomInset: true,
       appBar: hasAppBar
           ? AppBar(
@@ -164,11 +164,10 @@ class PremiumScaffold extends StatelessWidget {
             ),
           ),
           SafeArea(
-            // Al no poner bottom: false, Flutter respeta la barra nativa de Android/iOS
             child: Padding(
               padding: const EdgeInsets.only(
                 bottom: 24.0,
-              ), // Respiro para los botones
+              ),
               child: child,
             ),
           ),

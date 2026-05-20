@@ -193,7 +193,7 @@ class GroupBloc extends Bloc<GroupEvent, GroupState> {
         event.memberName,
         event.memberEmail,
       );
-      add(const LoadGroupsEvent()); // Recargamos para ver la lista actualizada
+      add(const LoadGroupsEvent());
       emit(
         state.copyWith(
           status: GroupStatus.success,

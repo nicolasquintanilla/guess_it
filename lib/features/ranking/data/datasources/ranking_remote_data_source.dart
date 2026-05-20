@@ -35,8 +35,6 @@ class RankingRemoteDataSource {
   }
 
   Future<List<RankingEntity>> getGlobalRanking() async {
-    // Quitamos los filtros complejos de Firebase para evitar crashes por falta de Índices Compuestos.
-    // Hacemos una lectura limpia y lo filtramos todo en local de forma segura.
     final QuerySnapshot<Map<String, dynamic>> snapshot = await firestore
         .collection('users')
         .get();
@@ -45,14 +43,13 @@ class RankingRemoteDataSource {
       final Map<String, dynamic> data = doc.data();
       return RankingEntity(
         hostName: data['username'] as String? ?? data['hostName'] as String? ?? 'Desconocido',
-        avatar: data['avatar'] as String? ?? 'default', // ¡INYECCIÓN DEL AVATAR!
+        avatar: data['avatar'] as String? ?? 'default',
         totalMatchesWon: data['totalMatchesWon'] as int? ?? 0,
         totalPointsScored: data['totalPointsScored'] as int? ?? 0,
         gamesPlayed: data['gamesPlayed'] as int? ?? 0,
         victories: data['victories'] as int? ?? 0,
       );
     })
-    // Filtramos solo a los que hayan jugado al menos 1 partida para no ensuciar el ranking
     .where((RankingEntity user) => user.gamesPlayed > 0)
     .toList();
   }

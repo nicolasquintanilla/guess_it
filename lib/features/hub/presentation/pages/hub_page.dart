@@ -84,13 +84,13 @@ class _HubPageState extends State<HubPage> {
   @override
   Widget build(BuildContext context) {
     return PremiumScaffold(
-      title: '', // El título lo pondremos en el encabezado personalizado
+      title: '',
       showBackArrow: false,
       helpText:
           '¡Te damos la bienvenida al centro de mando de Guess It!\n\n'
           'Desde aquí puedes acceder a todas las funciones del juego:\n\n'
           '🎮 Empezar Partida: Configura los equipos, elige cuántas palabras queréis adivinar y lánzate a jugar.\n\n'
-          '👥 Mis Grupos: Crea grupos cerrados con tus amigos. Cada vez que juguéis usando un grupo, se generará una clasificación interna para ver quién es el mejor de la pandilla.\n\n'
+          '👥 Mis Grupos: Crea grupos cerrados con tus amigos. Cada vez que juguéis usando un grupo, se generará una clasificación interna para ver quién es el mejor del grupo.\n\n'
           '🌍 Ranking Global: Compite contra jugadores de todo el mundo. Las victorias que consigas en tus partidas se sumarán aquí.\n\n'
           '📖 Cómo Jugar: Repasa las reglas de las tres rondas del juego para que nadie haga trampas.\n\n'
           '👤 Mi Cuenta: Personaliza tu nombre, cambia tu avatar y revisa tu eficacia de victorias.',
@@ -121,7 +121,6 @@ class _HubPageState extends State<HubPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: <Widget>[
-                  // 1. Encabezado de Bienvenida
                   Row(
                     children: <Widget>[
                       Builder(
@@ -149,7 +148,7 @@ class _HubPageState extends State<HubPage> {
                           return Container(
                             width: avatarSize,
                             height: avatarSize,
-                            decoration: null, // Transparente 100%
+                            decoration: null,
                             child: Center(child: avatarWidget),
                           );
                         },
@@ -177,7 +176,6 @@ class _HubPageState extends State<HubPage> {
                   ),
                   const SizedBox(height: 48),
 
-                  // 2. Botón 'JUGAR' Destacado (C.T.A.)
                   GestureDetector(
                     onTap: () => context.push('/game-setup'),
                     child: Container(
@@ -235,7 +233,6 @@ class _HubPageState extends State<HubPage> {
                   ),
                   const SizedBox(height: 32),
 
-                  // 3. Grid 2x2 para el Resto
                   GridView.count(
                     crossAxisCount: 2,
                     shrinkWrap: true,

@@ -222,7 +222,7 @@ class GamePlayPage extends StatelessWidget {
                                         onChanged: isAi
                                             ? null
                                             : (bool newValue) {
-                                                // Bloqueado para la IA
+                                                // Bloqueado para el bot
                                                 context.read<GameBloc>().add(
                                                   ToggleWordReviewEvent(
                                                     word: word,

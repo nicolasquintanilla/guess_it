@@ -67,7 +67,7 @@ class _CustomWordsPageState extends State<CustomWordsPage> {
 
     setState(() {
       addedWords.add(newWord);
-      _obscureWords.add(true); // nueva palabra oculta por defecto
+      _obscureWords.add(true);
       wordController.clear();
     });
   }

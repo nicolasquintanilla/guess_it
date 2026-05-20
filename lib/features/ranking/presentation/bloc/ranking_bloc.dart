@@ -92,8 +92,6 @@ class RankingBloc extends Bloc<RankingEvent, RankingState> {
         isVictory: event.isVictory,
       );
     } catch (_) {
-      // Al ser un guardado silencioso, se ignora el error de red
-      // para no interrumpir el UI de celebración si hay un problema de conexión.
     }
   }
 

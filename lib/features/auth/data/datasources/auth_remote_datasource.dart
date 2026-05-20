@@ -80,7 +80,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
 
     final String createdAt = DateTime.now().toIso8601String();
 
-    // 1. PRIMERO: Guardamos en Firestore inmediatamente para aprovechar el token fresco
+    // 1. PRIMERO: Guardamos en Firestore inmediatamente para aprovechar el token
     await firestore.collection('users').doc(user.uid).set(<String, dynamic>{
       'username': username,
       'email': email.toLowerCase(),
@@ -139,8 +139,5 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
 
   @override
   Future<void> deleteAccount() async {
-    // El borrado ahora se maneja enteramente en AuthBloc.
-    // Este método se mantiene por contrato de la interfaz,
-    // pero la lógica pesada está en el BLoC.
   }
 }
