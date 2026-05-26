@@ -6,6 +6,8 @@ import 'package:guess_it/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:guess_it/features/auth/presentation/bloc/auth_event.dart';
 import 'package:guess_it/features/auth/presentation/bloc/auth_state.dart';
 import 'package:guess_it/core/widgets/premium_scaffold.dart';
+import 'package:guess_it/features/auth/presentation/widgets/auth_text_field.dart';
+import 'package:guess_it/features/auth/presentation/widgets/auth_gradient_button.dart';
 
 class LoginPage extends StatefulWidget {
   @override
@@ -181,45 +183,29 @@ class _LoginPageState extends State<LoginPage> {
                             if (state.status == AuthStatus.loading)
                               const CircularProgressIndicator()
                             else ...<Widget>[
-                              TextField(
+                              AuthTextField(
                                 controller: emailController,
-                                decoration: InputDecoration(
-                                  labelText: 'Correo electrónico',
-                                  prefixIcon: const Icon(Icons.email_outlined, color: Colors.deepPurple),
-                                  filled: true,
-                                  fillColor: Colors.grey.shade100,
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(16.0),
-                                    borderSide: BorderSide.none,
-                                  ),
-                                ),
+                                labelText: 'Correo electrónico',
+                                prefixIcon: Icons.email_outlined,
                                 keyboardType: TextInputType.emailAddress,
                               ),
                               const SizedBox(height: 16),
-                              TextField(
+                              AuthTextField(
                                 controller: passwordController,
-                                decoration: InputDecoration(
-                                  labelText: 'Contraseña',
-                                  prefixIcon: const Icon(Icons.lock_outline, color: Colors.deepPurple),
-                                  suffixIcon: IconButton(
-                                    icon: Icon(
-                                      _obscurePassword ? Icons.visibility_off : Icons.visibility,
-                                      color: Colors.grey,
-                                    ),
-                                    onPressed: () {
-                                      setState(() {
-                                        _obscurePassword = !_obscurePassword;
-                                      });
-                                    },
-                                  ),
-                                  filled: true,
-                                  fillColor: Colors.grey.shade100,
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(16.0),
-                                    borderSide: BorderSide.none,
-                                  ),
-                                ),
+                                labelText: 'Contraseña',
+                                prefixIcon: Icons.lock_outline,
                                 obscureText: _obscurePassword,
+                                suffixIcon: IconButton(
+                                  icon: Icon(
+                                    _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                                    color: Colors.grey,
+                                  ),
+                                  onPressed: () {
+                                    setState(() {
+                                      _obscurePassword = !_obscurePassword;
+                                    });
+                                  },
+                                ),
                               ),
                               Align(
                                 alignment: Alignment.centerRight,
@@ -233,48 +219,28 @@ class _LoginPageState extends State<LoginPage> {
                                 ),
                               ),
                               const SizedBox(height: 32),
-                              Container(
-                                width: double.infinity,
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(32),
-                                  gradient: const LinearGradient(
-                                    colors: <Color>[Colors.orangeAccent, Colors.pinkAccent],
-                                    begin: Alignment.topLeft,
-                                    end: Alignment.bottomRight,
-                                  ),
-                                  boxShadow: const <BoxShadow>[
-                                    BoxShadow(color: Colors.black26, blurRadius: 8, offset: Offset(0, 4))
-                                  ],
-                                ),
-                                child: ElevatedButton(
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.transparent, 
-                                    shadowColor: Colors.transparent,
-                                    padding: const EdgeInsets.symmetric(vertical: 16),
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(32)),
-                                  ),
-                                  onPressed: () {
-                                    final String email = emailController.text.trim();
-                                    final String password = passwordController.text.trim();
+                              AuthGradientButton(
+                                text: 'Iniciar Sesión',
+                                onPressed: () {
+                                  final String email = emailController.text.trim();
+                                  final String password = passwordController.text.trim();
 
-                                    if (email.isEmpty || password.isEmpty) {
-                                      _showCupertinoAlert(
-                                        context,
-                                        'Datos Incompletos',
-                                        'Por favor, introduce tu correo electrónico y contraseña.',
-                                      );
-                                      return;
-                                    }
-
-                                    context.read<AuthBloc>().add(
-                                      LoginHostEvent(
-                                        email: email,
-                                        password: password,
-                                      ),
+                                  if (email.isEmpty || password.isEmpty) {
+                                    _showCupertinoAlert(
+                                      context,
+                                      'Datos Incompletos',
+                                      'Por favor, introduce tu correo electrónico y contraseña.',
                                     );
-                                  },
-                                  child: const Text('Iniciar Sesión', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
-                                ),
+                                    return;
+                                  }
+
+                                  context.read<AuthBloc>().add(
+                                    LoginHostEvent(
+                                      email: email,
+                                      password: password,
+                                    ),
+                                  );
+                                },
                               ),
                               const SizedBox(height: 16),
                               TextButton(

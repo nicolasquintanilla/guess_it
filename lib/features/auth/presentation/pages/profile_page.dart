@@ -9,6 +9,10 @@ import 'package:guess_it/features/auth/presentation/bloc/auth_state.dart';
 import 'package:guess_it/core/widgets/premium_scaffold.dart';
 import 'package:guess_it/features/groups/presentation/bloc/group_bloc.dart';
 import 'package:guess_it/features/groups/presentation/bloc/group_event.dart';
+import 'package:guess_it/features/profile/presentation/widgets/guest_profile_view.dart';
+import 'package:guess_it/features/profile/presentation/widgets/avatar_renderer.dart';
+import 'package:guess_it/features/profile/presentation/widgets/stat_card.dart';
+import 'package:guess_it/features/profile/presentation/widgets/efficacy_card.dart';
 
 class ProfilePage extends StatefulWidget {
   @override
@@ -104,31 +108,7 @@ class _ProfilePageState extends State<ProfilePage> {
           }
 
           if (user.isGuest) {
-            return Center(
-              child: Padding(
-                padding: const EdgeInsets.all(32.0),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    Icon(
-                      Icons.no_accounts,
-                      size: 150,
-                      color: Colors.white.withOpacity(0.8),
-                    ),
-                    const SizedBox(height: 32),
-                    const Text(
-                      'Los invitados no guardan estadísticas. ¡Regístrate para competir!',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            );
+            return const GuestProfileView();
           }
 
           final double winRate = user.gamesPlayed == 0
@@ -137,6 +117,9 @@ class _ProfilePageState extends State<ProfilePage> {
 
           return Center(
             child: SingleChildScrollView(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).padding.bottom + 24.0,
+              ),
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 24.0),
                 child: Column(
@@ -147,8 +130,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         showModalBottomSheet(
                           context: context,
                           backgroundColor: Colors.white,
-                          isScrollControlled:
-                              true,
+                          isScrollControlled: true,
                           shape: const RoundedRectangleBorder(
                             borderRadius: BorderRadius.vertical(
                               top: Radius.circular(32.0),
@@ -156,9 +138,7 @@ class _ProfilePageState extends State<ProfilePage> {
                           ),
                           builder: (BuildContext ctx) {
                             return SizedBox(
-                              height:
-                                  MediaQuery.of(context).size.height *
-                                  0.75,
+                              height: MediaQuery.of(context).size.height * 0.75,
                               child: Column(
                                 children: <Widget>[
                                   const SizedBox(height: 24),
@@ -173,9 +153,15 @@ class _ProfilePageState extends State<ProfilePage> {
                                   const SizedBox(height: 16),
                                   Expanded(
                                     child: SingleChildScrollView(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 24.0,
-                                        vertical: 8.0,
+                                      padding: EdgeInsets.only(
+                                        left: 24.0,
+                                        right: 24.0,
+                                        top: 8.0,
+                                        bottom:
+                                            MediaQuery.of(
+                                              context,
+                                            ).padding.bottom +
+                                            24.0,
                                       ),
                                       child: GridView.builder(
                                         shrinkWrap: true,
@@ -205,12 +191,14 @@ class _ProfilePageState extends State<ProfilePage> {
                                                   );
                                                   Navigator.pop(ctx);
                                                 },
-                                                child: _renderAvatarImage(
-                                                  avatarKey:
-                                                      key,
-                                                  size:
-                                                      60,
+                                                child: AvatarRenderer(
+                                                  avatarKey: key,
+                                                  size: 60,
                                                   isSelected: isSelected,
+                                                  availableAvatars:
+                                                      _availableAvatars,
+                                                  defaultSimpleAvatarKey:
+                                                      _defaultSimpleAvatarKey,
                                                 ),
                                               );
                                             },
@@ -227,7 +215,12 @@ class _ProfilePageState extends State<ProfilePage> {
                       child: Stack(
                         alignment: Alignment.bottomRight,
                         children: <Widget>[
-                          _renderAvatarImage(avatarKey: user.avatar, size: 100),
+                          AvatarRenderer(
+                            avatarKey: user.avatar,
+                            size: 100,
+                            availableAvatars: _availableAvatars,
+                            defaultSimpleAvatarKey: _defaultSimpleAvatarKey,
+                          ),
                           Container(
                             padding: const EdgeInsets.all(8),
                             decoration: const BoxDecoration(
@@ -247,9 +240,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: <Widget>[
-                        const SizedBox(
-                          width: 48,
-                        ),
+                        const SizedBox(width: 48),
                         Expanded(
                           child: Text(
                             user.username,
@@ -318,7 +309,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: <Widget>[
                         Expanded(
-                          child: _StatCard(
+                          child: StatCard(
                             icon: Icons.emoji_events,
                             iconColor: Colors.amber,
                             value: user.victories.toString(),
@@ -327,7 +318,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         ),
                         const SizedBox(width: 16),
                         Expanded(
-                          child: _StatCard(
+                          child: StatCard(
                             icon: Icons.sports_esports,
                             iconColor: Colors.blueAccent,
                             value: user.gamesPlayed.toString(),
@@ -337,63 +328,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       ],
                     ),
                     const SizedBox(height: 16),
-                    Container(
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(24.0),
-                        gradient: LinearGradient(
-                          colors: winRate >= 50
-                              ? <Color>[Colors.orangeAccent, Colors.deepOrange]
-                              : <Color>[
-                                  Colors.blueGrey.shade400,
-                                  Colors.blueGrey.shade700,
-                                ],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                        boxShadow: const <BoxShadow>[
-                          BoxShadow(
-                            color: Colors.black26,
-                            blurRadius: 8,
-                            offset: Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                          vertical: 32.0,
-                          horizontal: 16.0,
-                        ),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: <Widget>[
-                            const Icon(
-                              Icons.bolt,
-                              size: 48,
-                              color: Colors.white,
-                            ),
-                            const SizedBox(height: 16),
-                            Text(
-                              '${winRate.toStringAsFixed(0)}%',
-                              style: const TextStyle(
-                                fontSize: 64,
-                                fontWeight: FontWeight.w900,
-                                color: Colors.white,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            const Text(
-                              'Eficacia',
-                              style: TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white70,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
+                    EfficacyCard(winRate: winRate),
                     const SizedBox(height: 48),
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
@@ -443,118 +378,6 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
           );
         },
-      ),
-    );
-  }
-
-  Widget _renderAvatarImage({
-    required String? avatarKey,
-    required double size,
-    bool isSelected = false,
-  }) {
-    // Lógica para el avatar predeterminado 'Simple'
-    if (avatarKey == null ||
-        avatarKey == _defaultSimpleAvatarKey ||
-        !_availableAvatars.containsKey(avatarKey)) {
-      return Container(
-        width: size,
-        height: size,
-        decoration: null,
-        child: Center(
-          child: Icon(
-            Icons.person_pin,
-            size: size * 0.8,
-            color: Colors.grey,
-          ),
-        ),
-      );
-    }
-
-    // Lógica para los 39 avatares PNG
-    final String imagePath = _availableAvatars[avatarKey]!;
-    return Container(
-      width: size,
-      height: size,
-      decoration: isSelected
-          ? BoxDecoration(
-              shape: BoxShape.circle,
-              color: Colors.deepPurple.withOpacity(0.2),
-            )
-          : null,
-      padding: const EdgeInsets.all(
-        4.0,
-      ),
-      child: Image.asset(
-        imagePath,
-        fit: BoxFit
-            .contain,
-        errorBuilder: (context, error, stackTrace) => Container(
-          width: size,
-          height: size,
-          color: Colors.red.withOpacity(0.1),
-          child: Icon(
-            Icons.help_outline,
-            color: Colors.white,
-            size: size * 0.5,
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _StatCard extends StatelessWidget {
-  @override
-  final Key? key;
-  final IconData icon;
-  final Color iconColor;
-  final String value;
-  final String title;
-
-  const _StatCard({
-    Key? key,
-    required IconData icon,
-    required Color iconColor,
-    required String value,
-    required String title,
-  }) : key = key,
-       icon = icon,
-       iconColor = iconColor,
-       value = value,
-       title = title;
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24.0)),
-      color: Colors.white,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 24.0, horizontal: 8.0),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            Icon(icon, size: 40, color: iconColor),
-            const SizedBox(height: 16),
-            Text(
-              value,
-              style: const TextStyle(
-                fontSize: 36,
-                fontWeight: FontWeight.w900,
-                color: Colors.black87,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              title,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: Colors.grey,
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }

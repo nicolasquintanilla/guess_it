@@ -48,9 +48,7 @@ class PremiumScaffold extends StatelessWidget {
               builder: (BuildContext ctx) {
                 return Container(
                   constraints: BoxConstraints(
-                    maxHeight:
-                        MediaQuery.of(ctx).size.height *
-                        0.85,
+                    maxHeight: MediaQuery.of(ctx).size.height * 0.85,
                   ),
                   child: SafeArea(
                     child: Padding(
@@ -165,9 +163,7 @@ class PremiumScaffold extends StatelessWidget {
           ),
           SafeArea(
             child: Padding(
-              padding: const EdgeInsets.only(
-                bottom: 24.0,
-              ),
+              padding: const EdgeInsets.only(bottom: 0.0),
               child: child,
             ),
           ),
