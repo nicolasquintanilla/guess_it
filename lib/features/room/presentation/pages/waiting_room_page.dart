@@ -3,44 +3,37 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:guess_it/features/room/presentation/bloc/room_bloc.dart';
 import 'package:guess_it/features/room/presentation/bloc/room_state.dart';
 
+import 'package:guess_it/core/widgets/premium_scaffold.dart';
+import 'package:guess_it/features/room/presentation/widgets/room_code_display.dart';
+
 class WaitingRoomPage extends StatelessWidget {
   const WaitingRoomPage({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Sala de Espera'),
-      ),
-      body: BlocBuilder<RoomBloc, RoomState>(
+    return PremiumScaffold(
+      title: 'Sala de Espera',
+      showBackArrow: true,
+      child: BlocBuilder<RoomBloc, RoomState>(
         builder: (BuildContext context, RoomState state) {
           if (state.status == RoomStatus.loading) {
-            return const Center(child: CircularProgressIndicator());
+            return const Center(child: CircularProgressIndicator(color: Colors.white));
           } else if (state.status == RoomStatus.success && state.room != null) {
+            return RoomCodeDisplay(roomId: state.room!.roomId);
+          } else if (state.status == RoomStatus.error) {
             return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  const Text(
-                    'Código de la sala:',
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    state.room!.roomId,
-                    style: const TextStyle(
-                      fontSize: 48,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: 8,
-                    ),
-                  ),
-                ],
+              child: Text(
+                state.errorMessage ?? 'Error desconocido',
+                style: const TextStyle(color: Colors.white),
               ),
             );
-          } else if (state.status == RoomStatus.error) {
-            return Center(child: Text(state.errorMessage ?? 'Error desconocido'));
           } else {
-            return const Center(child: Text('Iniciando sala...'));
+            return const Center(
+              child: Text(
+                'Iniciando sala...',
+                style: TextStyle(color: Colors.white),
+              ),
+            );
           }
         },
       ),

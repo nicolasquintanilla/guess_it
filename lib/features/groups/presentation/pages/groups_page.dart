@@ -9,6 +9,9 @@ import 'package:guess_it/features/groups/domain/entities/group_entity.dart';
 import 'package:guess_it/features/groups/presentation/bloc/group_bloc.dart';
 import 'package:guess_it/features/groups/presentation/bloc/group_event.dart';
 import 'package:guess_it/features/groups/presentation/bloc/group_state.dart';
+import 'package:guess_it/features/groups/presentation/widgets/group_action_buttons.dart';
+import 'package:guess_it/features/groups/presentation/widgets/empty_groups_view.dart';
+import 'package:guess_it/features/groups/presentation/widgets/groups_list.dart';
 
 class GroupsPage extends StatefulWidget {
   @override
@@ -156,33 +159,9 @@ class _GroupsPageState extends State<GroupsPage> {
               'Accede rápidamente a tus salas habituales. Si eres el Anfitrión, podrás editarlas o eliminarlas.',
           floatingActionButton: isGuest
               ? null
-              : Column(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  mainAxisSize: MainAxisSize.min,
-                  children: <Widget>[
-                    FloatingActionButton.extended(
-                      heroTag: 'createGroupBtn',
-                      backgroundColor: Colors.white,
-                      foregroundColor: Colors.purple,
-                      icon: const Icon(Icons.add),
-                      label: const Text('Crear Grupo'),
-                      onPressed: () {
-                        _showCreateGroupDialog(context);
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                    FloatingActionButton.extended(
-                      heroTag: 'joinGroupBtn',
-                      backgroundColor: Colors.teal,
-                      foregroundColor: Colors.white,
-                      icon: const Icon(Icons.login),
-                      label: const Text('Unirse con Código'),
-                      onPressed: () {
-                        _showJoinGroupDialog(context);
-                      },
-                    ),
-                  ],
+              : GroupActionButtons(
+                  onCreatePressed: () => _showCreateGroupDialog(context),
+                  onJoinPressed: () => _showJoinGroupDialog(context),
                 ),
           child: isGuest
               ? const Center(
@@ -231,57 +210,13 @@ class _GroupsPageState extends State<GroupsPage> {
                     }
 
                     if (state.groups.isEmpty) {
-                      return const Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: <Widget>[
-                            Icon(Icons.groups, color: Colors.white, size: 120),
-                            SizedBox(height: 24),
-                            Text(
-                              'Tus grupos aparecerán aquí',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 24,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
+                      return const EmptyGroupsView();
                     }
 
-                    return ListView.builder(
-                      padding: const EdgeInsets.all(24.0),
-                      itemCount: state.groups.length,
-                      itemBuilder: (BuildContext context, int index) {
-                        final GroupEntity group = state.groups[index];
-                        return Card(
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(32.0),
-                          ),
-                          color: Colors.white,
-                          child: ListTile(
-                            onTap: () {
-                              context.push('/group-details', extra: group);
-                            },
-                            contentPadding: const EdgeInsets.all(16.0),
-                            title: Text(
-                              group.name,
-                              style: const TextStyle(
-                                color: Colors.purple,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 22,
-                              ),
-                            ),
-                            subtitle: Text(
-                              '${group.memberNames.length} miembros',
-                            ),
-                            trailing: Chip(
-                              label: Text(group.joinCode.toUpperCase()),
-                              backgroundColor: Colors.green,
-                            ),
-                          ),
-                        );
+                    return GroupsList(
+                      groups: state.groups,
+                      onGroupTap: (GroupEntity group) {
+                        context.push('/group-details', extra: group);
                       },
                     );
                   },

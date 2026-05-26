@@ -6,6 +6,9 @@ import 'package:guess_it/features/auth/presentation/bloc/auth_state.dart';
 import 'package:guess_it/features/room/presentation/bloc/room_bloc.dart';
 import 'package:guess_it/features/room/presentation/bloc/room_event.dart';
 import 'package:guess_it/features/room/presentation/bloc/room_state.dart';
+import 'package:guess_it/core/widgets/premium_scaffold.dart';
+import 'package:guess_it/features/room/presentation/widgets/room_code_input.dart';
+import 'package:guess_it/features/room/presentation/widgets/join_room_button.dart';
 
 class JoinRoomPage extends StatefulWidget {
   const JoinRoomPage({Key? key}) : super(key: key);
@@ -27,11 +30,10 @@ class _JoinRoomPageState extends State<JoinRoomPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Unirse a Partida'),
-      ),
-      body: BlocConsumer<RoomBloc, RoomState>(
+    return PremiumScaffold(
+      title: 'Unirse a Partida',
+      showBackArrow: true,
+      child: BlocConsumer<RoomBloc, RoomState>(
         listener: (BuildContext context, RoomState state) {
           if (state.status == RoomStatus.success) {
             context.push('/waiting-room');
@@ -56,25 +58,17 @@ class _JoinRoomPageState extends State<JoinRoomPage> {
               children: <Widget>[
                 const Text(
                   'Introduce el código de la sala:',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                  textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 16),
-                TextField(
-                  controller: codeController,
-                  textCapitalization: TextCapitalization.characters,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontSize: 32,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: 4,
-                  ),
-                  decoration: const InputDecoration(
-                    border: OutlineInputBorder(),
-                    hintText: 'CÓDIGO',
-                  ),
-                ),
+                RoomCodeInput(controller: codeController),
                 const SizedBox(height: 32),
-                ElevatedButton(
+                JoinRoomButton(
                   onPressed: () {
                     final String roomId = codeController.text.trim();
                     if (roomId.isEmpty) {
@@ -90,11 +84,6 @@ class _JoinRoomPageState extends State<JoinRoomPage> {
                           );
                     }
                   },
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                    textStyle: const TextStyle(fontSize: 18),
-                  ),
-                  child: const Text('Unirse'),
                 ),
               ],
             ),

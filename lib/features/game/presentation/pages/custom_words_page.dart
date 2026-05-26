@@ -5,6 +5,8 @@ import 'package:guess_it/features/game/presentation/bloc/game_bloc.dart';
 import 'package:guess_it/features/game/presentation/bloc/game_event.dart';
 import 'package:guess_it/core/widgets/premium_scaffold.dart';
 import 'package:guess_it/features/game/domain/entities/team_entity.dart';
+import 'package:guess_it/features/game/presentation/widgets/word_input_row.dart';
+import 'package:guess_it/features/game/presentation/widgets/word_list_item_card.dart';
 
 class CustomWordsPage extends StatefulWidget {
   final List<TeamEntity> initialTeams;
@@ -95,28 +97,9 @@ class _CustomWordsPageState extends State<CustomWordsPage> {
                   style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 24),
-                Row(
-                  children: <Widget>[
-                    Expanded(
-                      child: TextField(
-                        controller: wordController,
-                        textCapitalization: TextCapitalization.characters,
-                        decoration: const InputDecoration(
-                          labelText: 'Nueva palabra',
-                          border: OutlineInputBorder(),
-                        ),
-                        onSubmitted: (String _) {
-                          _addWord();
-                        },
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    IconButton(
-                      icon: const Icon(Icons.add, size: 32),
-                      onPressed: _addWord,
-                      color: Colors.blueAccent,
-                    ),
-                  ],
+                WordInputRow(
+                  controller: wordController,
+                  onAdd: _addWord,
                 ),
                 const SizedBox(height: 24),
                 ListView.builder(
@@ -124,48 +107,20 @@ class _CustomWordsPageState extends State<CustomWordsPage> {
                   physics: const NeverScrollableScrollPhysics(),
                   itemCount: addedWords.length,
                   itemBuilder: (BuildContext context, int index) {
-                    final bool isObscured = _obscureWords[index];
-                    return Card(
-                      child: ListTile(
-                        title: Text(
-                          isObscured
-                              ? '••••••'
-                              : addedWords[index],
-                          style: const TextStyle(
-                            fontSize: 16,
-                            letterSpacing: 1.2,
-                          ),
-                        ),
-                        trailing: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: <Widget>[
-                            IconButton(
-                              icon: Icon(
-                                isObscured
-                                    ? Icons.visibility_off
-                                    : Icons.visibility,
-                                color: Colors.purple,
-                              ),
-                              tooltip: isObscured ? 'Mostrar' : 'Ocultar',
-                              onPressed: () {
-                                setState(() {
-                                  _obscureWords[index] = !_obscureWords[index];
-                                });
-                              },
-                            ),
-                            IconButton(
-                              icon: const Icon(Icons.delete, color: Colors.red),
-                              tooltip: 'Eliminar',
-                              onPressed: () {
-                                setState(() {
-                                  addedWords.removeAt(index);
-                                  _obscureWords.removeAt(index);
-                                });
-                              },
-                            ),
-                          ],
-                        ),
-                      ),
+                    return WordListItemCard(
+                      word: addedWords[index],
+                      isObscured: _obscureWords[index],
+                      onToggleVisibility: () {
+                        setState(() {
+                          _obscureWords[index] = !_obscureWords[index];
+                        });
+                      },
+                      onDelete: () {
+                        setState(() {
+                          addedWords.removeAt(index);
+                          _obscureWords.removeAt(index);
+                        });
+                      },
                     );
                   },
                 ),

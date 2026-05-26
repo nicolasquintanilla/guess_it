@@ -6,6 +6,8 @@ import 'package:guess_it/features/game/presentation/bloc/game_bloc.dart';
 import 'package:guess_it/features/game/presentation/bloc/game_event.dart';
 import 'package:guess_it/features/game/presentation/bloc/game_state.dart';
 import 'package:guess_it/core/widgets/premium_scaffold.dart';
+import 'package:guess_it/features/game/presentation/widgets/winner_team_card.dart';
+import 'package:guess_it/features/game/presentation/widgets/runner_up_team_card.dart';
 
 class ScoreboardPage extends StatefulWidget {
   @override
@@ -62,100 +64,10 @@ class _ScoreboardPageState extends State<ScoreboardPage> {
                       final TeamEntity team = sortedTeams[index];
 
                       if (index == 0) {
-                        return Container(
-                          margin: const EdgeInsets.only(bottom: 24.0),
-                          padding: const EdgeInsets.all(32.0),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(24.0),
-                            gradient: LinearGradient(
-                              colors: <Color>[
-                                Colors.amber.shade300,
-                                Colors.orange,
-                              ],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            ),
-                            boxShadow: <BoxShadow>[
-                              BoxShadow(
-                                color: Colors.orange.withOpacity(0.5),
-                                blurRadius: 16,
-                                offset: const Offset(0, 8),
-                              ),
-                            ],
-                          ),
-                          child: Column(
-                            children: <Widget>[
-                              const Icon(
-                                Icons.emoji_events,
-                                size: 80,
-                                color: Colors.white,
-                              ),
-                              const SizedBox(height: 16),
-                              Text(
-                                team.name,
-                                textAlign: TextAlign.center,
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
-                                  fontSize: 32,
-                                  fontWeight: FontWeight.w900,
-                                  color: Colors.white,
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                '${team.score} Puntos',
-                                style: const TextStyle(
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white70,
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
+                        return WinnerTeamCard(team: team);
                       }
 
-                      return Card(
-                        elevation: 4,
-                        margin: const EdgeInsets.only(bottom: 16.0),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16.0),
-                        ),
-                        color: Colors.white,
-                        child: ListTile(
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 24.0,
-                            vertical: 8.0,
-                          ),
-                          leading: CircleAvatar(
-                            backgroundColor: Colors.grey.shade200,
-                            child: Text(
-                              '#${index + 1}',
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black87,
-                              ),
-                            ),
-                          ),
-                          title: Text(
-                            team.name,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black87,
-                            ),
-                          ),
-                          trailing: Text(
-                            '${team.score} pts',
-                            style: const TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.w900,
-                              color: Colors.deepPurple,
-                            ),
-                          ),
-                        ),
-                      );
+                      return RunnerUpTeamCard(team: team, rank: index + 1);
                     },
                   ),
                   const SizedBox(height: 48),

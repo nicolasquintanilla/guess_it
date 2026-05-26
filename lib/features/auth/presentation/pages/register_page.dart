@@ -5,6 +5,8 @@ import 'package:go_router/go_router.dart';
 import 'package:guess_it/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:guess_it/features/auth/presentation/bloc/auth_event.dart';
 import 'package:guess_it/features/auth/presentation/bloc/auth_state.dart';
+import 'package:guess_it/features/auth/presentation/widgets/auth_text_field.dart';
+import 'package:guess_it/features/auth/presentation/widgets/auth_gradient_button.dart';
 
 class RegisterPage extends StatefulWidget {
   @override
@@ -169,140 +171,71 @@ class _RegisterPageState extends State<RegisterPage> {
                             if (state.status == AuthStatus.loading)
                               const CircularProgressIndicator()
                             else ...<Widget>[
-                              TextField(
+                              AuthTextField(
                                 controller: usernameController,
                                 maxLength: 10,
-                                decoration: InputDecoration(
-                                  labelText: 'Nombre de usuario',
-                                  prefixIcon: const Icon(
-                                    Icons.person_outline,
-                                    color: Colors.deepPurple,
-                                  ),
-                                  filled: true,
-                                  fillColor: Colors.grey.shade100,
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(16.0),
-                                    borderSide: BorderSide.none,
-                                  ),
-                                ),
+                                labelText: 'Nombre de usuario',
+                                prefixIcon: Icons.person_outline,
                               ),
                               const SizedBox(height: 16),
-                              TextField(
+                              AuthTextField(
                                 controller: emailController,
-                                decoration: InputDecoration(
-                                  labelText: 'Correo electrónico',
-                                  prefixIcon: const Icon(
-                                    Icons.email_outlined,
-                                    color: Colors.deepPurple,
-                                  ),
-                                  filled: true,
-                                  fillColor: Colors.grey.shade100,
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(16.0),
-                                    borderSide: BorderSide.none,
-                                  ),
-                                ),
+                                labelText: 'Correo electrónico',
+                                prefixIcon: Icons.email_outlined,
                                 keyboardType: TextInputType.emailAddress,
                               ),
                               const SizedBox(height: 16),
-                              TextField(
+                              AuthTextField(
                                 controller: passwordController,
-                                decoration: InputDecoration(
-                                  labelText: 'Contraseña',
-                                  prefixIcon: const Icon(
-                                    Icons.lock_outline,
-                                    color: Colors.deepPurple,
-                                  ),
-                                  suffixIcon: IconButton(
-                                    icon: Icon(
-                                      _obscurePassword ? Icons.visibility_off : Icons.visibility,
-                                      color: Colors.grey,
-                                    ),
-                                    onPressed: () {
-                                      setState(() {
-                                        _obscurePassword = !_obscurePassword;
-                                      });
-                                    },
-                                  ),
-                                  filled: true,
-                                  fillColor: Colors.grey.shade100,
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(16.0),
-                                    borderSide: BorderSide.none,
-                                  ),
-                                ),
+                                labelText: 'Contraseña',
+                                prefixIcon: Icons.lock_outline,
                                 obscureText: _obscurePassword,
-                              ),
-                              const SizedBox(height: 32),
-                              Container(
-                                width: double.infinity,
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(32),
-                                  gradient: const LinearGradient(
-                                    colors: <Color>[
-                                      Colors.orangeAccent,
-                                      Colors.pinkAccent,
-                                    ],
-                                    begin: Alignment.topLeft,
-                                    end: Alignment.bottomRight,
-                                  ),
-                                  boxShadow: const <BoxShadow>[
-                                    BoxShadow(
-                                      color: Colors.black26,
-                                      blurRadius: 8,
-                                      offset: Offset(0, 4),
-                                    ),
-                                  ],
-                                ),
-                                child: ElevatedButton(
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.transparent,
-                                    shadowColor: Colors.transparent,
-                                    padding: const EdgeInsets.symmetric(
-                                      vertical: 16,
-                                    ),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(32),
-                                    ),
+                                suffixIcon: IconButton(
+                                  icon: Icon(
+                                    _obscurePassword
+                                        ? Icons.visibility_off
+                                        : Icons.visibility,
+                                    color: Colors.grey,
                                   ),
                                   onPressed: () {
-                                    final String username = usernameController
-                                        .text
-                                        .trim();
-                                    final String email = emailController.text
-                                        .trim();
-                                    final String password = passwordController
-                                        .text
-                                        .trim();
-
-                                    if (username.isEmpty ||
-                                        email.isEmpty ||
-                                        password.isEmpty) {
-                                      _showCupertinoAlert(
-                                        context,
-                                        'Datos Incompletos',
-                                        'Por favor, rellena todos los campos para registrarte.',
-                                      );
-                                      return;
-                                    }
-
-                                    context.read<AuthBloc>().add(
-                                      RegisterHostEvent(
-                                        username: username,
-                                        email: email,
-                                        password: password,
-                                      ),
-                                    );
+                                    setState(() {
+                                      _obscurePassword = !_obscurePassword;
+                                    });
                                   },
-                                  child: const Text(
-                                    'Registrarse',
-                                    style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.white,
-                                    ),
-                                  ),
                                 ),
+                              ),
+                              const SizedBox(height: 32),
+                              AuthGradientButton(
+                                onPressed: () {
+                                  final String username = usernameController
+                                      .text
+                                      .trim();
+                                  final String email = emailController.text
+                                      .trim();
+                                  final String password = passwordController
+                                      .text
+                                      .trim();
+
+                                  if (username.isEmpty ||
+                                      email.isEmpty ||
+                                      password.isEmpty) {
+                                    _showCupertinoAlert(
+                                      context,
+                                      'Datos Incompletos',
+                                      'Por favor, rellena todos los campos para registrarte.',
+                                    );
+                                    return;
+                                  }
+
+                                  context.read<AuthBloc>().add(
+                                    RegisterHostEvent(
+                                      username: username,
+                                      email: email,
+                                      password: password,
+                                    ),
+                                  );
+                                },
+                                text: 'Registrarse',
                               ),
                               const SizedBox(height: 16),
                               TextButton(

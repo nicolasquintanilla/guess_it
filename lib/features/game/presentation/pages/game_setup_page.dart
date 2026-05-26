@@ -12,6 +12,9 @@ import 'package:guess_it/features/groups/domain/entities/group_entity.dart';
 import 'package:guess_it/features/groups/presentation/bloc/group_bloc.dart';
 import 'package:guess_it/features/groups/presentation/bloc/group_event.dart';
 import 'package:guess_it/features/groups/presentation/bloc/group_state.dart';
+import 'package:guess_it/features/game/presentation/widgets/team_setup_card.dart';
+import 'package:guess_it/features/game/presentation/widgets/game_settings_card.dart';
+import 'package:guess_it/features/game/presentation/widgets/ai_settings_section.dart';
 
 class GameSetupPage extends StatefulWidget {
   @override
@@ -340,148 +343,36 @@ class _GameSetupPageState extends State<GameSetupPage> {
                 final TextEditingController controller = entry.value;
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 24.0),
-                  child: Card(
-                    color: Colors.white,
-                    elevation: 4,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(24.0),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(24.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: <Widget>[
-                          Row(
-                            children: <Widget>[
-                              Expanded(
-                                child: Text(
-                                  'Equipo ${index + 1}',
-                                  style: const TextStyle(
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.black87,
-                                  ),
-                                ),
-                              ),
-                              if (teamControllers.length > 2 &&
-                                  index == teamControllers.length - 1)
-                                IconButton(
-                                  icon: const Icon(
-                                    Icons.remove_circle_outline,
-                                    color: Colors.red,
-                                  ),
-                                  onPressed: () {
-                                    setState(() {
-                                      final TextEditingController removed =
-                                          teamControllers.removeLast();
-                                      removed.dispose();
-                                      teamEmailsLists.removeLast();
-                                      final TextEditingController removedEmail =
-                                          emailInputControllers.removeLast();
-                                      removedEmail.dispose();
-                                      if (selectedHostIndex >=
-                                          teamControllers.length) {
-                                        selectedHostIndex =
-                                            teamControllers.length - 1;
-                                      }
-                                    });
-                                  },
-                                ),
-                            ],
-                          ),
-                          const SizedBox(height: 16),
-                          TextField(
-                            controller: controller,
-                            maxLength: 15,
-                            enabled: !(isAiOpponent && index == 1),
-                            style: TextStyle(
-                              color: (isAiOpponent && index == 1)
-                                  ? Colors.grey
-                                  : Colors.black87,
-                            ),
-                            decoration: InputDecoration(
-                              labelText: 'Nombre del Equipo',
-                              filled: isAiOpponent && index == 1,
-                              fillColor: (isAiOpponent && index == 1)
-                                  ? Colors.grey.withOpacity(0.1)
-                                  : null,
-                              border: const OutlineInputBorder(
-                                borderRadius: BorderRadius.all(
-                                  Radius.circular(12),
-                                ),
-                              ),
-                              prefixIcon: const Icon(Icons.group),
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          if (teamEmailsLists[index].isNotEmpty) ...<Widget>[
-                            Wrap(
-                              spacing: 8.0,
-                              runSpacing: 8.0,
-                              children: teamEmailsLists[index].map((
-                                String email,
-                              ) {
-                                return InputChip(
-                                  backgroundColor: Colors.purple.withOpacity(
-                                    0.1,
-                                  ),
-                                  label: Text(
-                                    email,
-                                    style: const TextStyle(
-                                      color: Colors.purple,
-                                    ),
-                                  ),
-                                  deleteIcon: const Icon(
-                                    Icons.close,
-                                    size: 18,
-                                    color: Colors.purple,
-                                  ),
-                                  onDeleted: () {
-                                    setState(() {
-                                      teamEmailsLists[index].remove(email);
-                                      final bool allEmpty = teamEmailsLists
-                                          .every(
-                                            (List<String> list) => list.isEmpty,
-                                          );
-                                      if (allEmpty) selectedGroup = null;
-                                    });
-                                  },
-                                );
-                              }).toList(),
-                            ),
-                            const SizedBox(height: 16),
-                          ],
-                          if (!(isAiOpponent && index == 1)) ...<Widget>[
-                            TextField(
-                              controller: emailInputControllers[index],
-                              decoration: const InputDecoration(
-                                labelText: 'Añadir Jugador (Correo o Nombre)',
-                                hintText: 'Escribe y pulsa Enter',
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.all(
-                                    Radius.circular(12),
-                                  ),
-                                ),
-                                prefixIcon: Icon(Icons.email_outlined),
-                              ),
-                              keyboardType: TextInputType.emailAddress,
-                              onChanged: (String value) {
-                                if (value.endsWith(',')) {
-                                  final String newEmail = value.substring(
-                                    0,
-                                    value.length - 1,
-                                  );
-                                  _processEmailInput(index, newEmail);
-                                }
-                              },
-                              onSubmitted: (String value) {
-                                _processEmailInput(index, value);
-                              },
-                            ),
-                          ],
-                        ],
-                      ),
-                    ),
+                  child: TeamSetupCard(
+                    index: index,
+                    teamController: controller,
+                    emailInputController: emailInputControllers[index],
+                    teamEmails: teamEmailsLists[index],
+                    isAiOpponent: isAiOpponent,
+                    onRemoveTeam: (teamControllers.length > 2 && index == teamControllers.length - 1)
+                        ? () {
+                            setState(() {
+                              final TextEditingController removed = teamControllers.removeLast();
+                              removed.dispose();
+                              teamEmailsLists.removeLast();
+                              final TextEditingController removedEmail = emailInputControllers.removeLast();
+                              removedEmail.dispose();
+                              if (selectedHostIndex >= teamControllers.length) {
+                                selectedHostIndex = teamControllers.length - 1;
+                              }
+                            });
+                          }
+                        : null,
+                    onEmailDeleted: (String email) {
+                      setState(() {
+                        teamEmailsLists[index].remove(email);
+                        final bool allEmpty = teamEmailsLists.every((List<String> list) => list.isEmpty);
+                        if (allEmpty) selectedGroup = null;
+                      });
+                    },
+                    onEmailAdded: (String newEmail) {
+                      _processEmailInput(index, newEmail);
+                    },
                   ),
                 );
               }),
@@ -511,152 +402,38 @@ class _GameSetupPageState extends State<GameSetupPage> {
                   ),
                 ),
 
-              Card(
-                color: Colors.white,
-                elevation: 4,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(24.0),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(24.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      const Text(
-                        'Ajustes de Partida',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black87,
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-                      TextField(
-                        controller: countController,
-                        keyboardType: TextInputType.number,
-                        decoration: const InputDecoration(
-                          labelText: 'Cantidad total de palabras',
-                          hintText: 'Ej. 30, 40, 60',
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.all(Radius.circular(12)),
-                          ),
-                          prefixIcon: Icon(Icons.format_list_numbered),
-                        ),
-                      ),
-                      const SizedBox(height: 32),
-                      const Text(
-                        '¿En qué equipo juegas tú (Anfitrión)?',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.black87,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      Wrap(
-                        spacing: 12,
-                        runSpacing: 12,
-                        children: teamControllers.asMap().entries.map((
-                          MapEntry<int, TextEditingController> entry,
-                        ) {
-                          final int index = entry.key;
-                          final bool isSelected = selectedHostIndex == index;
-                          return ChoiceChip(
-                            label: Text('Equipo ${index + 1}'),
-                            selected: isSelected,
-                            onSelected: (bool selected) {
-                              if (selected && selectedHostIndex != index) {
-                                setState(() {
-                                  selectedHostIndex = index;
-                                  if (selectedGroup != null) {
-                                    _loadGroup(
-                                      selectedGroup!,
-                                      keepHostIndex: true,
-                                    );
-                                  }
-                                });
-                              }
-                            },
-                            selectedColor: Colors.purple.withOpacity(0.2),
-                            labelStyle: TextStyle(
-                              color: isSelected
-                                  ? Colors.purple
-                                  : Colors.black87,
-                              fontWeight: isSelected
-                                  ? FontWeight.bold
-                                  : FontWeight.normal,
-                            ),
-                          );
-                        }).toList(),
-                      ),
-                      const SizedBox(height: 32),
-                      const Text(
-                        'Duración del turno (segundos)',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.black87,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      SizedBox(
-                        width: double.infinity,
-                        child: CupertinoSlidingSegmentedControl<int>(
-                          groupValue: selectedTurnDuration,
-                          children: const <int, Widget>{
-                            30: Padding(
-                              padding: EdgeInsets.symmetric(vertical: 12),
-                              child: Text('30s'),
-                            ),
-                            45: Padding(
-                              padding: EdgeInsets.symmetric(vertical: 12),
-                              child: Text('45s'),
-                            ),
-                            60: Padding(
-                              padding: EdgeInsets.symmetric(vertical: 12),
-                              child: Text('60s'),
-                            ),
-                          },
-                          onValueChanged: (int? value) {
-                            if (value != null) {
-                              setState(() {
-                                selectedTurnDuration = value;
-                              });
-                            }
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+              GameSettingsCard(
+                countController: countController,
+                teamCount: teamControllers.length,
+                selectedHostIndex: selectedHostIndex,
+                selectedTurnDuration: selectedTurnDuration,
+                onHostSelected: (int index) {
+                  setState(() {
+                    selectedHostIndex = index;
+                    if (selectedGroup != null) {
+                      _loadGroup(selectedGroup!, keepHostIndex: true);
+                    }
+                  });
+                },
+                onDurationChanged: (int duration) {
+                  setState(() {
+                    selectedTurnDuration = duration;
+                  });
+                },
               ),
               const SizedBox(height: 32),
 
-              SwitchListTile(
-                title: const Text(
-                  '¿Jugar contra el Bot?',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                subtitle: const Text(
-                  'El Equipo 2 será controlado por Gessi',
-                  style: TextStyle(color: Colors.white70),
-                ),
-                value: isAiOpponent,
-                activeColor: Colors.orangeAccent,
-                onChanged: (bool value) {
+              AiSettingsSection(
+                isAiOpponent: isAiOpponent,
+                aiDifficulty: aiDifficulty,
+                onAiToggle: (bool value) {
                   setState(() {
                     isAiOpponent = value;
                     _updateAiName();
 
                     if (selectedGroup != null) {
-                      _loadGroup(
-                        selectedGroup!,
-                      ); // Redistribuye el grupo cargado
+                      _loadGroup(selectedGroup!);
                     } else {
-                      // Si lo han metido a mano, movemos a los humanos del Equipo 2 al Equipo 1 para no perderlos
                       if (isAiOpponent &&
                           teamEmailsLists.length > 1 &&
                           teamEmailsLists[1].isNotEmpty) {
@@ -666,78 +443,13 @@ class _GameSetupPageState extends State<GameSetupPage> {
                     }
                   });
                 },
+                onDifficultyChanged: (int value) {
+                  setState(() {
+                    aiDifficulty = value;
+                    _updateAiName();
+                  });
+                },
               ),
-              if (isAiOpponent) ...<Widget>[
-                const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 16.0),
-                  child: Text(
-                    'Dificultad de la Máquina',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  child: SizedBox(
-                    width: double.infinity,
-                    child: CupertinoSlidingSegmentedControl<int>(
-                      groupValue: aiDifficulty,
-                      backgroundColor: Colors.black26,
-                      thumbColor: Colors.white,
-                      children: <int, Widget>{
-                        0: Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          child: Text(
-                            'Fácil',
-                            style: TextStyle(
-                              color: aiDifficulty == 0
-                                  ? Colors.deepPurple
-                                  : Colors.white,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                        1: Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          child: Text(
-                            'Media',
-                            style: TextStyle(
-                              color: aiDifficulty == 1
-                                  ? Colors.deepPurple
-                                  : Colors.white,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                        2: Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          child: Text(
-                            'Difícil',
-                            style: TextStyle(
-                              color: aiDifficulty == 2
-                                  ? Colors.deepPurple
-                                  : Colors.white,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      },
-                      onValueChanged: (int? value) {
-                        if (value != null) {
-                          setState(() {
-                            aiDifficulty = value;
-                            _updateAiName();
-                          });
-                        }
-                      },
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 24),
-              ],
               const SizedBox(height: 16),
 
               Container(

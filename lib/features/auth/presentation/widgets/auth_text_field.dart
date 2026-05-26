@@ -7,6 +7,7 @@ class AuthTextField extends StatelessWidget {
   final TextInputType? keyboardType;
   final bool obscureText;
   final Widget? suffixIcon;
+  final int? maxLength;
 
   const AuthTextField({
     Key? key,
@@ -16,6 +17,7 @@ class AuthTextField extends StatelessWidget {
     this.keyboardType,
     this.obscureText = false,
     this.suffixIcon,
+    this.maxLength,
   }) : super(key: key);
 
   @override
@@ -35,6 +37,7 @@ class AuthTextField extends StatelessWidget {
       ),
       keyboardType: keyboardType,
       obscureText: obscureText,
+      maxLength: maxLength,
     );
   }
 }
