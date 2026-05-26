@@ -1,10 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:guess_it/features/ranking/domain/entities/ranking_entity.dart';
 
+/// Widget de presentación gráfica que dibuja un podio (1º, 2º y 3º puesto)
+/// para los mejores jugadores del ranking.
+///
+/// Los tres jugadores principales se resaltan con tamaños y bordes dorados,
+/// plateados y cobrizos, destacándolos del resto de la lista.
 class RankingPodium extends StatelessWidget {
+  /// Lista con los datos de hasta los 3 mejores jugadores.
   final List<RankingEntity> top3;
+
+  /// Diccionario con las rutas locales de los avatares para resolver la imagen.
   final Map<String, String> avatars;
 
+  /// Crea una instancia de [RankingPodium].
+  ///
+  /// @param key El identificador opcional para el widget.
+  /// @param top3 La sublista con los líderes de la clasificación.
+  /// @param avatars Mapa inyectado para cargar los gráficos de los avatares.
   const RankingPodium({
     Key? key,
     required this.top3,
@@ -119,6 +132,10 @@ class RankingPodium extends StatelessWidget {
     );
   }
 
+  /// Construye el podio organizando visualmente los elementos en la disposición clásica (2º, 1º, 3º).
+  ///
+  /// @param context El contexto de construcción actual.
+  /// @return Un [Widget] de tipo `Row` que contiene los avatares posicionados, o un contenedor vacío si la lista está vacía.
   @override
   Widget build(BuildContext context) {
     if (top3.isEmpty) return const SizedBox.shrink();

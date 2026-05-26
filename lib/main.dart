@@ -23,6 +23,11 @@ import 'features/groups/presentation/bloc/group_bloc.dart';
 import 'features/groups/data/datasources/group_remote_data_source.dart';
 import 'features/groups/data/repositories/group_repository_impl.dart';
 
+/// Punto de entrada principal de la aplicación Guess It.
+///
+/// Se encarga de inicializar los bindings de Flutter, configurar Firebase,
+/// configurar la inyección de dependencias (DI) e inicializar el almacenamiento
+/// local para la caché de BLoC (HydratedBloc) antes de arrancar la interfaz gráfica.
 void main() async {
   // 1. Asegurar los bindings de Flutter
   WidgetsFlutterBinding.ensureInitialized();
@@ -67,12 +72,24 @@ void main() async {
   runApp(const MyApp());
 }
 
+/// Raíz de la jerarquía de widgets de la aplicación.
+///
+/// Se encarga de proveer globalmente los BLoCs (Auth, Game, Ranking, Group)
+/// a todo el árbol de widgets y de configurar el `MaterialApp` con el enrutador
+/// y el tema visual base (colores, tipografías, estilos de botones).
 class MyApp extends StatelessWidget {
   @override
   final Key? key;
 
+  /// Crea una instancia de [MyApp].
+  ///
+  /// @param key El identificador opcional para el widget raíz.
   const MyApp({Key? key}) : key = key;
 
+  /// Construye la aplicación inyectando dependencias y configurando el tema.
+  ///
+  /// @param context El contexto de construcción base.
+  /// @return Un [Widget] de tipo `MultiBlocProvider` que envuelve a `MaterialApp.router`.
   @override
   Widget build(BuildContext context) {
     return MultiBlocProvider(

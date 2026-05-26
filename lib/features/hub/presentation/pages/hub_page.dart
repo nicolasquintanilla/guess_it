@@ -11,12 +11,26 @@ import 'package:guess_it/features/hub/presentation/widgets/hub_grid_item.dart';
 import 'package:guess_it/features/hub/presentation/widgets/start_game_button.dart';
 import 'package:guess_it/features/hub/presentation/widgets/user_header.dart';
 
+/// Pantalla principal (Hub) de la aplicación a la que se accede tras iniciar sesión.
+///
+/// Actúa como el centro neurálgico del juego, permitiendo al usuario:
+/// - Iniciar una nueva partida.
+/// - Acceder a sus grupos.
+/// - Consultar el ranking global.
+/// - Leer las instrucciones de juego.
+/// - Gestionar su perfil y cerrar sesión.
 class HubPage extends StatefulWidget {
   @override
   final Key? key;
 
+  /// Crea una instancia de [HubPage].
+  ///
+  /// @param key El identificador opcional para el widget.
   const HubPage({Key? key}) : key = key;
 
+  /// Crea el estado mutable para este widget.
+  ///
+  /// @return Una instancia de [_HubPageState] para gestionar el estado.
   @override
   State<HubPage> createState() {
     return _HubPageState();

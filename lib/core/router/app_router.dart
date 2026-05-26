@@ -14,6 +14,10 @@ import 'package:guess_it/features/groups/presentation/pages/group_details_page.d
 import 'package:guess_it/features/groups/domain/entities/group_entity.dart';
 import 'package:guess_it/features/game/domain/entities/team_entity.dart';
 
+/// Enrutador principal de la aplicación utilizando [GoRouter].
+///
+/// Gestiona la navegación declarativa y centralizada de todas las pantallas
+/// del juego, inyectando argumentos cuando es necesario a través de `state.extra`.
 final GoRouter appRouter = GoRouter(
   initialLocation: '/',
   routes: <RouteBase>[

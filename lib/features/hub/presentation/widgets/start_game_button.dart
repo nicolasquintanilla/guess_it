@@ -1,13 +1,26 @@
 import 'package:flutter/material.dart';
 
+/// Widget reutilizable que representa el botón principal y destacado de la pantalla Hub.
+///
+/// Este botón utiliza un degradado atractivo y sombras para incentivar la
+/// acción más importante de la aplicación: iniciar una nueva partida.
 class StartGameButton extends StatelessWidget {
+  /// Callback que se ejecuta al presionar el botón.
   final VoidCallback onStart;
 
+  /// Crea una instancia de [StartGameButton].
+  ///
+  /// @param key El identificador opcional para el widget.
+  /// @param onStart La función de acción principal para iniciar el juego.
   const StartGameButton({
     Key? key,
     required this.onStart,
   }) : super(key: key);
 
+  /// Construye la representación visual del botón de inicio rápido.
+  ///
+  /// @param context El contexto de construcción actual.
+  /// @return Un [Widget] con diseño resaltado e interactividad.
   @override
   Widget build(BuildContext context) {
     return GestureDetector(

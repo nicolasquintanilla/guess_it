@@ -6,12 +6,23 @@ import 'package:guess_it/core/widgets/premium_scaffold.dart';
 import 'package:guess_it/features/ranking/presentation/widgets/ranking_podium.dart';
 import 'package:guess_it/features/ranking/presentation/widgets/ranking_list_item.dart';
 
+/// Pantalla principal que muestra la clasificación global de jugadores.
+///
+/// Obtiene y renderiza la lista de usuarios ordenados según su eficacia
+/// y número de victorias. Destaca a los 3 mejores mediante el widget `RankingPodium`
+/// y muestra el resto en una lista continua con `RankingListItem`.
 class RankingPage extends StatefulWidget {
   @override
   final Key? key;
 
+  /// Crea una instancia de [RankingPage].
+  ///
+  /// @param key El identificador opcional para el widget.
   const RankingPage({Key? key}) : key = key;
 
+  /// Crea el estado mutable necesario para esta pantalla.
+  ///
+  /// @return Una instancia de [_RankingPageState].
   @override
   State<RankingPage> createState() {
     return _RankingPageState();

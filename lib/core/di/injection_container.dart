@@ -18,8 +18,15 @@ import 'package:guess_it/features/game/domain/repositories/word_repository.dart'
 import 'package:guess_it/features/game/data/repositories/word_repository_impl.dart';
 import 'package:guess_it/features/game/data/datasources/word_remote_data_source.dart';
 
+/// Instancia global de [GetIt] utilizada como Service Locator (contenedor de inyección de dependencias).
 final GetIt sl = GetIt.instance;
 
+/// Inicializa e inyecta todas las dependencias de la aplicación.
+///
+/// Registra BLoCs, Casos de Uso, Repositorios, DataSources y servicios externos
+/// en el contenedor [GetIt] para permitir el patrón de Inyección de Dependencias.
+///
+/// @return Un [Future] que se completa cuando todas las dependencias están registradas.
 Future<void> init() async {
   // --- BLoC ---
   sl.registerFactory(

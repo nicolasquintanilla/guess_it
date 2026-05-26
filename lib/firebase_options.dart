@@ -15,6 +15,11 @@ import 'package:flutter/foundation.dart'
 /// );
 /// ```
 class DefaultFirebaseOptions {
+  /// Obtiene la configuración de Firebase apropiada para la plataforma actual.
+  ///
+  /// Lanza un [UnsupportedError] si la plataforma actual no está soportada.
+  ///
+  /// @return Las [FirebaseOptions] correspondientes al sistema operativo en ejecución.
   static FirebaseOptions get currentPlatform {
     if (kIsWeb) {
       throw UnsupportedError(
@@ -49,6 +54,7 @@ class DefaultFirebaseOptions {
     }
   }
 
+  /// Opciones de configuración generadas específicamente para Android.
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyDUOJRU79yhuEroadI9x0sLAH9-cGARFXg',
     appId: '1:638542701605:android:b14d8d1e4b606d80420bcc',
@@ -57,6 +63,7 @@ class DefaultFirebaseOptions {
     storageBucket: 'guess-it-tfg.firebasestorage.app',
   );
 
+  /// Opciones de configuración generadas específicamente para iOS.
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyCGdrZpXfx_CWrPEvIllTibHIt4NLy2zEM',
     appId: '1:638542701605:ios:97c7826139226445420bcc',

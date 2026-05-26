@@ -10,9 +10,20 @@ import 'package:guess_it/core/widgets/premium_scaffold.dart';
 import 'package:guess_it/features/room/presentation/widgets/room_code_input.dart';
 import 'package:guess_it/features/room/presentation/widgets/join_room_button.dart';
 
+/// Pantalla de interfaz gráfica para que un jugador invitado introduzca
+/// el código y se una a una sala existente.
+///
+/// Gestiona la entrada de texto y escucha los cambios en el estado del [RoomBloc]
+/// para navegar a la sala de espera en caso de éxito o mostrar un error.
 class JoinRoomPage extends StatefulWidget {
+  /// Crea una instancia de [JoinRoomPage].
+  ///
+  /// @param key El identificador opcional para el widget.
   const JoinRoomPage({Key? key}) : super(key: key);
 
+  /// Crea el estado mutable necesario para esta pantalla.
+  ///
+  /// @return Una instancia de [_JoinRoomPageState].
   @override
   State<JoinRoomPage> createState() {
     return _JoinRoomPageState();

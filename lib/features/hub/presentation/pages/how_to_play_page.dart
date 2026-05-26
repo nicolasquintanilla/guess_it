@@ -2,12 +2,24 @@ import 'package:flutter/material.dart';
 import 'package:guess_it/core/widgets/premium_scaffold.dart';
 import 'package:guess_it/core/widgets/rule_card.dart';
 
+/// Pantalla estática que muestra las reglas y el funcionamiento del juego.
+///
+/// Este widget renderiza una lista de tarjetas informativas (`RuleCard`)
+/// explicando las dinámicas de cada una de las 3 rondas (Tabú, Una Palabra, Mímica)
+/// y las penalizaciones por pasar palabra.
 class HowToPlayPage extends StatelessWidget {
   @override
   final Key? key;
 
+  /// Crea una instancia de [HowToPlayPage].
+  ///
+  /// @param key El identificador opcional para el widget.
   const HowToPlayPage({Key? key}) : key = key;
 
+  /// Construye la representación visual de la pantalla de instrucciones.
+  ///
+  /// @param context El contexto de construcción actual.
+  /// @return Un [Widget] que renderiza las reglas utilizando [PremiumScaffold].
   @override
   Widget build(BuildContext context) {
     return PremiumScaffold(

@@ -6,9 +6,20 @@ import 'package:guess_it/features/room/presentation/bloc/room_state.dart';
 import 'package:guess_it/core/widgets/premium_scaffold.dart';
 import 'package:guess_it/features/room/presentation/widgets/room_code_display.dart';
 
+/// Pantalla donde los jugadores esperan antes de que comience oficialmente la partida.
+///
+/// Si el usuario es el anfitrión, esta pantalla le muestra el código generado (vía [RoomCodeDisplay])
+/// para que otros puedan unirse. Maneja dinámicamente los estados del [RoomBloc].
 class WaitingRoomPage extends StatelessWidget {
+  /// Crea una instancia de [WaitingRoomPage].
+  ///
+  /// @param key El identificador opcional para el widget.
   const WaitingRoomPage({Key? key}) : super(key: key);
 
+  /// Construye la representación gráfica de la sala de espera, escuchando los estados.
+  ///
+  /// @param context El contexto de construcción actual.
+  /// @return Un [Widget] envuelto en un `PremiumScaffold` con información del estado actual.
   @override
   Widget build(BuildContext context) {
     return PremiumScaffold(

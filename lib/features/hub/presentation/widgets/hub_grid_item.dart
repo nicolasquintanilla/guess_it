@@ -1,12 +1,34 @@
 import 'package:flutter/material.dart';
 
+/// Widget reutilizable que representa un botón en formato tarjeta dentro de la cuadrícula del Hub.
+///
+/// Muestra un icono destacado, un título y una descripción, proporcionando
+/// un diseño interactivo para navegar a las diferentes secciones secundarias
+/// de la aplicación (Grupos, Ranking, Cómo jugar, etc.).
 class HubGridItem extends StatelessWidget {
+  /// El título principal de la tarjeta.
   final String title;
+
+  /// Texto secundario breve que describe la acción de la tarjeta.
   final String description;
+
+  /// El icono visual que representa la sección.
   final IconData icon;
+
+  /// El color de acento utilizado para el icono y su fondo decorativo.
   final Color iconColor;
+
+  /// La función a ejecutar cuando el usuario toca la tarjeta.
   final VoidCallback onTap;
 
+  /// Crea una instancia de [HubGridItem].
+  ///
+  /// @param key El identificador opcional para el widget.
+  /// @param title El título de la opción de navegación.
+  /// @param description La descripción secundaria.
+  /// @param icon El [IconData] a mostrar.
+  /// @param iconColor El [Color] principal para acentuar la tarjeta.
+  /// @param onTap El callback de pulsación.
   const HubGridItem({
     Key? key,
     required this.title,
@@ -16,6 +38,10 @@ class HubGridItem extends StatelessWidget {
     required this.onTap,
   }) : super(key: key);
 
+  /// Construye la representación visual de la tarjeta interactiva.
+  ///
+  /// @param context El contexto de construcción actual.
+  /// @return Un [Widget] interactivo envolviendo el diseño.
   @override
   Widget build(BuildContext context) {
     return GestureDetector(

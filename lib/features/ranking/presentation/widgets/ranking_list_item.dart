@@ -1,11 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:guess_it/features/ranking/domain/entities/ranking_entity.dart';
 
+/// Widget de interfaz que representa a un usuario individual dentro de la lista de ranking.
+///
+/// Muestra su posición, avatar, nombre y estadísticas clave (victorias).
+/// Se utiliza para los jugadores que están fuera del podio (posiciones 4 en adelante).
 class RankingListItem extends StatelessWidget {
+  /// Entidad con los datos estadísticos y perfil del usuario.
   final RankingEntity user;
+
+  /// La posición actual de este usuario en la clasificación (ej. 4, 5, 6...).
   final int rank;
+
+  /// Diccionario con las rutas locales de los avatares disponibles.
   final Map<String, String> avatars;
 
+  /// Crea una instancia de [RankingListItem].
+  ///
+  /// @param key El identificador opcional para el widget.
+  /// @param user La entidad [RankingEntity] a mostrar.
+  /// @param rank El número de puesto en la clasificación general.
+  /// @param avatars Mapa inyectado para la resolución gráfica del avatar.
   const RankingListItem({
     Key? key,
     required this.user,
@@ -13,6 +28,10 @@ class RankingListItem extends StatelessWidget {
     required this.avatars,
   }) : super(key: key);
 
+  /// Construye la representación gráfica en forma de tarjeta (`Card`) y `ListTile`.
+  ///
+  /// @param context El contexto de construcción actual.
+  /// @return Un [Widget] visualizando la fila de la tabla de clasificación.
   @override
   Widget build(BuildContext context) {
     return Card(

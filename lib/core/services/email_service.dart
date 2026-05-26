@@ -1,6 +1,9 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
+/// Servicio encargado de la gestión y envío de correos electrónicos transaccionales.
+///
+/// Utiliza la API de EmailJS para enviar correos utilizando plantillas preconfiguradas.
 class EmailService {
   static const String _serviceId = 'service_u1e8bsh';
   static const String _templateWelcomeId = 'template_th5cpeq';
@@ -9,7 +12,11 @@ class EmailService {
 
   static const String _apiUrl = 'https://api.emailjs.com/api/v1.0/email/send';
 
-  /// Enviar correo de Bienvenida
+  /// Envía un correo electrónico de bienvenida al usuario recién registrado.
+  ///
+  /// @param userEmail La dirección de correo electrónico del destinatario.
+  /// @param userName El nombre del destinatario para personalizar el correo.
+  /// @return Un [Future] que se completa cuando la solicitud de envío finaliza.
   static Future<void> sendWelcomeEmail({
     required String userEmail,
     required String userName,
@@ -23,7 +30,11 @@ class EmailService {
     );
   }
 
-  /// Enviar correo de Despedida (Cuenta Eliminada)
+  /// Envía un correo electrónico de confirmación de eliminación de cuenta (Despedida).
+  ///
+  /// @param userEmail La dirección de correo electrónico del destinatario.
+  /// @param userName El nombre del destinatario para personalizar el correo.
+  /// @return Un [Future] que se completa cuando la solicitud de envío finaliza.
   static Future<void> sendGoodbyeEmail({
     required String userEmail,
     required String userName,

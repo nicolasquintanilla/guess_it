@@ -6,10 +6,18 @@ import 'package:guess_it/features/groups/presentation/bloc/group_state.dart';
 import 'package:guess_it/features/groups/domain/entities/group_entity.dart';
 import 'package:guess_it/core/utils/network_checker.dart';
 
+/// BLoC encargado de la lógica de presentación para la gestión de grupos.
+///
+/// Convierte los eventos de la UI (crear, unirse, eliminar grupos) en estados
+/// que la interfaz puede renderizar de forma reactiva.
 class GroupBloc extends Bloc<GroupEvent, GroupState> {
+  /// Repositorio inyectado que maneja las operaciones de datos de grupos.
   final GroupRepository repository;
   StreamSubscription<List<GroupEntity>>? _groupsSubscription;
 
+  /// Crea una instancia de [GroupBloc].
+  ///
+  /// @param repository El [GroupRepository] utilizado para las operaciones de backend.
   GroupBloc({required GroupRepository repository})
     : repository = repository,
       super(const GroupState()) {
@@ -207,6 +215,10 @@ class GroupBloc extends Bloc<GroupEvent, GroupState> {
     }
   }
 
+  /// Cierra el BLoC y cancela cualquier suscripción activa al flujo de grupos
+  /// para prevenir fugas de memoria.
+  ///
+  /// @return Un [Future] que se completa cuando el BLoC se ha cerrado correctamente.
   @override
   Future<void> close() async {
     await _groupsSubscription?.cancel();

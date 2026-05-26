@@ -1,12 +1,34 @@
 import 'package:flutter/material.dart';
 
+/// Widget encargado de renderizar visualmente un avatar.
+///
+/// Gestiona la lógica para mostrar una imagen desde los assets si la clave
+/// es válida, o un icono por defecto si el usuario no tiene avatar seleccionado
+/// o hay un error en la carga.
 class AvatarRenderer extends StatelessWidget {
+  /// Clave o identificador del avatar a mostrar (ej. 'astronauta').
   final String? avatarKey;
+
+  /// Tamaño cuadrado (ancho y alto) asignado al avatar.
   final double size;
+
+  /// Indica si el avatar debe mostrarse con un estilo de selección resaltado.
   final bool isSelected;
+
+  /// Mapa que asocia las claves de avatares con las rutas de sus assets locales.
   final Map<String, String> availableAvatars;
+
+  /// Clave especial (ej. 'none') que indica que se debe usar el icono genérico.
   final String defaultSimpleAvatarKey;
 
+  /// Crea una instancia de [AvatarRenderer].
+  ///
+  /// @param key El identificador opcional para el widget.
+  /// @param avatarKey La clave del avatar a renderizar.
+  /// @param size El tamaño en píxeles.
+  /// @param isSelected Si está seleccionado (por defecto `false`).
+  /// @param availableAvatars Diccionario de rutas de imágenes.
+  /// @param defaultSimpleAvatarKey Clave fallback para un icono simple.
   const AvatarRenderer({
     Key? key,
     required this.avatarKey,
@@ -16,6 +38,10 @@ class AvatarRenderer extends StatelessWidget {
     required this.defaultSimpleAvatarKey,
   }) : super(key: key);
 
+  /// Construye la representación gráfica del avatar.
+  ///
+  /// @param context El contexto de construcción actual.
+  /// @return Un [Widget] que contiene la imagen o el icono de respaldo.
   @override
   Widget build(BuildContext context) {
     if (avatarKey == null ||

@@ -1,13 +1,26 @@
 import 'package:flutter/material.dart';
 
+/// Widget tipo tarjeta (Card) diseñado para mostrar el porcentaje de victorias del usuario.
+///
+/// Destaca visualmente cambiando su esquema de color (degradado) dependiendo
+/// de si la tasa de victorias ([winRate]) es superior o igual al 50%.
 class EfficacyCard extends StatelessWidget {
+  /// El porcentaje de victorias del usuario, de 0.0 a 100.0.
   final double winRate;
 
+  /// Crea una instancia de [EfficacyCard].
+  ///
+  /// @param key El identificador opcional para el widget.
+  /// @param winRate La tasa de victorias a renderizar.
   const EfficacyCard({
     Key? key,
     required this.winRate,
   }) : super(key: key);
 
+  /// Construye la representación gráfica de la tarjeta de eficacia.
+  ///
+  /// @param context El contexto de construcción actual.
+  /// @return Un [Widget] de tipo contenedor con colores condicionales y sombra.
   @override
   Widget build(BuildContext context) {
     return Container(

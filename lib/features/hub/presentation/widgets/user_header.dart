@@ -1,16 +1,32 @@
 import 'package:flutter/material.dart';
 import 'package:guess_it/features/auth/presentation/bloc/auth_state.dart';
 
+/// Widget que renderiza la cabecera del usuario en la pantalla principal (Hub).
+///
+/// Muestra el avatar dinámico seleccionado por el usuario y su nombre
+/// de visualización, indicando si se encuentra en modo "Invitado".
 class UserHeader extends StatelessWidget {
+  /// El estado actual de autenticación que contiene los datos del usuario.
   final AuthState authState;
+
+  /// Mapa que relaciona las claves de los avatares con sus rutas de imagen.
   final Map<String, String> availableAvatars;
 
+  /// Crea una instancia de [UserHeader].
+  ///
+  /// @param key El identificador opcional para el widget.
+  /// @param authState Estado del BLoC de autenticación con la sesión activa.
+  /// @param availableAvatars Diccionario de avatares disponibles en la app.
   const UserHeader({
     Key? key,
     required this.authState,
     required this.availableAvatars,
   }) : super(key: key);
 
+  /// Construye la visualización de la información básica del perfil.
+  ///
+  /// @param context El contexto de construcción actual.
+  /// @return Un [Widget] tipo Row con la imagen del avatar y el nombre de usuario.
   @override
   Widget build(BuildContext context) {
     final bool isGuest = authState.user?.isGuest ?? true;
