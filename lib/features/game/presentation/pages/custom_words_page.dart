@@ -68,8 +68,8 @@ class _CustomWordsPageState extends State<CustomWordsPage> {
     }
 
     setState(() {
-      addedWords.add(newWord);
-      _obscureWords.add(true);
+      addedWords.insert(0, newWord);
+      _obscureWords.insert(0, true);
       wordController.clear();
     });
   }

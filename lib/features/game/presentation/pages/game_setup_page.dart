@@ -153,24 +153,28 @@ class _GameSetupPageState extends State<GameSetupPage> {
         .where((String e) => e.toLowerCase() != hostEmail)
         .toList();
 
+    final bool isGuest = context.read<AuthBloc>().state.user?.isGuest == true;
+
     // Validaciones según el modo de juego
-    if (isAiOpponent) {
-      if (filteredEmails.isEmpty) {
-        _showCupertinoAlert(
-          context,
-          'Grupo insuficiente',
-          'Necesitas al menos 2 personas en total (Tú + 1 amigo) para enfrentaros a la maquina.',
-        );
-        return;
-      }
-    } else {
-      if (filteredEmails.length < 3) {
-        _showCupertinoAlert(
-          context,
-          'Grupo insuficiente',
-          'Para jugar por equipos necesitáis ser al menos 4 personas en total (Tú + 3 amigos).',
-        );
-        return;
+    if (!isGuest) {
+      if (isAiOpponent) {
+        if (filteredEmails.isEmpty) {
+          _showCupertinoAlert(
+            context,
+            'Grupo insuficiente',
+            'Necesitas al menos 2 personas en total (Tú + 1 amigo) para enfrentaros a la maquina.',
+          );
+          return;
+        }
+      } else {
+        if (filteredEmails.length < 3) {
+          _showCupertinoAlert(
+            context,
+            'Grupo insuficiente',
+            'Para jugar por equipos necesitáis ser al menos 4 personas en total (Tú + 3 amigos).',
+          );
+          return;
+        }
       }
     }
 
