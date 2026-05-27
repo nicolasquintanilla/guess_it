@@ -87,7 +87,7 @@ class PremiumScaffold extends StatelessWidget {
                         left: 24.0,
                         right: 24.0,
                         top: 24.0,
-                        bottom: MediaQuery.of(ctx).viewInsets.bottom + 24.0,
+                        bottom: 0,
                       ),
                       child: SingleChildScrollView(
                         child: Column(

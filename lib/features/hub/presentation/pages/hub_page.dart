@@ -138,9 +138,7 @@ class _HubPageState extends State<HubPage> {
                     availableAvatars: _availableAvatars,
                   ),
                   const SizedBox(height: 48),
-                  StartGameButton(
-                    onStart: () => context.push('/game-setup'),
-                  ),
+                  StartGameButton(onStart: () => context.push('/game-setup')),
                   const SizedBox(height: 32),
 
                   GridView.count(
