@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -98,6 +99,38 @@ class _HubPageState extends State<HubPage> {
     }
   }
 
+  Future<void> _mostrarDialogoCierreSesion(BuildContext context) {
+    return showCupertinoDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext dialogContext) {
+        return CupertinoAlertDialog(
+          title: const Text('Cerrar Sesión'),
+          content: const Text('¿Estás seguro de que quieres salir de la cuenta?'),
+          actions: <Widget>[
+            CupertinoDialogAction(
+              isDefaultAction: true,
+              onPressed: () {
+                Navigator.of(dialogContext).pop();
+              },
+              child: const Text('Cancelar'),
+            ),
+            CupertinoDialogAction(
+              isDestructiveAction: true,
+              onPressed: () {
+                Navigator.of(dialogContext).pop();
+                context.read<GroupBloc>().add(const ClearGroupsEvent());
+                context.read<AuthBloc>().add(const LogoutEvent());
+                context.go('/');
+              },
+              child: const Text('Salir'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return PremiumScaffold(
@@ -116,9 +149,7 @@ class _HubPageState extends State<HubPage> {
           icon: const Icon(Icons.logout, color: Colors.white),
           tooltip: 'Cerrar Sesión',
           onPressed: () {
-            context.read<GroupBloc>().add(const ClearGroupsEvent());
-            context.read<AuthBloc>().add(const LogoutEvent());
-            context.go('/');
+            _mostrarDialogoCierreSesion(context);
           },
         ),
       ],

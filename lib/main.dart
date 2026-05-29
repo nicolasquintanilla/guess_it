@@ -137,6 +137,15 @@ class MyApp extends StatelessWidget {
       child: MaterialApp.router(
         title: 'Guess It',
         debugShowCheckedModeBanner: false,
+        builder: (BuildContext context, Widget? child) {
+          return GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: () {
+              FocusManager.instance.primaryFocus?.unfocus();
+            },
+            child: child,
+          );
+        },
         theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(
             seedColor: Colors.deepPurpleAccent,

@@ -69,7 +69,7 @@ class HowToPlayPage extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             const RuleCard(
-              title: '¡Regla de Oro para Pasar Palabra!',
+              title: '¡Regla opcional para Pasar Palabra!',
               icon: Icons.warning_amber_rounded,
               color: Colors.redAccent,
               description:
